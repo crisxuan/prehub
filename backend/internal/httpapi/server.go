@@ -265,63 +265,89 @@ func (s *Server) handleSubmitRepository(w http.ResponseWriter, r *http.Request) 
 
 func (s *Server) handleRecrawl(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Query   string `json:"query"`
-		PerPage int    `json:"perPage"`
+		Query    string `json:"query"`
+		PerPage  int    `json:"perPage"`
+		Category string `json:"category"`
 	}
 	if err := decodeJSON(r, &input); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
-	if strings.TrimSpace(input.Query) == "" {
-		input.Query = "topic:ai stars:100..12000 pushed:>2026-02-01 archived:false fork:false"
+	queries := []string{strings.TrimSpace(input.Query)}
+	if queries[0] == "" {
+		queries = domain.DefaultSearchQueries(input.Category)
 	}
 
 	client := github.New(s.config.GitHubToken, s.config.GitHubAPIVersion)
-	repositories, rate, err := client.SearchRepositoriesWithSort(r.Context(), input.Query, input.PerPage, "updated", "desc")
-	if err != nil {
-		s.logger.Warn("github recrawl failed", "query", input.Query, "error", err)
-		writeJSON(w, http.StatusBadGateway, map[string]string{"error": err.Error()})
-		return
-	}
+	var rate github.RateLimitSnapshot
+	var lastErr error
+	successfulSearches := 0
+	seen := map[string]bool{}
+	candidates := []domain.Candidate{}
 
-	candidates := make([]domain.Candidate, 0, len(repositories))
-	for _, item := range repositories {
-		summary := item.Description
-		_, readme, readmeRate, err := client.GetReadme(r.Context(), item.Owner.Login, item.Name)
-		if err != nil {
-			s.logger.Warn("github recrawl readme fetch failed", "owner", item.Owner.Login, "repo", item.Name, "error", err)
-		} else {
-			rate = readmeRate
-			summary = editorial.SummarizeReadme(readme, item.Description)
-		}
-		repo := github.ToDomainRepository(item, item.Topics, summary)
-		score := scoring.ScoreRepository(repo, time.Now().UTC())
-		if !scoring.IsCandidateQualityAcceptable(score) {
-			s.logger.Info("recrawl candidate skipped by quality guard", "candidate", repo.FullName, "score", score.Quality)
+	for _, query := range queries {
+		query = strings.TrimSpace(query)
+		if query == "" {
 			continue
 		}
-		candidate := domain.Candidate{
-			ID:           "github_" + strings.ReplaceAll(repo.FullName, "/", "_"),
-			Repository:   repo,
-			Status:       "discovered",
-			QualityScore: score.Quality,
-			Score:        &score,
-			Source:       "github_search",
+		repositories, searchRate, err := client.SearchRepositoriesWithSort(r.Context(), query, input.PerPage, "updated", "desc")
+		if err != nil {
+			lastErr = err
+			s.logger.Warn("github recrawl failed", "query", query, "error", err)
+			continue
 		}
-		if s.store != nil {
-			result, err := s.store.SaveCandidate(r.Context(), repo, score, "github_search", "pending_review")
-			if err != nil {
-				s.logger.Warn("recrawl candidate persist failed", "candidate", repo.FullName, "error", err)
-			} else {
-				candidate = result.Candidate
+		rate = searchRate
+		successfulSearches++
+
+		for _, item := range repositories {
+			if seen[item.FullName] {
+				continue
 			}
+			seen[item.FullName] = true
+
+			summary := item.Description
+			_, readme, readmeRate, err := client.GetReadme(r.Context(), item.Owner.Login, item.Name)
+			if err != nil {
+				s.logger.Warn("github recrawl readme fetch failed", "owner", item.Owner.Login, "repo", item.Name, "error", err)
+			} else {
+				rate = readmeRate
+				summary = editorial.SummarizeReadme(readme, item.Description)
+			}
+			repo := github.ToDomainRepository(item, item.Topics, summary)
+			score := scoring.ScoreRepository(repo, time.Now().UTC())
+			if !scoring.IsCandidateQualityAcceptable(score) {
+				s.logger.Info("recrawl candidate skipped by quality guard", "candidate", repo.FullName, "score", score.Quality)
+				continue
+			}
+			candidate := domain.Candidate{
+				ID:           "github_" + strings.ReplaceAll(repo.FullName, "/", "_"),
+				Repository:   repo,
+				Status:       "discovered",
+				QualityScore: score.Quality,
+				Score:        &score,
+				Source:       "github_search",
+			}
+			if s.store != nil {
+				result, err := s.store.SaveCandidate(r.Context(), repo, score, "github_search", "pending_review")
+				if err != nil {
+					s.logger.Warn("recrawl candidate persist failed", "candidate", repo.FullName, "error", err)
+				} else {
+					candidate = result.Candidate
+				}
+			}
+			candidates = append(candidates, candidate)
 		}
-		candidates = append(candidates, candidate)
+	}
+
+	if successfulSearches == 0 && lastErr != nil {
+		writeJSON(w, http.StatusBadGateway, map[string]string{"error": lastErr.Error()})
+		return
 	}
 
 	writeJSON(w, http.StatusAccepted, map[string]any{
 		"status":     "accepted",
-		"query":      input.Query,
+		"query":      strings.Join(queries, " | "),
+		"queries":    queries,
 		"candidates": candidates,
 		"rateLimit":  rate,
 	})

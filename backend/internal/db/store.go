@@ -317,6 +317,7 @@ func (s *Store) SearchRepositoriesByCategory(ctx context.Context, category strin
 		limit = 50
 	}
 	filter := repositoryCategoryFilterSQL("r", category)
+	boost := repositoryCategoryBoostSQL("r", category)
 	rows, err := s.pool.Query(ctx, `
 		SELECT
 			r.full_name,
@@ -337,7 +338,7 @@ func (s *Store) SearchRepositoriesByCategory(ctx context.Context, category strin
 		LEFT JOIN repository_topics t ON t.repository_id = r.id
 		WHERE `+filter+`
 		GROUP BY r.id, rr.summary, sc.quality_score
-		ORDER BY COALESCE(sc.quality_score, 0) DESC, r.stars_count DESC
+		ORDER BY COALESCE(sc.quality_score, 0) + `+boost+` DESC, r.stars_count DESC
 		LIMIT $1
 	`, limit)
 	if err != nil {
@@ -698,6 +699,22 @@ func repositoryCategoryBoostSQL(repositoryAlias string, category string) string 
 	}
 
 	switch domain.NormalizeCategory(category) {
+	case "ai-image":
+		return `(CASE WHEN ` + topicIn("'ai-image-generation','ai-art','inpainting','sdxl','flux','face-swap','video-generation'") + ` THEN 90 ELSE 0 END
+			+ CASE WHEN ` + topicIn("'image-generation','image-editing','text-to-image','image-to-image','diffusion','stable-diffusion','comfyui','dalle'") + ` THEN 45 ELSE 0 END
+			+ CASE WHEN ` + name + ` ILIKE '%gpt-image%' OR ` + description + ` ILIKE '%gpt-image%' OR ` + description + ` ILIKE '%image generation%' OR ` + description + ` ILIKE '%image editing%' OR ` + description + ` ILIKE '%text-to-image%' OR ` + description + ` ILIKE '%image-to-image%' OR ` + description + ` ILIKE '%ComfyUI%' OR ` + description + ` ILIKE '%diffusion%' THEN 90 ELSE 0 END
+			+ CASE WHEN ` + repositoryAlias + `.stars_count BETWEEN 10 AND 5000 THEN 15 ELSE 0 END
+			- CASE WHEN ` + name + ` ILIKE 'awesome%' OR ` + description + ` ILIKE '%comprehensive list%' THEN 60 ELSE 0 END)`
+	case "ai-prompts":
+		return `(CASE WHEN ` + topicIn("'prompt','prompts','prompt-engineering','prompt-management','prompt-library','prompt-template','chatgpt-prompts','system-prompt'") + ` THEN 45 ELSE 0 END
+			+ CASE WHEN ` + name + ` ILIKE '%prompt%' OR ` + description + ` ILIKE '%prompt engineering%' OR ` + description + ` ILIKE '%prompt library%' OR ` + description + ` ILIKE '%prompt workflow%' OR ` + description + ` ILIKE '%prompt template%' OR ` + description + ` ILIKE '%system prompt%' OR ` + description + ` ILIKE '%prompt pack%' OR ` + description + ` ILIKE '%prompt driven%' THEN 90 ELSE 0 END
+			+ CASE WHEN ` + repositoryAlias + `.stars_count BETWEEN 10 AND 5000 THEN 15 ELSE 0 END
+			- CASE WHEN ` + name + ` ILIKE 'awesome%' OR ` + description + ` ILIKE '%jailbreak%' OR ` + description + ` ILIKE '%bypass%' THEN 60 ELSE 0 END)`
+	case "ai-skills":
+		return `(CASE WHEN ` + topicIn("'skill','skills','agent','agents','ai-agents','mcp','claude-code','codex','coding-agent','agent-client-protocol','workflow','automation','tool-use'") + ` THEN 45 ELSE 0 END
+			+ CASE WHEN ` + name + ` ILIKE '%skill%' OR ` + description + ` ILIKE '%codex skill%' OR ` + description + ` ILIKE '%claude code skill%' OR ` + description + ` ILIKE '%agent skill%' OR ` + description + ` ILIKE '%mcp server%' OR ` + description + ` ILIKE '%agent workflow%' OR ` + description + ` ILIKE '%tool use%' OR ` + description + ` ILIKE '%coding agent%' THEN 90 ELSE 0 END
+			+ CASE WHEN ` + repositoryAlias + `.stars_count BETWEEN 10 AND 5000 THEN 15 ELSE 0 END
+			- CASE WHEN ` + name + ` ILIKE 'awesome%' OR ` + description + ` ILIKE '%comprehensive list%' THEN 60 ELSE 0 END)`
 	case "ai":
 		return `(CASE WHEN ` + topicIn("'llm','agents','agentic-ai','ai-agents','mcp','rag','inference','local-llm','model-routing','cost-optimization','agent-evaluation','agent-observability','agentops'") + ` THEN 60 ELSE 0 END
 			+ CASE WHEN ` + description + ` ILIKE '%LLM%' OR ` + description + ` ILIKE '%agent%' OR ` + description + ` ILIKE '%MCP%' OR ` + description + ` ILIKE '%RAG%' OR ` + description + ` ILIKE '%model routing%' OR ` + description + ` ILIKE '%evaluation%' THEN 30 ELSE 0 END
@@ -731,6 +748,26 @@ func repositoryCategoryFilterSQL(repositoryAlias string, category string) string
 	case "backend":
 		return "(" + topicIn("'api','server','backend','microservices','distributed-systems','kubernetes','docker','go','rust','java'") +
 			" OR " + language + " IN ('Go', 'Rust', 'Java') OR " + description + " ILIKE '%server%')"
+	case "ai-image":
+		return "(" + repositoryAlias + ".stars_count BETWEEN 10 AND 12000 AND " + name + " NOT ILIKE 'awesome%' AND " + description + " NOT ILIKE '%free%api%key%' AND " +
+			description + " NOT ILIKE '%no credit card%' AND " + description + " NOT ILIKE '%comprehensive list%' AND (" +
+			topicIn("'ai-image-generation','ai-art','image-generation','image-editing','text-to-image','image-to-image','diffusion','stable-diffusion','comfyui','dalle','inpainting','sdxl','flux','face-swap','video-generation'") +
+			" OR " + name + " ILIKE '%gpt-image%' OR " + description + " ILIKE '%gpt-image%' OR " + description + " ILIKE '%image generation%' OR " + description + " ILIKE '%image editing%' OR " +
+			description + " ILIKE '%text-to-image%' OR " + description + " ILIKE '%image-to-image%' OR " + description + " ILIKE '%ComfyUI%' OR " + description + " ILIKE '%diffusion%' OR " +
+			"(" + description + " ILIKE '%multimodal%' AND " + description + " ILIKE '%image%')))"
+	case "ai-prompts":
+		return "(" + repositoryAlias + ".stars_count BETWEEN 10 AND 12000 AND " + name + " NOT ILIKE 'awesome%' AND " + description + " NOT ILIKE '%free%api%key%' AND " +
+			description + " NOT ILIKE '%no credit card%' AND " + description + " NOT ILIKE '%jailbreak%' AND " + description + " NOT ILIKE '%bypass%' AND (" +
+			topicIn("'prompt','prompts','prompt-engineering','prompt-management','prompt-library','prompt-template','chatgpt-prompts','system-prompt'") +
+			" OR " + name + " ILIKE '%prompt%' OR " + description + " ILIKE '%prompt engineering%' OR " + description + " ILIKE '%prompt library%' OR " +
+			description + " ILIKE '%prompt workflow%' OR " + description + " ILIKE '%prompt template%' OR " + description + " ILIKE '%system prompt%' OR " + description + " ILIKE '%prompt pack%'))"
+	case "ai-skills":
+		return "(" + repositoryAlias + ".stars_count BETWEEN 10 AND 12000 AND " + name + " NOT ILIKE 'awesome%' AND " + description + " NOT ILIKE '%free%api%key%' AND " +
+			description + " NOT ILIKE '%no credit card%' AND " + description + " NOT ILIKE '%comprehensive list%' AND (" +
+			topicIn("'skill','skills','agent','agents','ai-agents','mcp','claude-code','codex','coding-agent','agent-client-protocol','workflow','automation','tool-use'") +
+			" OR " + name + " ILIKE '%skill%' OR " + description + " ILIKE '%codex skill%' OR " + description + " ILIKE '%claude code skill%' OR " +
+			description + " ILIKE '%agent skill%' OR " + description + " ILIKE '%skills/%' OR " + description + " ILIKE '%mcp server%' OR " +
+			description + " ILIKE '%agent workflow%' OR " + description + " ILIKE '%tool use%' OR " + description + " ILIKE '%coding agent%'))"
 	case "ai":
 		fallthrough
 	default:

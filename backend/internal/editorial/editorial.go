@@ -119,6 +119,12 @@ func problemStatement(repo domain.Repository) string {
 	}
 
 	switch {
+	case has("image-generation", "image-editing", "text-to-image", "image-to-image", "diffusion", "stable-diffusion", "comfyui", "multimodal", "vision"):
+		return "核心痛点是把图像生成、编辑或多模态能力接入真实创作工作流"
+	case has("prompt", "prompts", "prompt-engineering", "prompt-management", "prompt-library", "prompt-template", "system-prompt"):
+		return "核心痛点是把 prompt 技巧、模板和工作流沉淀成可复用资产"
+	case has("skill", "skills", "claude-code", "codex", "agent-client-protocol", "tool-use"):
+		return "核心痛点是让 AI agent 通过可复用 skills 和工具流程处理具体任务"
 	case has("cost-optimization", "model-routing", "router"):
 		return "核心痛点是多模型调用时的成本、准确率和路由决策"
 	case has("evaluation", "evals", "tracing", "observability", "monitoring", "debugging", "guardrails"):
@@ -173,6 +179,12 @@ func proofStatement(repo domain.Repository) string {
 func useCase(repo domain.Repository) string {
 	text := strings.ToLower(strings.Join([]string{repo.Description, repo.Summary, strings.Join(repo.Topics, " ")}, " "))
 	switch {
+	case strings.Contains(text, "image generation") || strings.Contains(text, "image editing") || strings.Contains(text, "gpt-image") || strings.Contains(text, "comfyui") || strings.Contains(text, "diffusion") || strings.Contains(text, "multimodal"):
+		return "AI 绘图和多模态工作流"
+	case strings.Contains(text, "prompt engineering") || strings.Contains(text, "prompt library") || strings.Contains(text, "prompt template") || strings.Contains(text, "system prompt"):
+		return "Prompt 技巧和模板沉淀"
+	case strings.Contains(text, "codex skill") || strings.Contains(text, "claude code skill") || strings.Contains(text, "agent skill") || strings.Contains(text, "skills/"):
+		return "AI Skills 和 agent 工作流"
 	case strings.Contains(text, "model-routing") || strings.Contains(text, "cost-optimization"):
 		return "LLM 成本优化和模型路由"
 	case strings.Contains(text, "evaluation") || strings.Contains(text, "evals") || strings.Contains(text, "observability"):

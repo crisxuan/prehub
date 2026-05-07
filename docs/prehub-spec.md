@@ -180,6 +180,9 @@ GitHub Search 只用于候选召回，最终推荐必须走本地评分。
 
 ```text
 topic:ai stars:100..12000 pushed:>2026-02-01 archived:false fork:false
+"gpt-image" in:name,description,readme stars:10..12000 pushed:>2026-02-01 archived:false fork:false
+"prompt engineering" in:name,description,readme stars:10..12000 pushed:>2026-02-01 archived:false fork:false
+"agent skill" in:name,description,readme stars:10..12000 pushed:>2026-02-01 archived:false fork:false
 language:TypeScript topic:ui stars:>500 pushed:>2025-05-01 archived:false
 "agent framework" in:name,description,readme stars:>200 pushed:>2025-05-01 archived:false
 topic:self-hosted stars:>1000 license:mit pushed:>2024-05-01 archived:false
@@ -227,6 +230,17 @@ MVP 默认排程：
 - 根据 topics、README embedding、描述和类别发现相似项目。
 
 AI 类推荐默认偏向“有痛点、能解决问题、潜力足”的项目，而不是 AI 领域人尽皆知的高 star 项目。当前召回策略优先使用 `stars:100..12000`、近期更新、`sort=updated`，并排除 awesome-list、反馈仓库、凭据/API key 风险仓库等不适合作为每日推荐的内容。
+
+AI 推荐需要拆成可单独浏览和采集的场景分类，避免所有 AI 项目混在一起：
+
+| 分类 | 关注内容 | 默认召回种子 |
+| --- | --- | --- |
+| `ai` / AI | Agent、RAG、local LLM、inference、评测、模型路由等通用 AI 工程项目 | `topic:ai` + 适中 stars + 近期更新 |
+| `ai-image` / AI 绘图/多模态 | GPT-image、image generation/editing、ComfyUI workflow、diffusion、多模态创作链路 | `gpt-image`、`image generation`、`comfyui workflow` |
+| `ai-prompts` / Prompt 技巧 | prompt engineering、system prompt、prompt template、prompt workflow、可复用提示词模板 | `prompt engineering`、`system prompt`、`prompt template` |
+| `ai-skills` / AI Skills/工作流 | Codex/Claude Code skills、agent skill、MCP server、tool use、自动化工作流 | `agent skill`、`codex skill`、`mcp server` |
+
+这些子分类继续共用质量评分和 README 摘要，但会有各自的 boost/filter：优先解决具体痛点、近期仍活跃、stars 在潜力甜点区，并降权高 star 但泛化的 awesome-list、API key 聚合、jailbreak/bypass 等不适合每日推荐的项目。
 
 ### 8.2 项目质量评分
 

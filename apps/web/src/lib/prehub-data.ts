@@ -35,6 +35,9 @@ export const defaultCategory = "ai";
 
 export const recommendationCategories = [
   { slug: "ai", label: "AI" },
+  { slug: "ai-image", label: "AI 绘图/多模态" },
+  { slug: "ai-prompts", label: "Prompt 技巧" },
+  { slug: "ai-skills", label: "AI Skills/工作流" },
   { slug: "web", label: "Web 前端" },
   { slug: "devtools", label: "开发工具" },
   { slug: "data", label: "数据与数据库" },

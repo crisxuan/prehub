@@ -235,6 +235,8 @@ paths:
               properties:
                 query:
                   type: string
+                category:
+                  $ref: "#/components/schemas/RecommendationCategory"
                 perPage:
                   type: integer
                   minimum: 1
@@ -251,6 +253,10 @@ paths:
                     type: string
                   query:
                     type: string
+                  queries:
+                    type: array
+                    items:
+                      type: string
                   candidates:
                     type: array
                     items:
@@ -505,6 +511,9 @@ components:
       type: string
       enum:
         - ai
+        - ai-image
+        - ai-prompts
+        - ai-skills
         - web
         - devtools
         - data

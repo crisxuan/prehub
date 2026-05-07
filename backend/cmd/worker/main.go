@@ -9,6 +9,7 @@ import (
 
 	"github.com/prehub/prehub/backend/internal/config"
 	"github.com/prehub/prehub/backend/internal/db"
+	"github.com/prehub/prehub/backend/internal/domain"
 	"github.com/prehub/prehub/backend/internal/editorial"
 	"github.com/prehub/prehub/backend/internal/github"
 	"github.com/prehub/prehub/backend/internal/scoring"
@@ -63,41 +64,62 @@ func main() {
 
 func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store) {
 	query := strings.TrimSpace(os.Getenv("PREHUB_INITIAL_QUERY"))
+	queries := []string{query}
 	if query == "" {
-		query = "topic:ai stars:100..12000 pushed:>2026-02-01 archived:false fork:false"
+		queries = domain.DefaultSearchQueries(os.Getenv("PREHUB_INITIAL_CATEGORY"))
 	}
 
 	runCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
 	defer cancel()
 
 	client := github.New(cfg.GitHubToken, cfg.GitHubAPIVersion)
-	repositories, rate, err := client.SearchRepositoriesWithSort(runCtx, query, 10, "updated", "desc")
-	if err != nil {
-		logger.Warn("candidate discovery failed", "query", query, "error", err)
-		return
-	}
-	logger.Info("candidate discovery fetched", "query", query, "count", len(repositories), "remaining", rate.Remaining)
+	var rate github.RateLimitSnapshot
+	seen := map[string]bool{}
+	for _, query := range queries {
+		query = strings.TrimSpace(query)
+		if query == "" {
+			continue
+		}
 
-	for _, item := range repositories {
-		summary := item.Description
-		_, readme, readmeRate, err := client.GetReadme(runCtx, item.Owner.Login, item.Name)
+		repositories, searchRate, err := client.SearchRepositoriesWithSort(runCtx, query, 10, "updated", "desc")
 		if err != nil {
-			logger.Warn("candidate readme fetch failed", "repo", item.FullName, "error", err)
-		} else {
-			rate = readmeRate
-			summary = editorial.SummarizeReadme(readme, item.Description)
-		}
-		repo := github.ToDomainRepository(item, item.Topics, summary)
-		score := scoring.ScoreRepository(repo, time.Now().UTC())
-		if !scoring.IsCandidateQualityAcceptable(score) {
-			logger.Info("candidate skipped by quality guard", "repo", repo.FullName, "score", score.Quality)
+			logger.Warn("candidate discovery failed", "query", query, "error", err)
 			continue
 		}
-		if _, err := store.SaveCandidate(runCtx, repo, score, "worker_search", "pending_review"); err != nil {
-			logger.Warn("candidate persist failed", "repo", repo.FullName, "error", err)
-			continue
+		rate = searchRate
+		logger.Info("candidate discovery fetched", "query", query, "count", len(repositories), "remaining", rate.Remaining)
+
+		for _, item := range repositories {
+			if seen[item.FullName] {
+				continue
+			}
+			seen[item.FullName] = true
+
+			summary := item.Description
+			_, readme, readmeRate, err := client.GetReadme(runCtx, item.Owner.Login, item.Name)
+			if err != nil {
+				logger.Warn("candidate readme fetch failed", "repo", item.FullName, "error", err)
+			} else {
+				rate = readmeRate
+				summary = editorial.SummarizeReadme(readme, item.Description)
+			}
+			repo := github.ToDomainRepository(item, item.Topics, summary)
+			score := scoring.ScoreRepository(repo, time.Now().UTC())
+			if !scoring.IsCandidateQualityAcceptable(score) {
+				logger.Info("candidate skipped by quality guard", "repo", repo.FullName, "score", score.Quality)
+				continue
+			}
+			if _, err := store.SaveCandidate(runCtx, repo, score, "worker_search", "pending_review"); err != nil {
+				logger.Warn("candidate persist failed", "repo", repo.FullName, "error", err)
+				continue
+			}
+			logger.Info("candidate persisted", "repo", repo.FullName, "score", score.Quality)
 		}
-		logger.Info("candidate persisted", "repo", repo.FullName, "score", score.Quality)
+
+		if runCtx.Err() != nil {
+			logger.Warn("candidate discovery stopped", "error", runCtx.Err())
+			break
+		}
 	}
 	logger.Info("candidate discovery finished", "remaining", rate.Remaining)
 }
