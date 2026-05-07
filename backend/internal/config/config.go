@@ -1,0 +1,31 @@
+package config
+
+import "os"
+
+type Config struct {
+	Port             string
+	DatabaseURL      string
+	RedisAddr        string
+	GitHubToken      string
+	GitHubAPIVersion string
+	InternalAPIToken string
+}
+
+func Load() Config {
+	return Config{
+		Port:             env("PORT", "8080"),
+		DatabaseURL:      env("DATABASE_URL", ""),
+		RedisAddr:        env("REDIS_ADDR", "localhost:6379"),
+		GitHubToken:      env("GITHUB_TOKEN", ""),
+		GitHubAPIVersion: env("GITHUB_API_VERSION", "2026-03-10"),
+		InternalAPIToken: env("INTERNAL_API_TOKEN", ""),
+	}
+}
+
+func env(key string, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
+}

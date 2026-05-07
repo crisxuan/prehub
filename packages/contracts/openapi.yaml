@@ -1,0 +1,522 @@
+openapi: 3.1.0
+info:
+  title: PreHub Internal API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/v1
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /daily-picks/today:
+    get:
+      operationId: getTodayPick
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecommendationCategory"
+      responses:
+        "200":
+          description: Today daily pick
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyPick"
+  /daily-picks/recent:
+    get:
+      operationId: listRecentDailyPicks
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 31
+            default: 7
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecommendationCategory"
+      responses:
+        "200":
+          description: Recent published daily picks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyPickHistory"
+        "400":
+          description: Invalid days window
+  /search:
+    get:
+      operationId: searchRepositories
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: freshness
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+  /repositories/{owner}/{repo}:
+    get:
+      operationId: getRepository
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Repository detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+        "404":
+          description: Repository not found
+  /feedback:
+    post:
+      operationId: createFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "202":
+          description: Feedback accepted
+  /admin/candidates:
+    get:
+      operationId: listCandidates
+      responses:
+        "200":
+          description: Candidate queue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidates:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Candidate"
+                required:
+                  - candidates
+  /admin/candidates/{candidateId}/approve:
+    post:
+      operationId: approveCandidate
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Candidate approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  candidate:
+                    $ref: "#/components/schemas/Candidate"
+                required:
+                  - status
+                  - candidate
+        "404":
+          description: Candidate not found
+  /admin/candidates/{candidateId}/publish:
+    post:
+      operationId: publishCandidate
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublishCandidateInput"
+      responses:
+        "200":
+          description: Candidate published as daily pick
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  dailyPick:
+                    $ref: "#/components/schemas/DailyPick"
+                required:
+                  - status
+                  - dailyPick
+        "400":
+          description: Candidate cannot be published
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      responses:
+        "200":
+          description: Admin overview metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+  /admin/repositories/submit:
+    post:
+      operationId: submitRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitRepositoryInput"
+      responses:
+        "202":
+          description: Repository submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmitRepositoryResponse"
+        "400":
+          description: Invalid repository URL
+        "502":
+          description: GitHub API failed
+  /admin/recrawl:
+    post:
+      operationId: recrawlRepositories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                perPage:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+      responses:
+        "202":
+          description: Recrawl accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  query:
+                    type: string
+                  candidates:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Candidate"
+                  rateLimit:
+                    $ref: "#/components/schemas/RateLimitSnapshot"
+                required:
+                  - status
+                  - query
+                  - candidates
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        service:
+          type: string
+        status:
+          type: string
+        version:
+          type: string
+      required:
+        - service
+        - status
+        - version
+    Repository:
+      type: object
+      properties:
+        fullName:
+          type: string
+        owner:
+          type: string
+        name:
+          type: string
+        htmlUrl:
+          type: string
+          format: uri
+        description:
+          type: string
+        language:
+          type: string
+        stars:
+          type: integer
+        forks:
+          type: integer
+        license:
+          type: string
+        pushedAt:
+          type: string
+          format: date-time
+        topics:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
+        caveat:
+          type: string
+        summary:
+          type: string
+      required:
+        - fullName
+        - owner
+        - name
+        - htmlUrl
+        - description
+        - language
+        - stars
+        - forks
+        - license
+        - pushedAt
+        - topics
+        - reason
+        - caveat
+        - summary
+    DailyPick:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        theme:
+          type: string
+        primary:
+          $ref: "#/components/schemas/Repository"
+        alternatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/Repository"
+      required:
+        - date
+        - category
+        - theme
+        - primary
+        - alternatives
+    DailyPickHistory:
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        days:
+          type: integer
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        picks:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyPick"
+      required:
+        - fromDate
+        - toDate
+        - days
+        - category
+        - picks
+    SearchResponse:
+      type: object
+      properties:
+        query:
+          type: string
+        intent:
+          type: array
+          items:
+            type: string
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Repository"
+      required:
+        - query
+        - intent
+        - results
+    FeedbackInput:
+      type: object
+      properties:
+        repositoryFullName:
+          type: string
+        action:
+          type: string
+        context:
+          type: string
+      required:
+        - repositoryFullName
+        - action
+    Candidate:
+      type: object
+      properties:
+        id:
+          type: string
+        repository:
+          $ref: "#/components/schemas/Repository"
+        status:
+          type: string
+        qualityScore:
+          type: integer
+        source:
+          type: string
+        score:
+          $ref: "#/components/schemas/ScoreBreakdown"
+      required:
+        - id
+        - repository
+        - status
+        - qualityScore
+    ScoreBreakdown:
+      type: object
+      properties:
+        quality:
+          type: integer
+        popularity:
+          type: integer
+        freshness:
+          type: integer
+        momentum:
+          type: integer
+        documentation:
+          type: integer
+        maintenance:
+          type: integer
+        community:
+          type: integer
+        license:
+          type: integer
+        novelty:
+          type: integer
+      required:
+        - quality
+        - popularity
+        - freshness
+        - momentum
+        - documentation
+        - maintenance
+        - community
+        - license
+        - novelty
+    AdminOverview:
+      type: object
+      properties:
+        candidateCount:
+          type: integer
+        pendingReviewCount:
+          type: integer
+        scheduledPickCount:
+          type: integer
+        lastRateLimitStatus:
+          type: string
+      required:
+        - candidateCount
+        - pendingReviewCount
+        - scheduledPickCount
+        - lastRateLimitStatus
+    SubmitRepositoryInput:
+      type: object
+      properties:
+        url:
+          type: string
+        source:
+          type: string
+        priority:
+          type: string
+      required:
+        - url
+    SubmitRepositoryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        candidate:
+          $ref: "#/components/schemas/Candidate"
+        message:
+          type: string
+        rateLimit:
+          $ref: "#/components/schemas/RateLimitSnapshot"
+      required:
+        - status
+    PublishCandidateInput:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        theme:
+          type: string
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+    RecommendationCategory:
+      type: string
+      enum:
+        - ai
+        - web
+        - devtools
+        - data
+        - backend
+    RateLimitSnapshot:
+      type: object
+      properties:
+        Limit:
+          type: string
+        Remaining:
+          type: string
+        Reset:
+          type: string
+        Resource:
+          type: string
