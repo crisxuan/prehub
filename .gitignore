@@ -16,3 +16,4 @@ tmp/
 # Local data
 postgres-data/
 redis-data/
+.vercel

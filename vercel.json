@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "experimentalServices": {
+    "web": {
+      "entrypoint": "apps/web",
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "backend",
+      "routePrefix": "/api-go",
+      "framework": "go",
+      "memory": 1024,
+      "maxDuration": 300
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/radar-backfill",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

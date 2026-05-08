@@ -12,7 +12,7 @@ import {
 } from "@/lib/prehub-data";
 
 async function fetchInternalJSON<T>(path: string): Promise<T | null> {
-  const baseURL = process.env.GO_API_URL;
+  const baseURL = resolveGoAPIBaseURL();
   if (!baseURL) {
     return null;
   }
@@ -38,10 +38,7 @@ export async function getTodayPick(category = defaultCategory): Promise<DailyPic
   const payload = await fetchInternalJSON<DailyPick>(
     `/v1/daily-picks/today?category=${encodeURIComponent(normalized)}`,
   );
-  if (!payload) {
-    throw new Error("PreHub API is unavailable; daily pick requires the backend.");
-  }
-  return payload;
+  return payload ?? unavailableDailyPick(normalized);
 }
 
 export async function getRecentDailyPicks(
@@ -150,6 +147,36 @@ function unavailableAdminOverview(): AdminOverview {
   };
 }
 
+function unavailableDailyPick(category: string): DailyPick {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    date: today,
+    category,
+    theme: "等待生产数据库",
+    primary: {
+      fullName: "prehub/setup-production-database",
+      owner: "prehub",
+      name: "setup-production-database",
+      htmlUrl: "https://github.com/crisxuan/prehub",
+      description:
+        "Vercel 部署已经就绪，配置托管 PostgreSQL 的 DATABASE_URL 并执行 migrations 后会展示真实推荐。",
+      language: "PostgreSQL",
+      stars: 0,
+      forks: 0,
+      license: "internal",
+      pushedAt: new Date().toISOString(),
+      topics: ["vercel", "postgres", "deployment"],
+      reason:
+        "线上服务已部署，但还没有连接生产数据库；当前展示部署空态，避免首页 500。",
+      caveat:
+        "接入 Neon、Supabase 或 Vercel Postgres 后，需要执行 packages/db/migrations 下的 SQL。",
+      summary:
+        "配置生产 DATABASE_URL、INTERNAL_API_TOKEN、GITHUB_TOKEN，并运行数据库迁移后，PreHub 会恢复真实 GitHub 推荐与 Radar 数据。",
+    },
+    alternatives: [],
+  };
+}
+
 function unavailableRadarOverview(
   category: string,
   window: string,
@@ -188,4 +215,15 @@ function radarWindowMs(window: string) {
     default:
       return 24 * 60 * 60 * 1000;
   }
+}
+
+function resolveGoAPIBaseURL() {
+  const explicit = process.env.GO_API_URL ?? process.env.API_URL;
+  if (explicit) {
+    return explicit.replace(/\/$/, "");
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api-go`;
+  }
+  return null;
 }

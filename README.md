@@ -62,3 +62,13 @@ cd backend && go run ./cmd/api
 ```bash
 cd backend && go run ./cmd/worker
 ```
+
+## Vercel Deployment
+
+PreHub can be deployed to Vercel with Services:
+
+- Next.js web service: `apps/web` at `/`
+- Go API service: `backend` at `/api-go`
+- Radar backfill cron: `/api/cron/radar-backfill`
+
+See [docs/vercel-deployment.md](docs/vercel-deployment.md) for project settings, required environment variables, migration steps, and cron notes.
