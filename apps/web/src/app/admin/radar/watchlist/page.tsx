@@ -12,6 +12,7 @@ export default function AdminRadarWatchlistPage() {
       <section className="mx-auto max-w-7xl px-5 py-8">
         <Link
           href="/radar"
+          prefetch={false}
           className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-800"
         >
           <ArrowLeft className="h-4 w-4" />

@@ -26,6 +26,7 @@ export function RepoCard({ repo, highlight = false }: RepoCardProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/r/${repo.owner}/${repo.name}`}
+                    prefetch={false}
                     className="break-all font-mono text-2xl font-bold tracking-tight text-slate-950 hover:text-emerald-700"
                   >
                     {repo.fullName}
@@ -90,6 +91,7 @@ export function RepoCard({ repo, highlight = false }: RepoCardProps) {
             <div className="min-w-0">
               <Link
                 href={`/r/${repo.owner}/${repo.name}`}
+                prefetch={false}
                 className="break-all font-mono text-lg font-semibold text-slate-950 hover:text-emerald-700"
               >
                 {repo.fullName}

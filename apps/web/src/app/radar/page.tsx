@@ -20,7 +20,6 @@ import {
   normalizeCategory,
 } from "@/lib/prehub-data";
 import {
-  getRadarMetrics,
   getRadarOverview,
 } from "@/lib/server-prehub-api";
 
@@ -44,15 +43,6 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
   const dataCoverageValue = overview.dataCoverage?.complete
     ? "完整窗口"
     : `自 ${formatCoverageKpi(overview.dataCoverage?.observedSince)} 起`;
-  const lead = overview.topTrending[0];
-  const leadMetrics = lead
-    ? await getRadarMetrics(
-        lead.repository.owner,
-        lead.repository.name,
-        selectedWindow,
-      )
-    : null;
-
   return (
     <main className="min-h-screen overflow-hidden bg-[#fbfdff] text-slate-950">
       <div className="page-soft-grid pointer-events-none fixed inset-0" />
@@ -82,6 +72,7 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
                 <Link
                   key={item.slug}
                   href={`/radar?category=${item.slug}&window=${selectedWindow}`}
+                  prefetch={false}
                   className={[
                     "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold ring-1 transition",
                     item.slug === selectedCategory
@@ -100,6 +91,7 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
                 <Link
                   key={item}
                   href={`/radar?category=${selectedCategory}&window=${item}`}
+                  prefetch={false}
                   className={[
                     "inline-flex h-9 items-center rounded-lg px-4 text-sm font-bold ring-1 transition",
                     item === selectedWindow
@@ -143,7 +135,7 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
 
       <RadarTrendBoard
         categoryLabel={selectedCategoryLabel}
-        initialMetrics={leadMetrics}
+        initialMetrics={null}
         items={overview.topTrending}
         key={`${selectedCategory}:${selectedWindow}`}
         recentEvents={overview.recentEvents}

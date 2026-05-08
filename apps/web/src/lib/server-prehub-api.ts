@@ -11,7 +11,42 @@ import {
   type Repository,
 } from "@/lib/prehub-data";
 
-async function fetchInternalJSON<T>(path: string): Promise<T | null> {
+type CachedJSON = {
+  expiresAt: number;
+  promise: Promise<unknown | null>;
+};
+
+const jsonCache = new Map<string, CachedJSON>();
+
+async function fetchInternalJSON<T>(
+  path: string,
+  options: { ttlMs?: number } = {},
+): Promise<T | null> {
+  const ttlMs = options.ttlMs ?? 0;
+  const cacheKey = path;
+  if (ttlMs > 0) {
+    const cached = jsonCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return (await cached.promise) as T | null;
+    }
+  }
+
+  const promise = fetchInternalJSONUncached<T>(path, ttlMs);
+  if (ttlMs > 0) {
+    rememberJSON(cacheKey, ttlMs, promise);
+  }
+
+  const payload = await promise;
+  if (payload === null) {
+    jsonCache.delete(cacheKey);
+  }
+  return payload;
+}
+
+async function fetchInternalJSONUncached<T>(
+  path: string,
+  ttlMs: number,
+): Promise<T | null> {
   const baseURL = resolveGoAPIBaseURL();
   if (!baseURL) {
     console.warn("PreHub Go API base URL is not configured", { path });
@@ -23,7 +58,8 @@ async function fetchInternalJSON<T>(path: string): Promise<T | null> {
       headers: {
         "x-internal-token": process.env.INTERNAL_API_TOKEN ?? "",
       },
-      cache: "no-store",
+      cache: ttlMs > 0 ? "force-cache" : "no-store",
+      next: ttlMs > 0 ? { revalidate: Math.ceil(ttlMs / 1000) } : undefined,
     });
     if (!response.ok) {
       console.warn("PreHub Go API returned a non-OK response", {
@@ -48,6 +84,7 @@ export async function getTodayPick(category = defaultCategory): Promise<DailyPic
   const normalized = normalizeCategory(category);
   const payload = await fetchInternalJSON<DailyPick>(
     `/v1/daily-picks/today?category=${encodeURIComponent(normalized)}`,
+    { ttlMs: 60_000 },
   );
   return payload ?? unavailableDailyPick(normalized);
 }
@@ -59,6 +96,7 @@ export async function getRecentDailyPicks(
   const normalized = normalizeCategory(category);
   const payload = await fetchInternalJSON<DailyPickHistory>(
     `/v1/daily-picks/recent?days=${encodeURIComponent(days)}&category=${encodeURIComponent(normalized)}`,
+    { ttlMs: 120_000 },
   );
   if (payload) {
     return payload;
@@ -81,7 +119,7 @@ export async function getSearchResults(query: string) {
       query: string;
       intent: string[];
       results: Repository[];
-    }>(`/v1/search?q=${encodeURIComponent(query)}`)) ?? {
+    }>(`/v1/search?q=${encodeURIComponent(query)}`, { ttlMs: 30_000 })) ?? {
       query,
       intent: [],
       results: [],
@@ -93,13 +131,16 @@ export async function getRepository(owner: string, repo: string) {
   return (
     (await fetchInternalJSON<Repository>(
       `/v1/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      { ttlMs: 120_000 },
     )) ?? null
   );
 }
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   return (
-    (await fetchInternalJSON<AdminOverview>("/v1/admin/overview")) ??
+    (await fetchInternalJSON<AdminOverview>("/v1/admin/overview", {
+      ttlMs: 15_000,
+    })) ??
     unavailableAdminOverview()
   );
 }
@@ -119,6 +160,7 @@ export async function getRadarOverview(
   return (
     (await fetchInternalJSON<RadarOverview>(
       `/v1/radar/overview?category=${encodeURIComponent(normalized)}&window=${encodeURIComponent(window)}`,
+      { ttlMs: 45_000 },
     )) ?? unavailableRadarOverview(normalized, window)
   );
 }
@@ -131,6 +173,7 @@ export async function getRadarTrending(
   const normalized = normalizeCategory(category);
   const payload = await fetchInternalJSON<{ items: RadarTrendItem[] }>(
     `/v1/radar/trending?category=${encodeURIComponent(normalized)}&window=${encodeURIComponent(window)}&limit=${encodeURIComponent(limit)}`,
+    { ttlMs: 45_000 },
   );
   return payload?.items ?? [];
 }
@@ -142,6 +185,7 @@ export async function getRadarMetrics(
 ): Promise<RadarMetricsResponse | null> {
   const payload = await fetchInternalJSON<RadarMetricsResponse>(
     `/v1/radar/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/metrics?window=${encodeURIComponent(window)}`,
+    { ttlMs: 60_000 },
   );
   if (payload) {
     return payload;
@@ -245,4 +289,17 @@ function safeHost(rawURL: string) {
   } catch {
     return "invalid-url";
   }
+}
+
+function rememberJSON<T>(key: string, ttlMs: number, promise: Promise<T | null>) {
+  if (jsonCache.size > 100) {
+    const oldestKey = jsonCache.keys().next().value;
+    if (oldestKey) {
+      jsonCache.delete(oldestKey);
+    }
+  }
+  jsonCache.set(key, {
+    expiresAt: Date.now() + ttlMs,
+    promise: promise as Promise<unknown | null>,
+  });
 }

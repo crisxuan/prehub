@@ -25,12 +25,14 @@ export default async function AdminPage() {
           </div>
           <Link
             href="/admin/candidates"
+            prefetch={false}
             className="rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             打开候选队列
           </Link>
           <Link
             href="/admin/radar/watchlist"
+            prefetch={false}
             className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-emerald-200 hover:text-emerald-700"
           >
             Radar 监控

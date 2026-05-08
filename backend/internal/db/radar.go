@@ -226,40 +226,44 @@ func (s *Store) RadarOverview(ctx context.Context, category string, window strin
 	if err != nil {
 		return domain.RadarOverview{}, err
 	}
-	potential, err := s.ListRadarTrending(ctx, category, window, 10, true)
-	if err != nil {
-		return domain.RadarOverview{}, err
-	}
-	events, err := s.ListRadarEvents(ctx, category, 20)
-	if err != nil {
-		return domain.RadarOverview{}, err
-	}
+	potential := radarPotentialFromTrending(trending, 10)
+	events := []domain.RadarEvent{}
 
 	var monitoredCount int
 	var candidateCount int
-	if err := s.pool.QueryRow(ctx, `SELECT count(DISTINCT repository_id) FROM monitored_repositories WHERE status = 'active' AND ($1 = 'all' OR category = $1)`, category).Scan(&monitoredCount); err != nil {
+	var starDelta int
+	var coverage domain.RadarDataCoverage
+	if stats, ok, err := s.radarExternalOverviewStats(ctx, category, window); err != nil {
 		return domain.RadarOverview{}, err
-	}
-	if err := s.pool.QueryRow(ctx, `
-		SELECT count(DISTINCT c.repository_id)
-		FROM repository_candidates c
-		WHERE
-			$1 = 'all'
-			OR c.source = 'global_discovery_' || $1
-			OR EXISTS (
-				SELECT 1
-				FROM monitored_repositories mr
-				WHERE mr.repository_id = c.repository_id
-					AND mr.status = 'active'
-					AND mr.category = $1
-			)
-	`, category).Scan(&candidateCount); err != nil {
-		return domain.RadarOverview{}, err
-	}
-
-	starDelta, coverage, err := s.radarWindowSummary(ctx, category, window)
-	if err != nil {
-		return domain.RadarOverview{}, err
+	} else if ok {
+		monitoredCount = stats.monitoredCount
+		candidateCount = stats.candidateCount
+		starDelta = stats.starDelta
+		coverage = stats.coverage
+	} else {
+		if err := s.pool.QueryRow(ctx, `SELECT count(DISTINCT repository_id) FROM monitored_repositories WHERE status = 'active' AND ($1 = 'all' OR category = $1)`, category).Scan(&monitoredCount); err != nil {
+			return domain.RadarOverview{}, err
+		}
+		if err := s.pool.QueryRow(ctx, `
+			SELECT count(DISTINCT c.repository_id)
+			FROM repository_candidates c
+			WHERE
+				$1 = 'all'
+				OR c.source = 'global_discovery_' || $1
+				OR EXISTS (
+					SELECT 1
+					FROM monitored_repositories mr
+					WHERE mr.repository_id = c.repository_id
+						AND mr.status = 'active'
+						AND mr.category = $1
+				)
+		`, category).Scan(&candidateCount); err != nil {
+			return domain.RadarOverview{}, err
+		}
+		starDelta, coverage, err = s.radarWindowSummary(ctx, category, window)
+		if err != nil {
+			return domain.RadarOverview{}, err
+		}
 	}
 
 	return domain.RadarOverview{
@@ -278,9 +282,100 @@ func (s *Store) RadarOverview(ctx context.Context, category string, window strin
 	}, nil
 }
 
+type radarOverviewStats struct {
+	monitoredCount int
+	candidateCount int
+	starDelta      int
+	coverage       domain.RadarDataCoverage
+}
+
+func (s *Store) radarExternalOverviewStats(ctx context.Context, category string, window string) (radarOverviewStats, bool, error) {
+	seconds := int(radarWindowDuration(window).Seconds())
+
+	var stats radarOverviewStats
+	var externalCount int
+	var observedSince time.Time
+	var observedUntil time.Time
+	var windowStartedAt time.Time
+	if err := s.pool.QueryRow(ctx, `
+		WITH scoped AS (
+			SELECT DISTINCT repository_id
+			FROM monitored_repositories
+			WHERE status = 'active' AND ($1 = 'all' OR category = $1)
+		),
+		external_summary AS (
+			SELECT
+				COALESCE(sum(external.star_delta), 0)::int AS star_delta,
+				count(*)::int AS external_count,
+				COALESCE(min(external.window_started_at), now() - ($2::double precision * interval '1 second')) AS observed_since,
+				COALESCE(max(external.window_ended_at), now()) AS observed_until
+			FROM scoped
+			JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
+				AND external.source = $3
+				AND external.trend_window = $4
+		)
+		SELECT
+			(SELECT count(*)::int FROM scoped),
+			(
+				SELECT count(DISTINCT c.repository_id)::int
+				FROM repository_candidates c
+				WHERE
+					$1 = 'all'
+					OR c.source = 'global_discovery_' || $1
+					OR c.repository_id IN (SELECT repository_id FROM scoped)
+			),
+			external_summary.star_delta,
+			external_summary.external_count,
+			external_summary.observed_since,
+			external_summary.observed_until,
+			now() - ($2::double precision * interval '1 second')
+		FROM external_summary
+	`, category, seconds, externalTrendSourceClickHouse, window).Scan(
+		&stats.monitoredCount,
+		&stats.candidateCount,
+		&stats.starDelta,
+		&externalCount,
+		&observedSince,
+		&observedUntil,
+		&windowStartedAt,
+	); err != nil {
+		return radarOverviewStats{}, false, err
+	}
+	if externalCount == 0 {
+		return radarOverviewStats{}, false, nil
+	}
+	stats.coverage = radarCoverage(true, observedSince, observedUntil, windowStartedAt)
+	return stats, true, nil
+}
+
+func radarPotentialFromTrending(items []domain.RadarTrendItem, limit int) []domain.RadarTrendItem {
+	potential := []domain.RadarTrendItem{}
+	for _, item := range items {
+		stars := item.Repository.Stars
+		if stars >= 10 && stars <= 12000 {
+			potential = append(potential, item)
+		}
+		if len(potential) >= limit {
+			return potential
+		}
+	}
+	if len(potential) > 0 {
+		return potential
+	}
+	if len(items) > limit {
+		return items[:limit]
+	}
+	return items
+}
+
 func (s *Store) radarWindowSummary(ctx context.Context, category string, window string) (int, domain.RadarDataCoverage, error) {
 	category = domain.NormalizeCategory(category)
 	window = normalizeRadarWindow(window)
+	if starDelta, coverage, ok, err := s.externalRadarWindowSummary(ctx, category, window); err != nil {
+		return 0, domain.RadarDataCoverage{}, err
+	} else if ok {
+		return starDelta, coverage, nil
+	}
 	seconds := int(radarWindowDuration(window).Seconds())
 	toleranceSeconds := int(radarBaselineTolerance(window).Seconds())
 
@@ -371,6 +466,11 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 	}
 	category = domain.NormalizeCategory(category)
 	window = normalizeRadarWindow(window)
+	if items, ok, err := s.listExternalRadarTrending(ctx, category, window, limit, potentialOnly); err != nil {
+		return nil, err
+	} else if ok {
+		return items, nil
+	}
 	seconds := int(radarWindowDuration(window).Seconds())
 	toleranceSeconds := int(radarBaselineTolerance(window).Seconds())
 	potentialFilter := ""
@@ -530,6 +630,168 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 		items = append(items, item)
 	}
 	return items, rows.Err()
+}
+
+func (s *Store) externalRadarWindowSummary(ctx context.Context, category string, window string) (int, domain.RadarDataCoverage, bool, error) {
+	seconds := int(radarWindowDuration(window).Seconds())
+
+	var starDelta int
+	var count int
+	var observedSince time.Time
+	var observedUntil time.Time
+	var windowStartedAt time.Time
+	if err := s.pool.QueryRow(ctx, `
+		WITH scoped AS (
+			SELECT DISTINCT repository_id
+			FROM monitored_repositories
+			WHERE status = 'active' AND ($1 = 'all' OR category = $1)
+		)
+		SELECT
+			COALESCE(sum(external.star_delta), 0)::int,
+			count(*)::int,
+			COALESCE(min(external.window_started_at), now() - ($2::double precision * interval '1 second')),
+			COALESCE(max(external.window_ended_at), now()),
+			now() - ($2::double precision * interval '1 second')
+		FROM scoped
+		JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
+			AND external.source = $3
+			AND external.trend_window = $4
+	`, category, seconds, externalTrendSourceClickHouse, window).Scan(
+		&starDelta,
+		&count,
+		&observedSince,
+		&observedUntil,
+		&windowStartedAt,
+	); err != nil {
+		return 0, domain.RadarDataCoverage{}, false, err
+	}
+	if count == 0 {
+		return 0, domain.RadarDataCoverage{}, false, nil
+	}
+	return starDelta, radarCoverage(true, observedSince, observedUntil, windowStartedAt), true, nil
+}
+
+func (s *Store) listExternalRadarTrending(ctx context.Context, category string, window string, limit int, potentialOnly bool) ([]domain.RadarTrendItem, bool, error) {
+	potentialFilter := ""
+	if potentialOnly {
+		potentialFilter = "AND repo.stars_count BETWEEN 10 AND 12000"
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		WITH scoped AS (
+			SELECT DISTINCT repository_id
+			FROM monitored_repositories
+			WHERE status = 'active' AND ($1 = 'all' OR category = $1)
+		),
+		ranked AS (
+			SELECT
+				repo.id,
+				repo.full_name,
+				repo.owner,
+				repo.name,
+				repo.html_url,
+				COALESCE(repo.avatar_url, '') AS avatar_url,
+				repo.description,
+				COALESCE(repo.primary_language, '') AS primary_language,
+				repo.stars_count,
+				repo.forks_count,
+				COALESCE(repo.license_key, 'unknown') AS license_key,
+				COALESCE(repo.pushed_at, now()) AS pushed_at,
+				COALESCE(readme.summary, repo.description) AS summary,
+				COALESCE(score.quality_score, 0) AS quality_score,
+				external.star_delta,
+				external.activity_events,
+				external.window_started_at,
+				external.window_ended_at
+			FROM scoped
+			JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
+				AND external.source = $4
+				AND external.trend_window = $2
+			JOIN repositories repo ON repo.id = scoped.repository_id
+			LEFT JOIN repository_readmes readme ON readme.repository_id = repo.id
+			LEFT JOIN repository_scores score ON score.repository_id = repo.id
+			WHERE true `+potentialFilter+`
+			ORDER BY external.star_delta DESC, COALESCE(score.quality_score, 0) DESC, repo.stars_count DESC
+			LIMIT $3
+		)
+		SELECT
+			ranked.full_name,
+			ranked.owner,
+			ranked.name,
+			ranked.html_url,
+			ranked.avatar_url,
+			ranked.description,
+			ranked.primary_language,
+			ranked.stars_count,
+			ranked.forks_count,
+			ranked.license_key,
+			ranked.pushed_at,
+			ranked.summary,
+			COALESCE(array_remove(array_agg(topic.topic ORDER BY topic.topic), NULL), '{}'),
+			ranked.star_delta,
+			ranked.activity_events,
+			ranked.quality_score,
+			ranked.window_started_at,
+			ranked.window_ended_at
+		FROM ranked
+		LEFT JOIN repository_topics topic ON topic.repository_id = ranked.id
+		GROUP BY ranked.id, ranked.full_name, ranked.owner, ranked.name, ranked.html_url,
+			ranked.avatar_url, ranked.description, ranked.primary_language, ranked.stars_count,
+			ranked.forks_count, ranked.license_key, ranked.pushed_at, ranked.summary,
+			ranked.star_delta, ranked.activity_events, ranked.quality_score,
+			ranked.window_started_at, ranked.window_ended_at
+		ORDER BY ranked.star_delta DESC, ranked.quality_score DESC, ranked.stars_count DESC
+	`, category, window, limit, externalTrendSourceClickHouse)
+	if err != nil {
+		return nil, false, err
+	}
+	defer rows.Close()
+
+	items := []domain.RadarTrendItem{}
+	for rows.Next() {
+		var repo domain.Repository
+		var pushedAt time.Time
+		var observedSince time.Time
+		var observedUntil time.Time
+		var topics []string
+		var quality int
+		item := domain.RadarTrendItem{Window: window}
+		if err := rows.Scan(
+			&repo.FullName,
+			&repo.Owner,
+			&repo.Name,
+			&repo.HTMLURL,
+			&repo.AvatarURL,
+			&repo.Description,
+			&repo.Language,
+			&repo.Stars,
+			&repo.Forks,
+			&repo.License,
+			&pushedAt,
+			&repo.Summary,
+			&topics,
+			&item.StarDelta,
+			&item.ActivityEvents,
+			&quality,
+			&observedSince,
+			&observedUntil,
+		); err != nil {
+			return nil, false, err
+		}
+		repo.PushedAt = pushedAt.UTC().Format(time.RFC3339)
+		repo.Topics = topics
+		item.Repository = applyRepositoryNarrative(repo, "")
+		item.DataCoverage = radarCoverage(true, observedSince, observedUntil, observedSince)
+		item.VelocityScore = radarVelocityScore(item.StarDelta, window)
+		item.AccelerationScore = radarAccelerationScore(item.StarDelta, repo.Stars)
+		item.TrendScore = radarTrendScore(item, quality)
+		item.Explanation = radarTrendExplanation(item, quality)
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, false, err
+	}
+	return items, len(items) > 0, nil
 }
 
 func (s *Store) RadarMetrics(ctx context.Context, owner string, repoName string, window string) (domain.RadarMetricsResponse, bool, error) {

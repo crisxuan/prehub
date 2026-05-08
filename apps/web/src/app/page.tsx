@@ -77,6 +77,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 <Link
                   key={item.slug}
                   href={`/?category=${item.slug}`}
+                  prefetch={false}
                   className={[
                     "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold ring-1 transition",
                     item.slug === selectedCategory
@@ -115,6 +116,7 @@ export default async function Home({ searchParams }: HomeProps) {
               </h2>
               <Link
                 href="/admin/candidates"
+                prefetch={false}
                 className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-emerald-700"
               >
                 查看全部
@@ -147,6 +149,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
             <Link
               href={`/daily?category=${selectedCategory}`}
+              prefetch={false}
               className="inline-flex h-9 items-center gap-1 rounded-lg px-3 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-emerald-700"
             >
               查看归档
@@ -206,6 +209,7 @@ function SideRepoRow({ repo }: { repo: Repository }) {
   return (
     <Link
       href={`/r/${repo.owner}/${repo.name}`}
+      prefetch={false}
       className="group flex w-full min-w-0 items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:shadow-[0_14px_30px_rgba(16,185,129,0.1)]"
     >
       <RepoAvatar repo={repo} />
@@ -229,6 +233,7 @@ function MiniRepoCard({ repo }: { repo: Repository }) {
   return (
     <Link
       href={`/r/${repo.owner}/${repo.name}`}
+      prefetch={false}
       className="group flex min-h-28 flex-col justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:shadow-[0_14px_30px_rgba(16,185,129,0.1)]"
     >
       <span className="flex gap-3">

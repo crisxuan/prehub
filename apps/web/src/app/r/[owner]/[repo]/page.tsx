@@ -29,7 +29,7 @@ export default async function RepoPage({ params }: RepoPageProps) {
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href="/" className="text-sm font-medium text-emerald-700">
+          <Link href="/" prefetch={false} className="text-sm font-medium text-emerald-700">
             返回今日推荐
           </Link>
           <a

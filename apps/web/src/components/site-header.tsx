@@ -24,7 +24,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 px-3 pt-2">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-4 rounded-lg border border-slate-200/80 bg-white/90 px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" prefetch={false} className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-lg bg-gradient-to-br from-emerald-300 via-emerald-500 to-teal-700 text-lg font-bold text-white shadow-[0_12px_28px_rgba(16,185,129,0.28)]">
             P
           </span>
@@ -48,6 +48,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={[
                   "inline-flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition",
                   isActive

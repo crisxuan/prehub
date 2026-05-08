@@ -122,6 +122,7 @@ export function RadarTrendBoard({
           </div>
           <Link
             href="/admin/radar/watchlist"
+            prefetch={false}
             className="inline-flex h-9 items-center gap-2 rounded-lg bg-slate-950 px-3 text-sm font-bold text-white hover:bg-emerald-700"
           >
             加入监控
@@ -161,6 +162,7 @@ export function RadarTrendBoard({
                 <div className="min-w-0">
                   <Link
                     href={`/r/${selectedItem.repository.owner}/${selectedItem.repository.name}`}
+                    prefetch={false}
                     className="block truncate font-mono text-base font-bold text-slate-950 hover:text-emerald-700"
                   >
                     {selectedItem.repository.fullName}
@@ -264,6 +266,7 @@ function TrendRow({
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/r/${repo.owner}/${repo.name}`}
+              prefetch={false}
               className="break-all font-mono text-lg font-bold text-slate-950 hover:text-emerald-700"
               onClick={(event) => event.stopPropagation()}
             >
