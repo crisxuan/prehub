@@ -27,7 +27,23 @@ func Connect(ctx context.Context, databaseURL string) (*Store, error) {
 	if strings.TrimSpace(databaseURL) == "" {
 		return nil, errors.New("DATABASE_URL is required")
 	}
-	pool, err := pgxpool.New(ctx, databaseURL)
+	config, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		return nil, err
+	}
+	if config.ConnConfig.RuntimeParams == nil {
+		config.ConnConfig.RuntimeParams = map[string]string{}
+	}
+	if strings.TrimSpace(config.ConnConfig.RuntimeParams["search_path"]) == "" {
+		config.ConnConfig.RuntimeParams["search_path"] = "public"
+	}
+	if config.ConnConfig.ConnectTimeout == 0 {
+		config.ConnConfig.ConnectTimeout = 10 * time.Second
+	}
+	if config.MaxConns == 0 || config.MaxConns > 4 {
+		config.MaxConns = 4
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, err
 	}

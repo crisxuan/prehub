@@ -17,3 +17,4 @@ tmp/
 postgres-data/
 redis-data/
 .vercel
+.env*.local
