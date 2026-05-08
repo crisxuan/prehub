@@ -29,6 +29,12 @@ export default async function AdminPage() {
           >
             打开候选队列
           </Link>
+          <Link
+            href="/admin/radar/watchlist"
+            className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-emerald-200 hover:text-emerald-700"
+          >
+            Radar 监控
+          </Link>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -53,7 +59,7 @@ export default async function AdminPage() {
           <h2 className="text-lg font-semibold text-slate-950">采集状态</h2>
           <dl className="mt-4 grid gap-4 text-sm md:grid-cols-3">
             <div>
-              <dt className="text-slate-500">GitHub rate limit</dt>
+              <dt className="text-slate-500">数据源状态</dt>
               <dd className="mt-1 font-mono font-semibold text-slate-950">
                 {adminOverview.lastRateLimitStatus}
               </dd>

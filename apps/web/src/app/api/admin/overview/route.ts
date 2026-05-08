@@ -1,11 +1,13 @@
 import { fetchGoAPI } from "@/lib/go-api";
-import { adminOverview } from "@/lib/prehub-data";
 
 export async function GET() {
   const goResponse = await fetchGoAPI("/v1/admin/overview");
-  if (goResponse?.ok) {
-    return Response.json(await goResponse.json());
+  if (goResponse) {
+    return Response.json(await goResponse.json(), { status: goResponse.status });
   }
 
-  return Response.json(adminOverview);
+  return Response.json(
+    { error: "Go API is not reachable; admin overview requires the backend." },
+    { status: 503 },
+  );
 }

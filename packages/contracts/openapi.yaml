@@ -50,7 +50,7 @@ paths:
             $ref: "#/components/schemas/RecommendationCategory"
       responses:
         "200":
-          description: Recent published daily picks
+          description: Recent daily picks, including today's automatic pick when it has not been manually published yet
           content:
             application/json:
               schema:
@@ -104,6 +104,95 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Repository"
+        "404":
+          description: Repository not found
+  /radar/overview:
+    get:
+      operationId: getRadarOverview
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecommendationCategory"
+        - name: window
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RadarWindow"
+      responses:
+        "200":
+          description: Radar overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RadarOverview"
+  /radar/trending:
+    get:
+      operationId: listRadarTrending
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecommendationCategory"
+        - name: window
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RadarWindow"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: potential
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Radar trending repositories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RadarTrendItem"
+                required:
+                  - items
+  /radar/repositories/{owner}/{repo}/metrics:
+    get:
+      operationId: getRadarRepositoryMetrics
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: window
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RadarWindow"
+      responses:
+        "200":
+          description: Repository metric snapshots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RadarMetricsResponse"
         "404":
           description: Repository not found
   /feedback:
@@ -267,6 +356,44 @@ paths:
                   - status
                   - query
                   - candidates
+  /admin/radar/watchlist:
+    post:
+      operationId: addRadarWatchlistRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddWatchlistInput"
+      responses:
+        "202":
+          description: Repository added to Radar watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddWatchlistResponse"
+        "400":
+          description: Invalid repository URL
+        "502":
+          description: GitHub API failed
+  /admin/radar/backfill:
+    post:
+      operationId: backfillRadarTrends
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RadarBackfillInput"
+      responses:
+        "202":
+          description: Radar trend backfill accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RadarBackfillResponse"
+        "502":
+          description: External trend source failed
 components:
   schemas:
     HealthResponse:
@@ -294,6 +421,8 @@ components:
         htmlUrl:
           type: string
           format: uri
+        avatarUrl:
+          type: string
         description:
           type: string
         language:
@@ -507,9 +636,287 @@ components:
           type: string
         category:
           $ref: "#/components/schemas/RecommendationCategory"
+    RadarWindow:
+      type: string
+      enum:
+        - 1h
+        - 24h
+        - 7d
+        - 30d
+        - 90d
+    RadarAPIHealth:
+      type: object
+      properties:
+        status:
+          type: string
+        remaining:
+          type: string
+        resetAt:
+          type: string
+      required:
+        - status
+    RadarOverview:
+      type: object
+      properties:
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        window:
+          $ref: "#/components/schemas/RadarWindow"
+        monitoredCount:
+          type: integer
+        starDelta:
+          type: integer
+        candidateCount:
+          type: integer
+        apiHealth:
+          $ref: "#/components/schemas/RadarAPIHealth"
+        dataCoverage:
+          $ref: "#/components/schemas/RadarDataCoverage"
+        topTrending:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarTrendItem"
+        topPotential:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarTrendItem"
+        recentEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarEvent"
+      required:
+        - category
+        - window
+        - monitoredCount
+        - starDelta
+        - candidateCount
+        - apiHealth
+        - dataCoverage
+        - topTrending
+        - topPotential
+        - recentEvents
+    RadarDataCoverage:
+      type: object
+      properties:
+        complete:
+          type: boolean
+        observedSince:
+          type: string
+          format: date-time
+        observedUntil:
+          type: string
+          format: date-time
+        windowStartedAt:
+          type: string
+          format: date-time
+      required:
+        - complete
+        - observedSince
+        - observedUntil
+        - windowStartedAt
+    RadarTrendItem:
+      type: object
+      properties:
+        repository:
+          $ref: "#/components/schemas/Repository"
+        window:
+          $ref: "#/components/schemas/RadarWindow"
+        starDelta:
+          type: integer
+        forkDelta:
+          type: integer
+        issueDelta:
+          type: integer
+        activityEvents:
+          type: integer
+        velocityScore:
+          type: number
+        accelerationScore:
+          type: number
+        trendScore:
+          type: number
+        explanation:
+          type: string
+        dataCoverage:
+          $ref: "#/components/schemas/RadarDataCoverage"
+      required:
+        - repository
+        - window
+        - starDelta
+        - forkDelta
+        - issueDelta
+        - activityEvents
+        - velocityScore
+        - accelerationScore
+        - trendScore
+        - explanation
+        - dataCoverage
+    RadarEvent:
+      type: object
+      properties:
+        repositoryFullName:
+          type: string
+        eventType:
+          type: string
+        actorLogin:
+          type: string
+        actorAvatarUrl:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+      required:
+        - repositoryFullName
+        - eventType
+        - occurredAt
+    RadarMetricPoint:
+      type: object
+      properties:
+        capturedAt:
+          type: string
+          format: date-time
+        stars:
+          type: integer
+        forks:
+          type: integer
+        openIssues:
+          type: integer
+      required:
+        - capturedAt
+        - stars
+        - forks
+        - openIssues
+    RadarMetricSummary:
+      type: object
+      properties:
+        starDelta:
+          type: integer
+        forkDelta:
+          type: integer
+        activityEvents:
+          type: integer
+      required:
+        - starDelta
+        - forkDelta
+        - activityEvents
+    RadarMetricsResponse:
+      type: object
+      properties:
+        repository:
+          $ref: "#/components/schemas/Repository"
+        window:
+          $ref: "#/components/schemas/RadarWindow"
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarMetricPoint"
+        summary:
+          $ref: "#/components/schemas/RadarMetricSummary"
+        dataCoverage:
+          $ref: "#/components/schemas/RadarDataCoverage"
+      required:
+        - repository
+        - window
+        - points
+        - summary
+        - dataCoverage
+    AddWatchlistInput:
+      type: object
+      properties:
+        url:
+          type: string
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        tier:
+          type: string
+          enum:
+            - hot
+            - watch
+            - candidate
+            - archive
+      required:
+        - url
+    AddWatchlistResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        repository:
+          $ref: "#/components/schemas/Repository"
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        tier:
+          type: string
+      required:
+        - status
+        - repository
+        - category
+        - tier
+    RadarBackfillInput:
+      type: object
+      properties:
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        windows:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarWindow"
+        limit:
+          type: integer
+          minimum: 1
+        batchSize:
+          type: integer
+          minimum: 1
+          maximum: 1000
+    RadarBackfillWindowResult:
+      type: object
+      properties:
+        window:
+          $ref: "#/components/schemas/RadarWindow"
+        repositoryCount:
+          type: integer
+        matchedCount:
+          type: integer
+        starDelta:
+          type: integer
+        activityEvents:
+          type: integer
+        windowStartedAt:
+          type: string
+          format: date-time
+        windowEndedAt:
+          type: string
+          format: date-time
+      required:
+        - window
+        - repositoryCount
+        - matchedCount
+        - starDelta
+        - activityEvents
+        - windowStartedAt
+        - windowEndedAt
+    RadarBackfillResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        source:
+          type: string
+        category:
+          $ref: "#/components/schemas/RecommendationCategory"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarBackfillWindowResult"
+      required:
+        - status
+        - source
+        - category
+        - results
     RecommendationCategory:
       type: string
       enum:
+        - all
         - ai
         - ai-image
         - ai-prompts

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { fetchGoAPI } from "@/lib/go-api";
-import { normalizeCategory, todayPick } from "@/lib/prehub-data";
+import { normalizeCategory } from "@/lib/prehub-data";
 
 export async function GET(request: NextRequest) {
   const category = normalizeCategory(
@@ -9,9 +9,12 @@ export async function GET(request: NextRequest) {
   const goResponse = await fetchGoAPI(
     `/v1/daily-picks/today?category=${encodeURIComponent(category)}`,
   );
-  if (goResponse?.ok) {
-    return Response.json(await goResponse.json());
+  if (goResponse) {
+    return Response.json(await goResponse.json(), { status: goResponse.status });
   }
 
-  return Response.json({ ...todayPick, category });
+  return Response.json(
+    { error: "Go API is not reachable; daily pick requires the backend." },
+    { status: 503 },
+  );
 }

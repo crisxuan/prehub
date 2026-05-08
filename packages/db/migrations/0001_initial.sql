@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   owner text NOT NULL,
   name text NOT NULL,
   html_url text NOT NULL,
+  avatar_url text,
   api_url text,
   description text NOT NULL DEFAULT '',
   homepage_url text,

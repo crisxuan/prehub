@@ -44,10 +44,7 @@ export function SubmitRepoForm() {
     setState({
       status: "success",
       candidate: payload.candidate,
-      message:
-        payload.status === "queued_mock"
-          ? "已创建本地候选预览"
-          : "已提交到候选队列",
+      message: "已提交到候选队列",
     });
     router.refresh();
   }

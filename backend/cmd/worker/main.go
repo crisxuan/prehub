@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -51,6 +52,13 @@ func main() {
 
 	if store != nil {
 		runCandidateDiscovery(context.Background(), logger, cfg, store)
+		seedRadarWatchlist(context.Background(), logger, store)
+		refreshDueRadarRepositories(context.Background(), logger, cfg, store)
+	}
+
+	if workerRunOnce() {
+		logger.Info("worker run once completed")
+		return
 	}
 
 	ticker := time.NewTicker(30 * time.Second)
@@ -58,68 +66,365 @@ func main() {
 
 	for {
 		<-ticker.C
+		if store != nil {
+			refreshDueRadarRepositories(context.Background(), logger, cfg, store)
+		}
 		logger.Info("worker heartbeat", "status", "idle")
 	}
 }
 
-func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store) {
-	query := strings.TrimSpace(os.Getenv("PREHUB_INITIAL_QUERY"))
-	queries := []string{query}
-	if query == "" {
-		queries = domain.DefaultSearchQueries(os.Getenv("PREHUB_INITIAL_CATEGORY"))
+func seedRadarWatchlist(ctx context.Context, logger *slog.Logger, store *db.Store) {
+	limit := seedRadarLimit()
+	if limit <= 0 {
+		logger.Info("radar seed skipped", "reason", "PREHUB_RADAR_SEED_LIMIT disabled")
+		return
+	}
+	for _, category := range seedCategories() {
+		seeded, err := store.SeedRadarFromCandidates(ctx, category, limit)
+		if err != nil {
+			logger.Warn("radar seed failed", "category", category, "error", err)
+			continue
+		}
+		logger.Info("radar seed finished", "category", category, "seeded", seeded)
+	}
+}
+
+func refreshDueRadarRepositories(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store) {
+	runCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	monitored, err := store.ListDueMonitoredRepositories(runCtx, 5)
+	if err != nil {
+		logger.Warn("radar due list failed", "error", err)
+		return
+	}
+	if len(monitored) == 0 {
+		return
 	}
 
-	runCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	client := github.New(cfg.GitHubToken, cfg.GitHubAPIVersion)
+	for _, item := range monitored {
+		response, rate, err := client.GetRepository(runCtx, item.Repository.Owner, item.Repository.Name)
+		if err != nil {
+			logger.Warn("radar refresh failed", "repo", item.Repository.FullName, "error", err, "remaining", rate.Remaining)
+			if rateLimitDepleted(rate) {
+				logger.Warn("radar refresh paused", "reason", "github rate limit depleted", "remaining", rate.Remaining)
+				return
+			}
+			continue
+		}
+		repo := github.ToDomainRepository(response, item.Repository.Topics, item.Repository.Summary)
+		if item.Repository.AvatarURL != "" && repo.AvatarURL == "" {
+			repo.AvatarURL = item.Repository.AvatarURL
+		}
+		if _, err := store.SaveMonitoredRepository(runCtx, repo, item.Category, item.Tier); err != nil {
+			logger.Warn("radar refresh persist failed", "repo", item.Repository.FullName, "error", err)
+			continue
+		}
+		starEvents, starRate, err := client.ListRecentStargazers(runCtx, item.Repository.Owner, item.Repository.Name, time.Now().UTC().AddDate(0, 0, -30), radarStargazerMaxPages())
+		if err != nil {
+			logger.Warn("radar stargazers fetch failed", "repo", item.Repository.FullName, "error", err, "remaining", starRate.Remaining)
+		} else {
+			rate = starRate
+			inserted, err := store.SaveRepositoryStarEvents(runCtx, item.Repository.Owner, item.Repository.Name, starEvents)
+			if err != nil {
+				logger.Warn("radar stargazers persist failed", "repo", item.Repository.FullName, "error", err)
+			} else {
+				logger.Info("radar stargazers persisted", "repo", item.Repository.FullName, "fetched", len(starEvents), "inserted", inserted, "remaining", rate.Remaining)
+			}
+		}
+		logger.Info("radar refreshed", "repo", repo.FullName, "category", item.Category, "tier", item.Tier, "remaining", rate.Remaining)
+	}
+}
+
+func radarStargazerMaxPages() int {
+	value, err := strconv.Atoi(strings.TrimSpace(os.Getenv("PREHUB_STARGAZER_PAGES")))
+	if err != nil || value <= 0 {
+		return 2
+	}
+	if value > 10 {
+		return 10
+	}
+	return value
+}
+
+func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store) {
+	runCtx, cancel := context.WithTimeout(ctx, time.Duration(discoveryTimeoutSeconds())*time.Second)
 	defer cancel()
 
 	client := github.New(cfg.GitHubToken, cfg.GitHubAPIVersion)
 	var rate github.RateLimitSnapshot
 	seen := map[string]bool{}
-	for _, query := range queries {
-		query = strings.TrimSpace(query)
-		if query == "" {
-			continue
+	searches := 0
+	persisted := 0
+	monitored := 0
+	readmesFetched := 0
+	stargazersFetched := 0
+	enrichmentRateLimited := false
+	stargazerRateLimited := false
+	maxSearches := discoveryMaxSearches(cfg)
+	maxReadmes := discoveryReadmeLimit(cfg)
+	maxStargazerRepos := discoveryStargazerRepoLimit(cfg)
+	perPage := discoveryPerPage()
+	pages := discoveryPages()
+	categories := discoveryCategories()
+	initialQuery := strings.TrimSpace(os.Getenv("PREHUB_INITIAL_QUERY"))
+	if initialQuery != "" {
+		categories = []string{domain.NormalizeCategory(os.Getenv("PREHUB_INITIAL_CATEGORY"))}
+	}
+
+	for _, category := range categories {
+		queries := domain.DiscoverySearchQueries(category, time.Now().UTC())
+		if initialQuery != "" {
+			queries = []string{initialQuery}
 		}
 
-		repositories, searchRate, err := client.SearchRepositoriesWithSort(runCtx, query, 10, "updated", "desc")
-		if err != nil {
-			logger.Warn("candidate discovery failed", "query", query, "error", err)
-			continue
-		}
-		rate = searchRate
-		logger.Info("candidate discovery fetched", "query", query, "count", len(repositories), "remaining", rate.Remaining)
-
-		for _, item := range repositories {
-			if seen[item.FullName] {
+		for _, query := range queries {
+			query = strings.TrimSpace(query)
+			if query == "" {
 				continue
 			}
-			seen[item.FullName] = true
+			for page := 1; page <= pages; page++ {
+				if searches >= maxSearches {
+					logger.Info("candidate discovery search budget reached", "max_searches", maxSearches, "persisted", persisted, "monitored", monitored)
+					logger.Info("candidate discovery finished", "remaining", rate.Remaining)
+					return
+				}
 
-			summary := item.Description
-			_, readme, readmeRate, err := client.GetReadme(runCtx, item.Owner.Login, item.Name)
-			if err != nil {
-				logger.Warn("candidate readme fetch failed", "repo", item.FullName, "error", err)
-			} else {
-				rate = readmeRate
-				summary = editorial.SummarizeReadme(readme, item.Description)
-			}
-			repo := github.ToDomainRepository(item, item.Topics, summary)
-			score := scoring.ScoreRepository(repo, time.Now().UTC())
-			if !scoring.IsCandidateQualityAcceptable(score) {
-				logger.Info("candidate skipped by quality guard", "repo", repo.FullName, "score", score.Quality)
-				continue
-			}
-			if _, err := store.SaveCandidate(runCtx, repo, score, "worker_search", "pending_review"); err != nil {
-				logger.Warn("candidate persist failed", "repo", repo.FullName, "error", err)
-				continue
-			}
-			logger.Info("candidate persisted", "repo", repo.FullName, "score", score.Quality)
-		}
+				repositories, searchRate, err := client.SearchRepositoriesPageWithSort(runCtx, query, perPage, page, "updated", "desc")
+				searches++
+				if err != nil {
+					logger.Warn("candidate discovery failed", "category", category, "query", query, "page", page, "error", err)
+					if rateLimitDepleted(searchRate) {
+						logger.Warn("candidate discovery paused", "reason", "github search rate limit depleted", "remaining", searchRate.Remaining)
+						logger.Info("candidate discovery finished", "remaining", searchRate.Remaining, "searches", searches, "persisted", persisted, "monitored", monitored, "readmes", readmesFetched, "stargazer_repos", stargazersFetched)
+						return
+					}
+					break
+				}
+				rate = searchRate
+				logger.Info("candidate discovery fetched", "category", category, "query", query, "page", page, "count", len(repositories), "remaining", rate.Remaining)
+				if len(repositories) == 0 {
+					break
+				}
 
-		if runCtx.Err() != nil {
-			logger.Warn("candidate discovery stopped", "error", runCtx.Err())
-			break
+				for _, item := range repositories {
+					seenKey := category + ":" + strings.ToLower(item.FullName)
+					if seen[seenKey] {
+						continue
+					}
+					seen[seenKey] = true
+
+					repo := github.ToDomainRepository(item, item.Topics, item.Description)
+					score := scoring.ScoreRepository(repo, time.Now().UTC())
+					if !scoring.IsCandidateQualityAcceptable(score) {
+						logger.Info("candidate skipped by quality guard", "repo", repo.FullName, "category", category, "score", score.Quality)
+						continue
+					}
+
+					if !enrichmentRateLimited && readmesFetched < maxReadmes {
+						_, readme, readmeRate, err := client.GetReadme(runCtx, item.Owner.Login, item.Name)
+						if err != nil {
+							logger.Warn("candidate readme fetch failed", "repo", item.FullName, "error", err)
+							if rateLimitDepleted(readmeRate) {
+								enrichmentRateLimited = true
+								logger.Warn("candidate readme enrichment paused", "reason", "github rate limit depleted", "remaining", readmeRate.Remaining)
+							}
+						} else {
+							rate = readmeRate
+							readmesFetched++
+							repo.Summary = editorial.SummarizeReadme(readme, item.Description)
+							readmeIconURL := github.ResolveReadmeIconURL(readme, item.Owner.Login, item.Name, item.DefaultBranch)
+							repo = github.ToDomainRepository(item, item.Topics, repo.Summary)
+							if readmeIconURL != "" {
+								repo.AvatarURL = readmeIconURL
+							}
+							score = scoring.ScoreRepository(repo, time.Now().UTC())
+						}
+					}
+
+					if _, err := store.SaveCandidate(runCtx, repo, score, "global_discovery_"+category, "pending_review"); err != nil {
+						logger.Warn("candidate persist failed", "repo", repo.FullName, "category", category, "error", err)
+						continue
+					}
+					persisted++
+
+					if _, err := store.SaveMonitoredRepository(runCtx, repo, category, "candidate"); err != nil {
+						logger.Warn("radar auto-watch persist failed", "repo", repo.FullName, "category", category, "error", err)
+						continue
+					}
+					monitored++
+
+					if !stargazerRateLimited && stargazersFetched < maxStargazerRepos {
+						events, starRate, err := client.ListRecentStargazers(runCtx, repo.Owner, repo.Name, time.Now().UTC().AddDate(0, 0, -30), radarStargazerMaxPages())
+						if err != nil {
+							logger.Warn("discovery stargazers fetch failed", "repo", repo.FullName, "error", err, "remaining", starRate.Remaining)
+							if rateLimitDepleted(starRate) {
+								stargazerRateLimited = true
+								logger.Warn("discovery stargazer backfill paused", "reason", "github rate limit depleted", "remaining", starRate.Remaining)
+							}
+						} else {
+							rate = starRate
+							stargazersFetched++
+							inserted, err := store.SaveRepositoryStarEvents(runCtx, repo.Owner, repo.Name, events)
+							if err != nil {
+								logger.Warn("discovery stargazers persist failed", "repo", repo.FullName, "error", err)
+							} else {
+								logger.Info("discovery stargazers persisted", "repo", repo.FullName, "fetched", len(events), "inserted", inserted, "remaining", rate.Remaining)
+							}
+						}
+					}
+
+					logger.Info("candidate persisted and monitored", "repo", repo.FullName, "category", category, "score", score.Quality)
+				}
+
+				if runCtx.Err() != nil {
+					logger.Warn("candidate discovery stopped", "error", runCtx.Err())
+					logger.Info("candidate discovery finished", "remaining", rate.Remaining)
+					return
+				}
+			}
 		}
 	}
-	logger.Info("candidate discovery finished", "remaining", rate.Remaining)
+	logger.Info("candidate discovery finished", "remaining", rate.Remaining, "searches", searches, "persisted", persisted, "monitored", monitored, "readmes", readmesFetched, "stargazer_repos", stargazersFetched)
+}
+
+func discoveryCategories() []string {
+	raw := strings.TrimSpace(os.Getenv("PREHUB_DISCOVERY_CATEGORIES"))
+	if raw == "" {
+		return []string{"ai", "ai-image", "ai-prompts", "ai-skills", "devtools", "web", "data", "backend"}
+	}
+	return parseCategories(raw)
+}
+
+func seedCategories() []string {
+	raw := strings.TrimSpace(os.Getenv("PREHUB_RADAR_SEED_CATEGORIES"))
+	if raw == "" {
+		return []string{domain.NormalizeCategory(os.Getenv("PREHUB_INITIAL_CATEGORY"))}
+	}
+	return parseCategories(raw)
+}
+
+func parseCategories(raw string) []string {
+	categories := []string{}
+	seen := map[string]bool{}
+	for _, part := range strings.Split(raw, ",") {
+		category := domain.NormalizeCategory(part)
+		if seen[category] {
+			continue
+		}
+		seen[category] = true
+		categories = append(categories, category)
+	}
+	if len(categories) == 0 {
+		return []string{domain.DefaultCategory}
+	}
+	return categories
+}
+
+func discoveryPerPage() int {
+	value := envInt("PREHUB_DISCOVERY_PER_PAGE", 30)
+	if value <= 0 {
+		return 30
+	}
+	if value > 100 {
+		return 100
+	}
+	return value
+}
+
+func discoveryPages() int {
+	value := envInt("PREHUB_DISCOVERY_PAGES", 2)
+	if value <= 0 {
+		return 1
+	}
+	if value > 10 {
+		return 10
+	}
+	return value
+}
+
+func discoveryMaxSearches(cfg config.Config) int {
+	fallback := 24
+	if strings.TrimSpace(cfg.GitHubToken) == "" {
+		fallback = 8
+	}
+	value := envInt("PREHUB_DISCOVERY_MAX_SEARCHES", fallback)
+	if value <= 0 {
+		return fallback
+	}
+	if value > 100 {
+		return 100
+	}
+	return value
+}
+
+func discoveryReadmeLimit(cfg config.Config) int {
+	fallback := 60
+	if strings.TrimSpace(cfg.GitHubToken) == "" {
+		fallback = 12
+	}
+	value := envInt("PREHUB_DISCOVERY_README_LIMIT", fallback)
+	if value < 0 {
+		return 0
+	}
+	if value > 300 {
+		return 300
+	}
+	return value
+}
+
+func discoveryStargazerRepoLimit(cfg config.Config) int {
+	fallback := 12
+	if strings.TrimSpace(cfg.GitHubToken) == "" {
+		fallback = 2
+	}
+	value := envInt("PREHUB_DISCOVERY_STARGAZER_REPOS", fallback)
+	if value < 0 {
+		return 0
+	}
+	if value > 100 {
+		return 100
+	}
+	return value
+}
+
+func discoveryTimeoutSeconds() int {
+	value := envInt("PREHUB_DISCOVERY_TIMEOUT_SECONDS", 180)
+	if value < 30 {
+		return 30
+	}
+	if value > 900 {
+		return 900
+	}
+	return value
+}
+
+func seedRadarLimit() int {
+	value := envInt("PREHUB_RADAR_SEED_LIMIT", 50)
+	if value <= 0 {
+		return 0
+	}
+	if value > 200 {
+		return 200
+	}
+	return value
+}
+
+func envInt(key string, fallback int) int {
+	value, err := strconv.Atoi(strings.TrimSpace(os.Getenv(key)))
+	if err != nil {
+		return fallback
+	}
+	return value
+}
+
+func workerRunOnce() bool {
+	value := strings.ToLower(strings.TrimSpace(os.Getenv("PREHUB_WORKER_RUN_ONCE")))
+	return value == "1" || value == "true" || value == "yes"
+}
+
+func rateLimitDepleted(rate github.RateLimitSnapshot) bool {
+	remaining, err := strconv.Atoi(strings.TrimSpace(rate.Remaining))
+	return err == nil && remaining <= 0
 }

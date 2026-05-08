@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"net/url"
 	"strings"
 	"time"
 
@@ -76,37 +77,76 @@ func (s *Store) SaveCandidate(ctx context.Context, repo domain.Repository, score
 	}
 
 	candidateID := ""
+	candidateStatus := status
 	err = tx.QueryRow(ctx, `
-		INSERT INTO repository_candidates (
-			repository_id,
-			source,
-			status,
-			score_snapshot_json,
-			ai_summary,
-			ai_tags_json
-		)
-		VALUES (
-			$1,
-			$2,
-			$3,
-			jsonb_build_object(
-				'quality', $4::int,
-				'popularity', $5::int,
-				'freshness', $6::int,
-				'momentum', $7::int,
-				'documentation', $8::int,
-				'maintenance', $9::int,
-				'community', $10::int,
-				'license', $11::int,
-				'novelty', $12::int
-			),
-			$13,
-			$14::jsonb
-		)
-		RETURNING id::text
-	`, repositoryID, source, status, score.Quality, score.Popularity, score.Freshness, score.Momentum, score.Documentation, score.Maintenance, score.Community, score.License, score.Novelty, repo.Summary, "[]").Scan(&candidateID)
-	if err != nil {
+		SELECT id::text, status
+		FROM repository_candidates
+		WHERE repository_id = $1 AND source = $2
+		ORDER BY created_at DESC
+		LIMIT 1
+	`, repositoryID, source).Scan(&candidateID, &candidateStatus)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return SubmitCandidateResult{}, err
+	}
+	if err == nil {
+		if candidateStatus != "approved" && candidateStatus != "published" {
+			candidateStatus = status
+		}
+		_, err = tx.Exec(ctx, `
+			UPDATE repository_candidates
+			SET
+				status = $2,
+				score_snapshot_json = jsonb_build_object(
+					'quality', $3::int,
+					'popularity', $4::int,
+					'freshness', $5::int,
+					'momentum', $6::int,
+					'documentation', $7::int,
+					'maintenance', $8::int,
+					'community', $9::int,
+					'license', $10::int,
+					'novelty', $11::int
+				),
+				ai_summary = $12,
+				ai_tags_json = $13::jsonb
+			WHERE id = $1
+		`, candidateID, candidateStatus, score.Quality, score.Popularity, score.Freshness, score.Momentum, score.Documentation, score.Maintenance, score.Community, score.License, score.Novelty, repo.Summary, "[]")
+		if err != nil {
+			return SubmitCandidateResult{}, err
+		}
+	} else {
+		err = tx.QueryRow(ctx, `
+			INSERT INTO repository_candidates (
+				repository_id,
+				source,
+				status,
+				score_snapshot_json,
+				ai_summary,
+				ai_tags_json
+			)
+			VALUES (
+				$1,
+				$2,
+				$3,
+				jsonb_build_object(
+					'quality', $4::int,
+					'popularity', $5::int,
+					'freshness', $6::int,
+					'momentum', $7::int,
+					'documentation', $8::int,
+					'maintenance', $9::int,
+					'community', $10::int,
+					'license', $11::int,
+					'novelty', $12::int
+				),
+				$13,
+				$14::jsonb
+			)
+			RETURNING id::text
+		`, repositoryID, source, candidateStatus, score.Quality, score.Popularity, score.Freshness, score.Momentum, score.Documentation, score.Maintenance, score.Community, score.License, score.Novelty, repo.Summary, "[]").Scan(&candidateID)
+		if err != nil {
+			return SubmitCandidateResult{}, err
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -117,13 +157,43 @@ func (s *Store) SaveCandidate(ctx context.Context, repo domain.Repository, score
 		Candidate: domain.Candidate{
 			ID:           candidateID,
 			Repository:   repo,
-			Status:       status,
+			Status:       candidateStatus,
 			QualityScore: score.Quality,
 			Score:        &score,
 			Source:       source,
 		},
 		RepositoryID: repositoryID,
 	}, nil
+}
+
+func (s *Store) SaveRepository(ctx context.Context, repo domain.Repository, score domain.ScoreBreakdown) (domain.Repository, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return domain.Repository{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	repositoryID, err := upsertRepository(ctx, tx, repo)
+	if err != nil {
+		return domain.Repository{}, err
+	}
+	if err := replaceTopics(ctx, tx, repositoryID, repo.Topics); err != nil {
+		return domain.Repository{}, err
+	}
+	if err := upsertReadme(ctx, tx, repositoryID, repo.Summary); err != nil {
+		return domain.Repository{}, err
+	}
+	if err := upsertScore(ctx, tx, repositoryID, score); err != nil {
+		return domain.Repository{}, err
+	}
+	if err := recordMetricSnapshot(ctx, tx, repositoryID, repo); err != nil {
+		return domain.Repository{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return domain.Repository{}, err
+	}
+
+	return s.GetRepositoryByFullName(ctx, repo.FullName)
 }
 
 func (s *Store) ListCandidates(ctx context.Context, limit int) ([]domain.Candidate, error) {
@@ -141,6 +211,7 @@ func (s *Store) ListCandidates(ctx context.Context, limit int) ([]domain.Candida
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -202,6 +273,7 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int)
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -250,6 +322,7 @@ func (s *Store) GetRepository(ctx context.Context, owner string, repoName string
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -287,6 +360,18 @@ func (s *Store) GetTodayPick(ctx context.Context, date time.Time, category strin
 		return domain.DailyPick{}, false, err
 	}
 	if len(repositories) == 0 {
+		created, err := s.createAutomaticDailyPick(ctx, pickDate, category)
+		if err != nil {
+			return domain.DailyPick{}, false, err
+		}
+		if created {
+			repositories, err = s.repositoriesForDailyPick(ctx, pickDate, category)
+			if err != nil {
+				return domain.DailyPick{}, false, err
+			}
+		}
+	}
+	if len(repositories) == 0 {
 		repositories, err = s.SearchRepositoriesByCategory(ctx, category, 4)
 		if err != nil {
 			return domain.DailyPick{}, false, err
@@ -297,7 +382,7 @@ func (s *Store) GetTodayPick(ctx context.Context, date time.Time, category strin
 	}
 
 	theme := "自动推荐"
-	_ = s.pool.QueryRow(ctx, `SELECT COALESCE(theme, '自动推荐') FROM daily_picks WHERE date = $1 AND category = $2 LIMIT 1`, pickDate, category).Scan(&theme)
+	_ = s.pool.QueryRow(ctx, `SELECT COALESCE(theme, '自动推荐') FROM daily_picks WHERE date = $1 AND ($2 = 'all' OR category = $2) LIMIT 1`, pickDate, category).Scan(&theme)
 
 	alternatives := []domain.Repository{}
 	if len(repositories) > 1 {
@@ -312,6 +397,66 @@ func (s *Store) GetTodayPick(ctx context.Context, date time.Time, category strin
 	}, true, nil
 }
 
+func (s *Store) createAutomaticDailyPick(ctx context.Context, pickDate string, category string) (bool, error) {
+	category = domain.NormalizeCategory(category)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback(ctx)
+
+	repositoryIDs, err := automaticDailyPickRepositoryIDs(ctx, tx, pickDate, category, 4)
+	if err != nil {
+		return false, err
+	}
+	if len(repositoryIDs) == 0 {
+		return false, nil
+	}
+
+	pickID := ""
+	theme := "自动推荐"
+	editorialTitle := domain.CategoryLabel(category) + " 自动推荐"
+	if err := tx.QueryRow(ctx, `
+		INSERT INTO daily_picks (date, category, primary_repository_id, theme, editorial_title, status, published_at)
+		VALUES ($1, $2, $3, $4, $5, 'published', now())
+		ON CONFLICT (date, category) DO UPDATE SET
+			primary_repository_id = EXCLUDED.primary_repository_id,
+			theme = EXCLUDED.theme,
+			editorial_title = EXCLUDED.editorial_title,
+			status = 'published',
+			published_at = now()
+		RETURNING id::text
+	`, pickDate, category, repositoryIDs[0], theme, editorialTitle).Scan(&pickID); err != nil {
+		return false, err
+	}
+
+	if _, err := tx.Exec(ctx, `DELETE FROM daily_pick_items WHERE daily_pick_id = $1`, pickID); err != nil {
+		return false, err
+	}
+	for index, repositoryID := range repositoryIDs {
+		repo, err := repositoryByID(ctx, tx, repositoryID)
+		if err != nil {
+			return false, err
+		}
+		reason := repo.Reason
+		if strings.TrimSpace(reason) == "" {
+			reason = "PreHub 根据分类匹配度、质量评分、维护活跃度和近期发现信号自动生成。"
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO daily_pick_items (daily_pick_id, repository_id, position, reason)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT DO NOTHING
+		`, pickID, repositoryID, index+1, reason); err != nil {
+			return false, err
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *Store) SearchRepositoriesByCategory(ctx context.Context, category string, limit int) ([]domain.Repository, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 50
@@ -324,6 +469,7 @@ func (s *Store) SearchRepositoriesByCategory(ctx context.Context, category strin
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -370,6 +516,7 @@ func (s *Store) ListDailyPicks(ctx context.Context, from time.Time, to time.Time
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -383,7 +530,7 @@ func (s *Store) ListDailyPicks(ctx context.Context, from time.Time, to time.Time
 		JOIN repositories r ON r.id = dpi.repository_id
 		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
 		LEFT JOIN repository_topics t ON t.repository_id = r.id
-		WHERE dp.date BETWEEN $1 AND $2 AND dp.category = $3 AND dp.status IN ('scheduled', 'published')
+		WHERE dp.date BETWEEN $1 AND $2 AND ($3 = 'all' OR dp.category = $3) AND dp.status IN ('scheduled', 'published')
 		GROUP BY dp.id, dp.date, dp.theme, dpi.position, dpi.reason, r.id, rr.summary
 		ORDER BY dp.date DESC, dpi.position ASC
 	`, from.Format("2006-01-02"), to.Format("2006-01-02"), category)
@@ -414,6 +561,7 @@ func (s *Store) ListDailyPicks(ctx context.Context, from time.Time, to time.Time
 			&repo.Owner,
 			&repo.Name,
 			&repo.HTMLURL,
+			&repo.AvatarURL,
 			&repo.Description,
 			&repo.Language,
 			&repo.Stars,
@@ -570,6 +718,7 @@ func (s *Store) repositoriesForDailyPick(ctx context.Context, date string, categ
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -584,7 +733,7 @@ func (s *Store) repositoriesForDailyPick(ctx context.Context, date string, categ
 		JOIN repositories r ON r.id = dpi.repository_id
 		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
 		LEFT JOIN repository_topics t ON t.repository_id = r.id
-		WHERE dp.date = $1 AND dp.category = $2 AND dp.status IN ('scheduled', 'published')
+		WHERE dp.date = $1 AND ($2 = 'all' OR dp.category = $2) AND dp.status IN ('scheduled', 'published')
 		GROUP BY r.id, rr.summary, dpi.position, dpi.reason
 		ORDER BY dpi.position ASC
 	`, date, domain.NormalizeCategory(category))
@@ -611,6 +760,7 @@ func repositoryByID(ctx context.Context, tx pgx.Tx, repositoryID string) (domain
 			r.owner,
 			r.name,
 			r.html_url,
+			COALESCE(r.avatar_url, ''),
 			r.description,
 			COALESCE(r.primary_language, ''),
 			r.stars_count,
@@ -689,6 +839,69 @@ func alternativeRepositoryIDs(ctx context.Context, tx pgx.Tx, primaryRepositoryI
 	return ids, rows.Err()
 }
 
+func automaticDailyPickRepositoryIDs(ctx context.Context, tx pgx.Tx, pickDate string, category string, limit int) ([]string, error) {
+	if limit <= 0 {
+		return []string{}, nil
+	}
+
+	filter := repositoryCategoryFilterSQL("r", category)
+	boost := repositoryCategoryBoostSQL("r", category)
+	rows, err := tx.Query(ctx, `
+		SELECT repository_id::text
+		FROM (
+			SELECT DISTINCT ON (r.id)
+				r.id AS repository_id,
+				`+boost+` AS category_fit_score,
+				CASE c.status
+					WHEN 'approved' THEN 0
+					WHEN 'pending_review' THEN 1
+					WHEN 'scored' THEN 2
+					WHEN 'discovered' THEN 3
+					ELSE 4
+				END AS status_rank,
+				COALESCE(sc.quality_score, 0) AS quality_score,
+				COALESCE(sc.novelty_score, 0) AS novelty_score,
+				COALESCE(sc.momentum_score, 0) AS momentum_score,
+				r.stars_count,
+				c.created_at
+			FROM repository_candidates c
+			JOIN repositories r ON r.id = c.repository_id
+			LEFT JOIN repository_scores sc ON sc.repository_id = r.id
+			WHERE c.status IN ('approved', 'pending_review', 'scored', 'discovered')
+				AND `+filter+`
+				AND NOT EXISTS (
+					SELECT 1
+					FROM daily_pick_items dpi
+					JOIN daily_picks dp ON dp.id = dpi.daily_pick_id
+					WHERE dpi.repository_id = r.id
+						AND dp.status IN ('scheduled', 'published')
+						AND dp.date >= $2::date - interval '30 days'
+				)
+			ORDER BY r.id, status_rank ASC, category_fit_score DESC,
+				COALESCE(sc.quality_score, 0) DESC,
+				COALESCE(sc.novelty_score, 0) DESC,
+				c.created_at DESC
+		) ranked
+		ORDER BY status_rank ASC, category_fit_score DESC, quality_score DESC,
+			novelty_score DESC, momentum_score DESC, stars_count ASC, created_at DESC
+		LIMIT $1
+	`, limit, pickDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
 func repositoryCategoryBoostSQL(repositoryAlias string, category string) string {
 	id := repositoryAlias + ".id"
 	name := repositoryAlias + ".name"
@@ -699,6 +912,8 @@ func repositoryCategoryBoostSQL(repositoryAlias string, category string) string 
 	}
 
 	switch domain.NormalizeCategory(category) {
+	case "all":
+		return "0"
 	case "ai-image":
 		return `(CASE WHEN ` + topicIn("'ai-image-generation','ai-art','inpainting','sdxl','flux','face-swap','video-generation'") + ` THEN 90 ELSE 0 END
 			+ CASE WHEN ` + topicIn("'image-generation','image-editing','text-to-image','image-to-image','diffusion','stable-diffusion','comfyui','dalle'") + ` THEN 45 ELSE 0 END
@@ -736,6 +951,8 @@ func repositoryCategoryFilterSQL(repositoryAlias string, category string) string
 	}
 
 	switch domain.NormalizeCategory(category) {
+	case "all":
+		return "true"
 	case "web":
 		return "(" + topicIn("'react','nextjs','vue','svelte','angular','web','frontend','css','html','javascript','typescript'") +
 			" OR " + language + " IN ('TypeScript', 'JavaScript') OR " + description + " ILIKE '%web%')"
@@ -789,6 +1006,7 @@ func upsertRepository(ctx context.Context, tx pgx.Tx, repo domain.Repository) (s
 	if strings.TrimSpace(htmlURL) == "" {
 		htmlURL = "https://github.com/" + repo.FullName
 	}
+	avatarURL := strings.TrimSpace(repo.AvatarURL)
 
 	repositoryID := ""
 	err := tx.QueryRow(ctx, `
@@ -797,6 +1015,7 @@ func upsertRepository(ctx context.Context, tx pgx.Tx, repo domain.Repository) (s
 			owner,
 			name,
 			html_url,
+			avatar_url,
 			description,
 			primary_language,
 			stars_count,
@@ -808,9 +1027,10 @@ func upsertRepository(ctx context.Context, tx pgx.Tx, repo domain.Repository) (s
 			updated_at,
 			last_crawled_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $7, $9, $10, now(), now(), now())
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $8, $10, $11, now(), now(), now())
 		ON CONFLICT (full_name) DO UPDATE SET
 			html_url = EXCLUDED.html_url,
+			avatar_url = COALESCE(NULLIF(EXCLUDED.avatar_url, ''), repositories.avatar_url),
 			description = EXCLUDED.description,
 			primary_language = EXCLUDED.primary_language,
 			stars_count = EXCLUDED.stars_count,
@@ -821,7 +1041,7 @@ func upsertRepository(ctx context.Context, tx pgx.Tx, repo domain.Repository) (s
 			updated_at = now(),
 			last_crawled_at = now()
 		RETURNING id::text
-	`, repo.FullName, repo.Owner, repo.Name, htmlURL, repo.Description, repo.Language, repo.Stars, repo.Forks, repo.License, pushed).Scan(&repositoryID)
+	`, repo.FullName, repo.Owner, repo.Name, htmlURL, avatarURL, repo.Description, repo.Language, repo.Stars, repo.Forks, repo.License, pushed).Scan(&repositoryID)
 	return repositoryID, err
 }
 
@@ -897,6 +1117,7 @@ func scanRepositoryRow(row repositoryScanner) (domain.Repository, error) {
 		&repo.Owner,
 		&repo.Name,
 		&repo.HTMLURL,
+		&repo.AvatarURL,
 		&repo.Description,
 		&repo.Language,
 		&repo.Stars,
@@ -924,6 +1145,7 @@ func scanDailyPickRepositoryRow(row repositoryScanner) (domain.Repository, error
 		&repo.Owner,
 		&repo.Name,
 		&repo.HTMLURL,
+		&repo.AvatarURL,
 		&repo.Description,
 		&repo.Language,
 		&repo.Stars,
@@ -960,6 +1182,7 @@ func scanCandidates(rows pgx.Rows) ([]domain.Candidate, error) {
 			&repo.Owner,
 			&repo.Name,
 			&repo.HTMLURL,
+			&repo.AvatarURL,
 			&repo.Description,
 			&repo.Language,
 			&repo.Stars,
@@ -992,11 +1215,23 @@ func scanCandidates(rows pgx.Rows) ([]domain.Candidate, error) {
 }
 
 func applyRepositoryNarrative(repo domain.Repository, storedReason string) domain.Repository {
+	repo.AvatarURL = repositoryAvatarURL(repo)
 	repo = editorial.WriteRepositoryNarrative(repo)
 	if isEditorialReason(storedReason) {
 		repo.Reason = strings.TrimSpace(storedReason)
 	}
 	return repo
+}
+
+func repositoryAvatarURL(repo domain.Repository) string {
+	if strings.TrimSpace(repo.AvatarURL) != "" {
+		return strings.TrimSpace(repo.AvatarURL)
+	}
+	owner := strings.TrimSpace(repo.Owner)
+	if owner == "" {
+		return ""
+	}
+	return "https://github.com/" + url.PathEscape(owner) + ".png?size=128"
 }
 
 func isEditorialReason(reason string) bool {

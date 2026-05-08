@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -52,7 +53,8 @@ type RepositoryResponse struct {
 }
 
 type Owner struct {
-	Login string `json:"login"`
+	Login     string `json:"login"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 type License struct {
@@ -72,6 +74,15 @@ type ReadmeResponse struct {
 	Path     string `json:"path"`
 	Content  string `json:"content"`
 	Encoding string `json:"encoding"`
+}
+
+type StargazerResponse struct {
+	StarredAt *time.Time `json:"starred_at"`
+	User      struct {
+		ID        int64  `json:"id"`
+		Login     string `json:"login"`
+		AvatarURL string `json:"avatar_url"`
+	} `json:"user"`
 }
 
 type RateLimitSnapshot struct {
@@ -99,11 +110,21 @@ func (c *Client) SearchRepositories(ctx context.Context, query string, perPage i
 }
 
 func (c *Client) SearchRepositoriesWithSort(ctx context.Context, query string, perPage int, sort string, order string) ([]RepositoryResponse, RateLimitSnapshot, error) {
+	return c.SearchRepositoriesPageWithSort(ctx, query, perPage, 1, sort, order)
+}
+
+func (c *Client) SearchRepositoriesPageWithSort(ctx context.Context, query string, perPage int, page int, sort string, order string) ([]RepositoryResponse, RateLimitSnapshot, error) {
 	if strings.TrimSpace(query) == "" {
 		return nil, RateLimitSnapshot{}, errors.New("github search query is required")
 	}
 	if perPage <= 0 || perPage > 100 {
 		perPage = 30
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if page > 10 {
+		page = 10
 	}
 	if sort == "" {
 		sort = "updated"
@@ -112,7 +133,7 @@ func (c *Client) SearchRepositoriesWithSort(ctx context.Context, query string, p
 		order = "desc"
 	}
 
-	endpoint := "/search/repositories?q=" + url.QueryEscape(query) + "&sort=" + url.QueryEscape(sort) + "&order=" + url.QueryEscape(order) + "&per_page=" + fmt.Sprintf("%d", perPage)
+	endpoint := "/search/repositories?q=" + url.QueryEscape(query) + "&sort=" + url.QueryEscape(sort) + "&order=" + url.QueryEscape(order) + "&per_page=" + fmt.Sprintf("%d", perPage) + "&page=" + fmt.Sprintf("%d", page)
 	var payload SearchResponse
 	rate, err := c.get(ctx, endpoint, &payload)
 	if err != nil {
@@ -157,13 +178,73 @@ func (c *Client) GetReadme(ctx context.Context, owner string, repo string) (stri
 	return payload.SHA, string(content), rate, nil
 }
 
-func (c *Client) get(ctx context.Context, endpoint string, target any) (RateLimitSnapshot, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+endpoint, nil)
+func (c *Client) ListRecentStargazers(ctx context.Context, owner string, repo string, since time.Time, maxPages int) ([]domain.RepositoryStarEvent, RateLimitSnapshot, error) {
+	if maxPages <= 0 || maxPages > 10 {
+		maxPages = 3
+	}
+	since = since.UTC()
+	perPage := 100
+	firstEndpoint := "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo) + "/stargazers?per_page=" + strconv.Itoa(perPage) + "&page=1"
+	firstPayload := []StargazerResponse{}
+	headers, rate, err := c.getWithAccept(ctx, firstEndpoint, "application/vnd.github.star+json", &firstPayload)
 	if err != nil {
-		return RateLimitSnapshot{}, err
+		return nil, rate, err
 	}
 
-	request.Header.Set("Accept", "application/vnd.github+json")
+	lastPage := lastPageFromLink(headers.Get("Link"))
+	if lastPage < 1 {
+		lastPage = 1
+	}
+
+	events := []domain.RepositoryStarEvent{}
+	for page, visited := lastPage, 0; page >= 1 && visited < maxPages; page, visited = page-1, visited+1 {
+		payload := firstPayload
+		pageRate := rate
+		if page != 1 {
+			endpoint := "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo) + "/stargazers?per_page=" + strconv.Itoa(perPage) + "&page=" + strconv.Itoa(page)
+			_, pageRate, err = c.getWithAccept(ctx, endpoint, "application/vnd.github.star+json", &payload)
+			if err != nil {
+				return events, pageRate, err
+			}
+		}
+		rate = pageRate
+		reachedOld := false
+		for index := len(payload) - 1; index >= 0; index-- {
+			item := payload[index]
+			if item.StarredAt == nil {
+				continue
+			}
+			starredAt := item.StarredAt.UTC()
+			if starredAt.Before(since) {
+				reachedOld = true
+				continue
+			}
+			events = append(events, domain.RepositoryStarEvent{
+				GitHubUserID: item.User.ID,
+				Login:        item.User.Login,
+				AvatarURL:    item.User.AvatarURL,
+				StarredAt:    starredAt,
+			})
+		}
+		if reachedOld {
+			break
+		}
+	}
+	return events, rate, nil
+}
+
+func (c *Client) get(ctx context.Context, endpoint string, target any) (RateLimitSnapshot, error) {
+	_, rate, err := c.getWithAccept(ctx, endpoint, "application/vnd.github+json", target)
+	return rate, err
+}
+
+func (c *Client) getWithAccept(ctx context.Context, endpoint string, accept string, target any) (http.Header, RateLimitSnapshot, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+endpoint, nil)
+	if err != nil {
+		return http.Header{}, RateLimitSnapshot{}, err
+	}
+
+	request.Header.Set("Accept", accept)
 	request.Header.Set("X-GitHub-Api-Version", c.apiVersion)
 	request.Header.Set("User-Agent", "PreHub/0.1")
 	if c.token != "" {
@@ -172,7 +253,7 @@ func (c *Client) get(ctx context.Context, endpoint string, target any) (RateLimi
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return RateLimitSnapshot{}, err
+		return http.Header{}, RateLimitSnapshot{}, err
 	}
 	defer response.Body.Close()
 
@@ -185,13 +266,13 @@ func (c *Client) get(ctx context.Context, endpoint string, target any) (RateLimi
 
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		body, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
-		return rate, fmt.Errorf("github api %s returned %d: %s", endpoint, response.StatusCode, strings.TrimSpace(string(body)))
+		return response.Header, rate, fmt.Errorf("github api %s returned %d: %s", endpoint, response.StatusCode, strings.TrimSpace(string(body)))
 	}
 
 	if err := json.NewDecoder(response.Body).Decode(target); err != nil {
-		return rate, err
+		return response.Header, rate, err
 	}
-	return rate, nil
+	return response.Header, rate, nil
 }
 
 func ToDomainRepository(response RepositoryResponse, topics []string, summary string) domain.Repository {
@@ -217,6 +298,7 @@ func ToDomainRepository(response RepositoryResponse, topics []string, summary st
 		Owner:       response.Owner.Login,
 		Name:        response.Name,
 		HTMLURL:     response.HTMLURL,
+		AvatarURL:   response.Owner.AvatarURL,
 		Description: response.Description,
 		Language:    response.Language,
 		Stars:       response.StargazersCount,
@@ -231,16 +313,62 @@ func ToDomainRepository(response RepositoryResponse, topics []string, summary st
 
 func ParseRepositoryURL(rawURL string) (string, string, error) {
 	value := strings.TrimSpace(rawURL)
-	value = strings.TrimSuffix(value, ".git")
-	value = strings.TrimPrefix(value, "https://")
-	value = strings.TrimPrefix(value, "http://")
-	value = strings.TrimPrefix(value, "git@")
-	value = strings.TrimPrefix(value, "github.com:")
-	value = strings.TrimPrefix(value, "github.com/")
-
-	parts := strings.Split(value, "/")
-	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
+	value = strings.Trim(value, " \t\r\n<>\"'`，。")
+	if value == "" {
 		return "", "", errors.New("expected github.com/{owner}/{repo}")
 	}
-	return parts[0], parts[1], nil
+
+	if strings.HasPrefix(value, "git@github.com:") {
+		value = strings.TrimPrefix(value, "git@github.com:")
+	} else if parsed, err := url.Parse(value); err == nil && parsed.Host != "" {
+		host := strings.TrimPrefix(strings.ToLower(parsed.Host), "www.")
+		if host != "github.com" {
+			return "", "", errors.New("expected github.com/{owner}/{repo}")
+		}
+		value = parsed.Path
+	} else {
+		value = strings.TrimPrefix(value, "https://")
+		value = strings.TrimPrefix(value, "http://")
+		value = strings.TrimPrefix(value, "github.com:")
+		value = strings.TrimPrefix(value, "github.com/")
+	}
+
+	value = strings.Trim(value, "/")
+	value = strings.TrimSuffix(value, ".git")
+	value = strings.Split(value, "?")[0]
+	value = strings.Split(value, "#")[0]
+
+	parts := strings.Split(value, "/")
+	if len(parts) < 2 {
+		return "", "", errors.New("expected github.com/{owner}/{repo}")
+	}
+	owner := strings.TrimSpace(parts[0])
+	repo := strings.TrimSpace(strings.TrimSuffix(parts[1], ".git"))
+	if owner == "" || repo == "" || strings.ContainsAny(owner+repo, " \t\r\n") {
+		return "", "", errors.New("expected github.com/{owner}/{repo}")
+	}
+	return owner, repo, nil
+}
+
+func lastPageFromLink(linkHeader string) int {
+	for _, part := range strings.Split(linkHeader, ",") {
+		part = strings.TrimSpace(part)
+		if !strings.Contains(part, `rel="last"`) {
+			continue
+		}
+		start := strings.Index(part, "<")
+		end := strings.Index(part, ">")
+		if start == -1 || end == -1 || end <= start+1 {
+			continue
+		}
+		parsed, err := url.Parse(part[start+1 : end])
+		if err != nil {
+			continue
+		}
+		page, err := strconv.Atoi(parsed.Query().Get("page"))
+		if err == nil {
+			return page
+		}
+	}
+	return 0
 }

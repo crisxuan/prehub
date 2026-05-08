@@ -23,12 +23,15 @@ func main() {
 	if cfg.DatabaseURL != "" {
 		connectedStore, err := db.Connect(ctx, cfg.DatabaseURL)
 		if err != nil {
-			logger.Warn("database unavailable, using in-memory fallback", "error", err)
+			logger.Error("database unavailable", "error", err)
+			os.Exit(1)
 		} else {
 			store = connectedStore
 			defer store.Close()
 			logger.Info("database connected")
 		}
+	} else {
+		logger.Warn("database url is not configured; data endpoints will be unavailable")
 	}
 
 	server := httpapi.New(cfg, logger, store)

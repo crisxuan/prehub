@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RepoCard } from "@/components/repo-card";
 import { SiteHeader } from "@/components/site-header";
-import { githubUrl, repositories } from "@/lib/prehub-data";
+import { githubUrl } from "@/lib/prehub-data";
 import { getRepository, getSearchResults } from "@/lib/server-prehub-api";
 
 type RepoPageProps = {
@@ -20,8 +20,7 @@ export default async function RepoPage({ params }: RepoPageProps) {
   }
 
   const related = await getSearchResults(repository.language || repository.owner);
-  const alternativeSource = related.results.length > 0 ? related.results : repositories;
-  const alternatives = alternativeSource.filter(
+  const alternatives = related.results.filter(
     (item) => item.fullName !== repository.fullName,
   );
 
@@ -75,6 +74,11 @@ export default async function RepoPage({ params }: RepoPageProps) {
             <RepoCard key={item.fullName} repo={item} />
           ))}
         </div>
+        {alternatives.length === 0 ? (
+          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">
+            暂无相似项目，后续会根据更多仓库元数据补齐。
+          </div>
+        ) : null}
       </section>
     </main>
   );

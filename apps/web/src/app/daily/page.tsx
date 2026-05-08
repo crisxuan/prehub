@@ -2,8 +2,8 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import {
   categoryLabel,
+  categoryFilterOptions,
   normalizeCategory,
-  recommendationCategories,
 } from "@/lib/prehub-data";
 import { getRecentDailyPicks } from "@/lib/server-prehub-api";
 
@@ -41,7 +41,7 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          {recommendationCategories.map((item) => (
+          {categoryFilterOptions.map((item) => (
             <Link
               key={item.slug}
               href={`/daily?category=${item.slug}`}
