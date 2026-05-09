@@ -49,6 +49,27 @@ Today AI API: http://localhost:3100/api/daily-picks/today?category=ai
 Recent AI API: http://localhost:3100/api/daily-picks/recent?days=7&category=ai
 ```
 
+## Daily GitHub Article
+
+Generate a daily Markdown article for the local note workspace:
+
+```bash
+make daily-github-article
+```
+
+By default this writes `~/Downloads/note/github/YYYY-MM-DD-github-daily.md`.
+The generator calls the GitHub API directly, scores fresh repositories, and writes a short, image-heavy "逛逛 GitHub" style article: link first, GitHub picbed image URLs, plain-language summary, and no related-projects section.
+The main project is explained through six simple numbered sections so the article stays easy to read while still showing real project understanding. Images are cached under `~/Downloads/note/github/assets/YYYY-MM-DD-owner-repo/`, copied into this public GitHub repository under `docs/images/github-daily/`, committed, pushed, and referenced through `https://cdn.jsdelivr.net/gh/crisxuan/prehub@main/...`.
+
+Useful overrides:
+
+```bash
+GITHUB_TOKEN=... make daily-github-article
+GITHUB_DAILY_OUTPUT_DIR=/Users/lx/Downloads/note/github make daily-github-article
+GITHUB_DAILY_IMAGE_BED_DIR=/Users/lx/Downloads/picbed GITHUB_DAILY_IMAGE_BED_BASE_URL=https://cdn.jsdelivr.net/gh/doggaifan/picbed GITHUB_DAILY_IMAGE_BED_PATH= make daily-github-article
+cd backend && go run ./cmd/dailyarticle --category ai --force
+```
+
 In separate terminals without Docker:
 
 ```bash
