@@ -133,6 +133,7 @@ func (s *Store) SaveExternalRepositoryTrends(ctx context.Context, refs []domain.
 
 func (s *Store) externalTrendBuckets(ctx context.Context, repositoryID string, window string, currentStars int) ([]domain.RadarMetricPoint, domain.RadarMetricSummary, domain.RadarDataCoverage, bool, error) {
 	window = normalizeRadarWindow(window)
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
 	var windowStartedAt time.Time
 	var windowEndedAt time.Time
 	var starDelta int
@@ -140,8 +141,11 @@ func (s *Store) externalTrendBuckets(ctx context.Context, repositoryID string, w
 	err := s.pool.QueryRow(ctx, `
 		SELECT window_started_at, window_ended_at, star_delta, activity_events
 		FROM repository_external_trends
-		WHERE repository_id = $1 AND source = $2 AND trend_window = $3
-	`, repositoryID, externalTrendSourceClickHouse, window).Scan(&windowStartedAt, &windowEndedAt, &starDelta, &activityEvents)
+		WHERE repository_id = $1
+			AND source = $2
+			AND trend_window = $3
+			AND window_ended_at >= now() - ($4::double precision * interval '1 second')
+	`, repositoryID, externalTrendSourceClickHouse, window, freshnessSeconds).Scan(&windowStartedAt, &windowEndedAt, &starDelta, &activityEvents)
 	if err != nil {
 		return nil, domain.RadarMetricSummary{}, domain.RadarDataCoverage{}, false, nil
 	}

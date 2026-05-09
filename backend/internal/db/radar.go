@@ -291,6 +291,7 @@ type radarOverviewStats struct {
 
 func (s *Store) radarExternalOverviewStats(ctx context.Context, category string, window string) (radarOverviewStats, bool, error) {
 	seconds := int(radarWindowDuration(window).Seconds())
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
 
 	var stats radarOverviewStats
 	var externalCount int
@@ -313,6 +314,7 @@ func (s *Store) radarExternalOverviewStats(ctx context.Context, category string,
 			JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
 				AND external.source = $3
 				AND external.trend_window = $4
+				AND external.window_ended_at >= now() - ($5::double precision * interval '1 second')
 		)
 		SELECT
 			(SELECT count(*)::int FROM scoped),
@@ -330,7 +332,7 @@ func (s *Store) radarExternalOverviewStats(ctx context.Context, category string,
 			external_summary.observed_until,
 			now() - ($2::double precision * interval '1 second')
 		FROM external_summary
-	`, category, seconds, externalTrendSourceClickHouse, window).Scan(
+	`, category, seconds, externalTrendSourceClickHouse, window, freshnessSeconds).Scan(
 		&stats.monitoredCount,
 		&stats.candidateCount,
 		&stats.starDelta,
@@ -342,6 +344,9 @@ func (s *Store) radarExternalOverviewStats(ctx context.Context, category string,
 		return radarOverviewStats{}, false, err
 	}
 	if externalCount == 0 {
+		return radarOverviewStats{}, false, nil
+	}
+	if !sufficientExternalTrendCoverage(externalCount, stats.monitoredCount) {
 		return radarOverviewStats{}, false, nil
 	}
 	stats.coverage = radarCoverage(true, observedSince, observedUntil, windowStartedAt)
@@ -378,6 +383,7 @@ func (s *Store) radarWindowSummary(ctx context.Context, category string, window 
 	}
 	seconds := int(radarWindowDuration(window).Seconds())
 	toleranceSeconds := int(radarBaselineTolerance(window).Seconds())
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
 
 	var starDelta int
 	var coverageComplete bool
@@ -413,6 +419,7 @@ func (s *Store) radarWindowSummary(ctx context.Context, category string, window 
 			LEFT JOIN repository_external_trends external ON external.repository_id = r.id
 				AND external.source = 'clickhouse_gharchive'
 				AND external.trend_window = $4
+				AND external.window_ended_at >= now() - ($5::double precision * interval '1 second')
 			LEFT JOIN LATERAL (
 				SELECT stars_count, captured_at
 				FROM repository_metric_snapshots
@@ -447,7 +454,7 @@ func (s *Store) radarWindowSummary(ctx context.Context, category string, window 
 			COALESCE(max(observed_until), now()),
 			now() - ($2::double precision * interval '1 second')
 		FROM per_repo
-	`, category, seconds, toleranceSeconds, window).Scan(
+	`, category, seconds, toleranceSeconds, window, freshnessSeconds).Scan(
 		&starDelta,
 		&coverageComplete,
 		&observedSince,
@@ -473,6 +480,7 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 	}
 	seconds := int(radarWindowDuration(window).Seconds())
 	toleranceSeconds := int(radarBaselineTolerance(window).Seconds())
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
 	potentialFilter := ""
 	if potentialOnly {
 		potentialFilter = "AND r.stars_count BETWEEN 10 AND 12000"
@@ -528,6 +536,7 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 		LEFT JOIN repository_external_trends external ON external.repository_id = r.id
 			AND external.source = 'clickhouse_gharchive'
 			AND external.trend_window = $5
+			AND external.window_ended_at >= now() - ($6::double precision * interval '1 second')
 		LEFT JOIN LATERAL (
 			SELECT COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}') AS topics
 			FROM repository_topics t
@@ -576,7 +585,7 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 			COALESCE(sc.quality_score, 0) DESC,
 			r.stars_count DESC
 		LIMIT $3
-	`, category, seconds, limit, toleranceSeconds, window)
+	`, category, seconds, limit, toleranceSeconds, window, freshnessSeconds)
 	if err != nil {
 		return nil, err
 	}
@@ -634,8 +643,10 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 
 func (s *Store) externalRadarWindowSummary(ctx context.Context, category string, window string) (int, domain.RadarDataCoverage, bool, error) {
 	seconds := int(radarWindowDuration(window).Seconds())
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
 
 	var starDelta int
+	var monitoredCount int
 	var count int
 	var observedSince time.Time
 	var observedUntil time.Time
@@ -647,6 +658,7 @@ func (s *Store) externalRadarWindowSummary(ctx context.Context, category string,
 			WHERE status = 'active' AND ($1 = 'all' OR category = $1)
 		)
 		SELECT
+			(SELECT count(*)::int FROM scoped),
 			COALESCE(sum(external.star_delta), 0)::int,
 			count(*)::int,
 			COALESCE(min(external.window_started_at), now() - ($2::double precision * interval '1 second')),
@@ -656,7 +668,9 @@ func (s *Store) externalRadarWindowSummary(ctx context.Context, category string,
 		JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
 			AND external.source = $3
 			AND external.trend_window = $4
-	`, category, seconds, externalTrendSourceClickHouse, window).Scan(
+			AND external.window_ended_at >= now() - ($5::double precision * interval '1 second')
+	`, category, seconds, externalTrendSourceClickHouse, window, freshnessSeconds).Scan(
+		&monitoredCount,
 		&starDelta,
 		&count,
 		&observedSince,
@@ -668,10 +682,21 @@ func (s *Store) externalRadarWindowSummary(ctx context.Context, category string,
 	if count == 0 {
 		return 0, domain.RadarDataCoverage{}, false, nil
 	}
+	if !sufficientExternalTrendCoverage(count, monitoredCount) {
+		return 0, domain.RadarDataCoverage{}, false, nil
+	}
 	return starDelta, radarCoverage(true, observedSince, observedUntil, windowStartedAt), true, nil
 }
 
 func (s *Store) listExternalRadarTrending(ctx context.Context, category string, window string, limit int, potentialOnly bool) ([]domain.RadarTrendItem, bool, error) {
+	freshnessSeconds := int(externalTrendFreshnessDuration(window).Seconds())
+	monitoredCount, freshCount, err := s.externalTrendCoverage(ctx, category, window, freshnessSeconds)
+	if err != nil {
+		return nil, false, err
+	}
+	if !sufficientExternalTrendCoverage(freshCount, monitoredCount) {
+		return nil, false, nil
+	}
 	potentialFilter := ""
 	if potentialOnly {
 		potentialFilter = "AND repo.stars_count BETWEEN 10 AND 12000"
@@ -707,6 +732,7 @@ func (s *Store) listExternalRadarTrending(ctx context.Context, category string, 
 			JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
 				AND external.source = $4
 				AND external.trend_window = $2
+				AND external.window_ended_at >= now() - ($5::double precision * interval '1 second')
 			JOIN repositories repo ON repo.id = scoped.repository_id
 			LEFT JOIN repository_readmes readme ON readme.repository_id = repo.id
 			LEFT JOIN repository_scores score ON score.repository_id = repo.id
@@ -741,7 +767,7 @@ func (s *Store) listExternalRadarTrending(ctx context.Context, category string, 
 			ranked.star_delta, ranked.activity_events, ranked.quality_score,
 			ranked.window_started_at, ranked.window_ended_at
 		ORDER BY ranked.star_delta DESC, ranked.quality_score DESC, ranked.stars_count DESC
-	`, category, window, limit, externalTrendSourceClickHouse)
+	`, category, window, limit, externalTrendSourceClickHouse, freshnessSeconds)
 	if err != nil {
 		return nil, false, err
 	}
@@ -792,6 +818,31 @@ func (s *Store) listExternalRadarTrending(ctx context.Context, category string, 
 		return nil, false, err
 	}
 	return items, len(items) > 0, nil
+}
+
+func (s *Store) externalTrendCoverage(ctx context.Context, category string, window string, freshnessSeconds int) (int, int, error) {
+	var monitoredCount int
+	var freshCount int
+	if err := s.pool.QueryRow(ctx, `
+		WITH scoped AS (
+			SELECT DISTINCT repository_id
+			FROM monitored_repositories
+			WHERE status = 'active' AND ($1 = 'all' OR category = $1)
+		)
+		SELECT
+			(SELECT count(*)::int FROM scoped),
+			(
+				SELECT count(*)::int
+				FROM scoped
+				JOIN repository_external_trends external ON external.repository_id = scoped.repository_id
+					AND external.source = $2
+					AND external.trend_window = $3
+					AND external.window_ended_at >= now() - ($4::double precision * interval '1 second')
+			)
+	`, category, externalTrendSourceClickHouse, window, freshnessSeconds).Scan(&monitoredCount, &freshCount); err != nil {
+		return 0, 0, err
+	}
+	return monitoredCount, freshCount, nil
 }
 
 func (s *Store) RadarMetrics(ctx context.Context, owner string, repoName string, window string) (domain.RadarMetricsResponse, bool, error) {
@@ -1082,6 +1133,26 @@ func radarBaselineTolerance(window string) time.Duration {
 	default:
 		return 6 * time.Hour
 	}
+}
+
+func externalTrendFreshnessDuration(window string) time.Duration {
+	switch normalizeRadarWindow(window) {
+	case "1h":
+		return 20 * time.Minute
+	case "24h":
+		return 2 * time.Hour
+	case "7d", "30d", "90d":
+		return 26 * time.Hour
+	default:
+		return 2 * time.Hour
+	}
+}
+
+func sufficientExternalTrendCoverage(freshCount int, monitoredCount int) bool {
+	if monitoredCount <= 0 {
+		return false
+	}
+	return freshCount*10 >= monitoredCount*8
 }
 
 func radarCoverage(complete bool, observedSince time.Time, observedUntil time.Time, windowStartedAt time.Time) domain.RadarDataCoverage {

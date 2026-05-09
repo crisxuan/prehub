@@ -180,13 +180,14 @@ func buildTrendQuery(repositories []string, options TrendFetchOptions) string {
 SELECT
 	repo_name,
 	toStartOfInterval(created_at, %s) AS bucket_started_at,
-	countIf(event_type = 'WatchEvent' AND action = 'started') AS star_delta,
-	countIf(event_type IN ('WatchEvent', 'PushEvent', 'PullRequestEvent', 'IssuesEvent', 'IssueCommentEvent', 'ReleaseEvent', 'ForkEvent', 'CreateEvent')) AS activity_events
+	count() AS star_delta,
+	count() AS activity_events
 FROM github.events
 WHERE repo_name IN (%s)
 	AND created_at >= toDateTime('%s')
 	AND created_at < toDateTime('%s')
-	AND event_type IN ('WatchEvent', 'PushEvent', 'PullRequestEvent', 'IssuesEvent', 'IssueCommentEvent', 'ReleaseEvent', 'ForkEvent', 'CreateEvent')
+	AND event_type = 'WatchEvent'
+	AND action = 'started'
 GROUP BY repo_name, bucket_started_at
 ORDER BY repo_name, bucket_started_at
 FORMAT JSON

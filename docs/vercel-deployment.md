@@ -51,7 +51,7 @@ Do not commit `.env` or database credentials.
 
 ## Cron Behavior
 
-`vercel.json` schedules Radar backfill daily by default so it can run on Vercel Hobby:
+`vercel.json` schedules Radar backfill daily by default because Vercel Hobby accounts only support daily cron jobs:
 
 ```json
 {
@@ -62,7 +62,7 @@ Do not commit `.env` or database credentials.
 
 This keeps `1h`, `24h`, `7d`, and `30d` trend windows backed by GH Archive / ClickHouse data.
 
-For Pro deployments, change the schedule to `0 * * * *` for hourly backfill or `*/5 * * * *` for tighter Radar freshness.
+For Pro deployments, change the schedule to `0 * * * *` for hourly backfill or `*/5 * * * *` for tighter Radar freshness. The backend freshness guard keeps stale external windows from being displayed as current data.
 
 ## Manual Smoke Checks
 
