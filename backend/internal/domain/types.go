@@ -209,9 +209,12 @@ type ExternalRepositoryTrend struct {
 
 type RadarBackfillInput struct {
 	Category  string   `json:"category"`
+	Window    string   `json:"window"`
 	Windows   []string `json:"windows"`
 	Limit     int      `json:"limit"`
 	BatchSize int      `json:"batchSize"`
+	Shard     int      `json:"shard"`
+	Shards    int      `json:"shards"`
 }
 
 type RadarBackfillWindowResult struct {

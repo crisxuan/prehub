@@ -533,8 +533,13 @@ func (s *Server) handleRadarBackfill(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	category := domain.NormalizeCategory(input.Category)
-	windows := normalizeBackfillWindows(input.Windows)
-	refs, err := s.store.ListMonitoredRepositoryRefs(r.Context(), category, input.Limit)
+	windows := normalizeBackfillWindows(input.Window, input.Windows)
+	shard, shards, err := normalizeBackfillShard(input.Shard, input.Shards)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	refs, err := s.store.ListMonitoredRepositoryRefs(r.Context(), category, input.Limit, shard, shards)
 	if err != nil {
 		s.logger.Warn("radar backfill repository list failed", "error", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -789,7 +794,10 @@ func searchIntent(query string) []string {
 	return intent
 }
 
-func normalizeBackfillWindows(windows []string) []string {
+func normalizeBackfillWindows(window string, windows []string) []string {
+	if strings.TrimSpace(window) != "" {
+		windows = append([]string{window}, windows...)
+	}
 	if len(windows) == 0 {
 		return []string{"1h", "24h", "7d", "30d"}
 	}
@@ -809,6 +817,19 @@ func normalizeBackfillWindows(windows []string) []string {
 		return []string{"1h", "24h", "7d", "30d"}
 	}
 	return normalized
+}
+
+func normalizeBackfillShard(shard int, shards int) (int, int, error) {
+	if shards <= 0 {
+		shards = 1
+	}
+	if shards > 128 {
+		return 0, 0, errors.New("shards must be <= 128")
+	}
+	if shard < 0 || shard >= shards {
+		return 0, 0, errors.New("shard must be >= 0 and < shards")
+	}
+	return shard, shards, nil
 }
 
 func radarHTTPWindowDuration(window string) time.Duration {

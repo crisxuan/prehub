@@ -10,23 +10,38 @@ import (
 
 const externalTrendSourceClickHouse = "clickhouse_gharchive"
 
-func (s *Store) ListMonitoredRepositoryRefs(ctx context.Context, category string, limit int) ([]domain.MonitoredRepositoryRef, error) {
+func (s *Store) ListMonitoredRepositoryRefs(ctx context.Context, category string, limit int, shard int, shards int) ([]domain.MonitoredRepositoryRef, error) {
 	category = domain.NormalizeCategory(category)
 	limitSQL := ""
-	args := []any{category}
+	args := []any{category, shards, shard}
 	if limit > 0 {
-		limitSQL = " LIMIT $2"
+		limitSQL = " LIMIT $4"
 		args = append(args, limit)
 	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT DISTINCT ON (r.id)
-			r.id::text,
-			r.full_name,
-			mr.category
-		FROM monitored_repositories mr
-		JOIN repositories r ON r.id = mr.repository_id
-		WHERE mr.status = 'active' AND ($1 = 'all' OR mr.category = $1)
-		ORDER BY r.id, mr.updated_at DESC
+		WITH refs AS (
+			SELECT DISTINCT ON (r.id)
+				r.id::text AS repository_id,
+				r.full_name,
+				mr.category,
+				mr.updated_at
+			FROM monitored_repositories mr
+			JOIN repositories r ON r.id = mr.repository_id
+			WHERE mr.status = 'active' AND ($1 = 'all' OR mr.category = $1)
+			ORDER BY r.id, mr.updated_at DESC
+		),
+		ranked AS (
+			SELECT
+				repository_id,
+				full_name,
+				category,
+				row_number() OVER (ORDER BY lower(full_name), repository_id) - 1 AS ordinal
+			FROM refs
+		)
+		SELECT repository_id, full_name, category
+		FROM ranked
+		WHERE $2 <= 1 OR mod(ordinal, $2::bigint) = $3::bigint
+		ORDER BY ordinal
 	`+limitSQL, args...)
 	if err != nil {
 		return nil, err

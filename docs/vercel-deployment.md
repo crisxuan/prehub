@@ -64,6 +64,35 @@ This keeps `1h`, `24h`, `7d`, and `30d` trend windows backed by GH Archive / Cli
 
 For Pro deployments, change the schedule to `0 * * * *` for hourly backfill or `*/5 * * * *` for tighter Radar freshness. The backend freshness guard keeps stale external windows from being displayed as current data.
 
+## External Scheduler
+
+Vercel Hobby only supports daily cron jobs, so short Radar windows should be refreshed by an external scheduler. PreHub keeps this scheduler-agnostic: any scheduler can call the same HTTP endpoint.
+
+```http
+POST https://prehub.vercel.app/api/scheduler/radar-backfill
+Authorization: Bearer <SCHEDULER_SECRET or CRON_SECRET>
+Content-Type: application/json
+```
+
+```json
+{
+  "category": "ai",
+  "windows": ["1h", "24h"],
+  "shard": 0,
+  "shards": 16,
+  "batchSize": 100
+}
+```
+
+The endpoint validates the token, normalizes the request, and forwards it to the Go backfill handler. GitHub Actions, QStash, Cloudflare Cron, or a VPS cron can all use this same contract.
+
+The repository includes `.github/workflows/prehub-radar-backfill.yml`, which calls the scheduler every 15 minutes for `1h` and `24h` AI windows using 16 shards. Configure these repository secrets before enabling it:
+
+```text
+PREHUB_BASE_URL=https://prehub.vercel.app
+PREHUB_SCHEDULER_SECRET=<same value as SCHEDULER_SECRET or CRON_SECRET in Vercel>
+```
+
 ## Manual Smoke Checks
 
 After deployment:

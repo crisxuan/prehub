@@ -1,0 +1,73 @@
+name: PreHub Radar Backfill
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  short-window-backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '*/15 * * * *'
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - name: Trigger PreHub scheduler
+        env:
+          PREHUB_BASE_URL: ${{ secrets.PREHUB_BASE_URL }}
+          PREHUB_SCHEDULER_SECRET: ${{ secrets.PREHUB_SCHEDULER_SECRET }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PREHUB_BASE_URL}" ] || [ -z "${PREHUB_SCHEDULER_SECRET}" ]; then
+            echo "PREHUB_BASE_URL and PREHUB_SCHEDULER_SECRET secrets are required" >&2
+            exit 1
+          fi
+
+          base_url="${PREHUB_BASE_URL%/}"
+          curl -fsS -X POST \
+            -H "authorization: Bearer ${PREHUB_SCHEDULER_SECRET}" \
+            -H "content-type: application/json" \
+            "${base_url}/api/scheduler/radar-backfill" \
+            --data "{
+              \"category\": \"ai\",
+              \"windows\": [\"1h\", \"24h\"],
+              \"shard\": ${SHARD},
+              \"shards\": 16,
+              \"batchSize\": 100
+            }"
+
+  long-window-backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 0 * * *'
+    steps:
+      - name: Trigger long-window PreHub scheduler
+        env:
+          PREHUB_BASE_URL: ${{ secrets.PREHUB_BASE_URL }}
+          PREHUB_SCHEDULER_SECRET: ${{ secrets.PREHUB_SCHEDULER_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PREHUB_BASE_URL}" ] || [ -z "${PREHUB_SCHEDULER_SECRET}" ]; then
+            echo "PREHUB_BASE_URL and PREHUB_SCHEDULER_SECRET secrets are required" >&2
+            exit 1
+          fi
+
+          base_url="${PREHUB_BASE_URL%/}"
+          curl -fsS -X POST \
+            -H "authorization: Bearer ${PREHUB_SCHEDULER_SECRET}" \
+            -H "content-type: application/json" \
+            "${base_url}/api/scheduler/radar-backfill" \
+            --data '{
+              "category": "ai",
+              "windows": ["7d", "30d"],
+              "shard": 0,
+              "shards": 1,
+              "limit": 500,
+              "batchSize": 100
+            }'
