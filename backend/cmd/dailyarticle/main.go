@@ -32,6 +32,7 @@ const (
 	defaultCategory   = "all"
 	defaultSinceDays  = 45
 	defaultPickCount  = 5
+	defaultRecentDays = 30
 	defaultTimeZone   = "Asia/Shanghai"
 	defaultAPIVersion = "2022-11-28"
 )
@@ -48,6 +49,7 @@ type options struct {
 	imageBedPath    string
 	sinceDays       int
 	pickCount       int
+	recentRepoDays  int
 	imageBedPush    bool
 	force           bool
 	dryRun          bool
@@ -66,6 +68,11 @@ type candidate struct {
 	source   string
 	readme   string
 	imageURL string
+}
+
+type recentRepoSet struct {
+	fullNames map[string]bool
+	safeKeys  map[string]bool
 }
 
 type articleTheme struct {
@@ -126,6 +133,7 @@ func parseOptions() options {
 		imageBedPath:    envFrom("GITHUB_DAILY_IMAGE_BED_PATH", "", localEnv),
 		sinceDays:       envIntFrom("GITHUB_DAILY_SINCE_DAYS", defaultSinceDays, localEnv),
 		pickCount:       envIntFrom("GITHUB_DAILY_PICK_COUNT", defaultPickCount, localEnv),
+		recentRepoDays:  envIntFrom("GITHUB_DAILY_RECENT_REPO_DAYS", defaultRecentDays, localEnv),
 		imageBedPush:    envBoolFrom("GITHUB_DAILY_IMAGE_BED_PUSH", true, localEnv),
 	}
 
@@ -138,6 +146,7 @@ func parseOptions() options {
 	flag.StringVar(&opts.imageBedPath, "image-bed-path", opts.imageBedPath, "optional repository subdirectory for uploaded picbed images")
 	flag.IntVar(&opts.sinceDays, "since-days", opts.sinceDays, "freshness window for GitHub search")
 	flag.IntVar(&opts.pickCount, "pick-count", opts.pickCount, "number of projects to include")
+	flag.IntVar(&opts.recentRepoDays, "recent-repo-days", opts.recentRepoDays, "number of recent article days to exclude from selection")
 	flag.BoolVar(&opts.imageBedPush, "image-bed-push", opts.imageBedPush, "commit and push downloaded article images to the GitHub picbed repository")
 	flag.BoolVar(&opts.force, "force", false, "overwrite today's article if it already exists")
 	flag.BoolVar(&opts.dryRun, "dry-run", false, "print the article instead of writing a file")
@@ -151,6 +160,9 @@ func parseOptions() options {
 	}
 	if opts.sinceDays < 7 {
 		opts.sinceDays = 7
+	}
+	if opts.recentRepoDays < 1 {
+		opts.recentRepoDays = 1
 	}
 	return opts
 }
@@ -216,15 +228,20 @@ func run(ctx context.Context, opts options) error {
 }
 
 func collectCandidates(ctx context.Context, client *gh.Client, opts options, now time.Time) ([]candidate, error) {
+	recentRepos := loadRecentRepos(opts.outputDir, now, opts.recentRepoDays)
+	if recentRepos.len() > 0 {
+		fmt.Fprintf(os.Stderr, "excluding %d recent GitHub daily repos\n", recentRepos.len())
+	}
+
 	plans := buildSearchPlans(opts.category, opts.sinceDays, now, true)
-	collected, err := searchCandidates(ctx, client, plans, now)
+	collected, err := searchCandidates(ctx, client, plans, now, recentRepos)
 	if err != nil {
 		return nil, err
 	}
 	if len(collected) == 0 {
 		fmt.Fprintln(os.Stderr, "fresh GitHub search returned no candidates; retrying with a broader window")
 		plans = buildSearchPlans(opts.category, opts.sinceDays*4, now, true)
-		collected, err = searchCandidates(ctx, client, plans, now)
+		collected, err = searchCandidates(ctx, client, plans, now, recentRepos)
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +249,7 @@ func collectCandidates(ctx context.Context, client *gh.Client, opts options, now
 	if len(collected) == 0 {
 		fmt.Fprintln(os.Stderr, "broader GitHub search returned no candidates; retrying without a date qualifier")
 		plans = buildSearchPlans(opts.category, opts.sinceDays, now, false)
-		collected, err = searchCandidates(ctx, client, plans, now)
+		collected, err = searchCandidates(ctx, client, plans, now, recentRepos)
 		if err != nil {
 			return nil, err
 		}
@@ -248,7 +265,7 @@ func collectCandidates(ctx context.Context, client *gh.Client, opts options, now
 	return enriched, nil
 }
 
-func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan, now time.Time) ([]candidate, error) {
+func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan, now time.Time, recentRepos recentRepoSet) ([]candidate, error) {
 	seen := map[string]bool{}
 	candidates := []candidate{}
 	var lastErr error
@@ -262,6 +279,10 @@ func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan
 		}
 		for _, item := range items {
 			if item.Fork || item.Archived || item.Disabled || item.FullName == "" || seen[item.FullName] {
+				continue
+			}
+			if recentRepos.has(item.FullName) {
+				fmt.Fprintf(os.Stderr, "GitHub candidate skipped because it was recently used: %s\n", item.FullName)
 				continue
 			}
 			repo := gh.ToDomainRepository(item, item.Topics, item.Description)
@@ -286,6 +307,125 @@ func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan
 		return nil, fmt.Errorf("github search unavailable after retries: %w", lastErr)
 	}
 	return candidates, nil
+}
+
+func loadRecentRepos(outputDir string, now time.Time, days int) recentRepoSet {
+	result := recentRepoSet{
+		fullNames: map[string]bool{},
+		safeKeys:  map[string]bool{},
+	}
+	if strings.TrimSpace(outputDir) == "" || days <= 0 {
+		return result
+	}
+
+	files, err := filepath.Glob(filepath.Join(outputDir, "*-github-daily.md"))
+	if err == nil {
+		for _, file := range files {
+			if !isRecentArticlePath(file, now, days) {
+				continue
+			}
+			if fullName := readPrimaryRepo(file); fullName != "" {
+				result.addFullName(fullName)
+			}
+		}
+	}
+
+	assetDirs, err := filepath.Glob(filepath.Join(outputDir, "assets", "????-??-??-*"))
+	if err == nil {
+		for _, dir := range assetDirs {
+			if !isRecentArticlePath(filepath.Base(dir), now, days) {
+				continue
+			}
+			if key := recentAssetRepoKey(filepath.Base(dir)); key != "" {
+				result.safeKeys[key] = true
+			}
+		}
+	}
+	return result
+}
+
+func (s recentRepoSet) addFullName(fullName string) {
+	fullName = strings.TrimSpace(fullName)
+	if fullName == "" {
+		return
+	}
+	s.fullNames[strings.ToLower(fullName)] = true
+	owner, name, ok := strings.Cut(fullName, "/")
+	if ok {
+		s.safeKeys[safeRepoKey(owner, name)] = true
+	}
+}
+
+func (s recentRepoSet) has(fullName string) bool {
+	fullName = strings.TrimSpace(fullName)
+	if fullName == "" {
+		return false
+	}
+	if s.fullNames[strings.ToLower(fullName)] {
+		return true
+	}
+	owner, name, ok := strings.Cut(fullName, "/")
+	return ok && s.safeKeys[safeRepoKey(owner, name)]
+}
+
+func (s recentRepoSet) len() int {
+	seen := map[string]bool{}
+	for fullName := range s.fullNames {
+		seen[fullName] = true
+	}
+	for key := range s.safeKeys {
+		seen["key:"+key] = true
+	}
+	return len(seen)
+}
+
+func isRecentArticlePath(pathValue string, now time.Time, days int) bool {
+	name := filepath.Base(pathValue)
+	if len(name) < len("2006-01-02") {
+		return false
+	}
+	date, err := time.ParseInLocation("2006-01-02", name[:len("2006-01-02")], now.Location())
+	if err != nil {
+		return false
+	}
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	oldest := today.AddDate(0, 0, -days)
+	return !date.Before(oldest) && !date.After(today)
+}
+
+func readPrimaryRepo(filePath string) string {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "primary_repo:") {
+			return strings.Trim(strings.TrimSpace(strings.TrimPrefix(line, "primary_repo:")), `"'`)
+		}
+		if line == "---" {
+			continue
+		}
+		if strings.HasPrefix(line, "# ") || strings.HasPrefix(line, "## ") {
+			break
+		}
+	}
+	return ""
+}
+
+func recentAssetRepoKey(dirName string) string {
+	const datePrefixLength = len("2006-01-02-")
+	if len(dirName) <= datePrefixLength {
+		return ""
+	}
+	return strings.Trim(strings.ToLower(dirName[datePrefixLength:]), "-")
+}
+
+func safeRepoKey(owner string, name string) string {
+	return safeFilename(owner + "-" + name)
 }
 
 func searchRepositoriesWithRetry(ctx context.Context, client *gh.Client, plan searchPlan) ([]gh.RepositoryResponse, error) {
@@ -563,11 +703,13 @@ func headlineScenario(repo domain.Repository) string {
 		return "把 AI Agent 装进桌面的项目"
 	case containsAny(text, "woodpecker", "continuous integration", "continuous delivery", "ci/cd", "ci-cd", "build pipeline", "pipelines"):
 		return "帮团队自建 CI/CD 的项目"
+	case containsAny(text, "terragrunt", "terraform", "opentofu", "infrastructure as code", "iac"):
+		return "把基础设施代码管得更顺的项目"
 	case containsAny(text, "starrocks", "database", "postgres", "analytics", "warehouse", "lakehouse", "query engine", "big-data", "olap"):
 		return "让实时分析跑得更快的数据库"
 	case containsAny(text, "crawler", "crawlee", "scraping", "web scraping", "browser automation"):
 		return "做网页采集和浏览器自动化的项目"
-	case containsAny(text, "rag", "knowledge", "vector", "embedding", "retrieval"):
+	case containsAnyToken(text, "rag", "knowledge", "vector", "embedding", "retrieval"):
 		return "把知识库变成问答助手的项目"
 	case containsAny(text, "mcp", "agent", "tool-use", "function calling"):
 		return "让 AI Agent 更好用的项目"
@@ -1084,6 +1226,7 @@ func plainScenario(repo domain.Repository) string {
 		new string
 	}{
 		{"搭建自己的自动化构建、测试和部署流程", "搭建 CI/CD 自动化流程"},
+		{"管理 Terraform / OpenTofu 基础设施代码和多环境配置", "管理 Terraform 多环境配置"},
 		{"提升数据查询、实时分析和湖仓链路的工程效率", "做更快的数据查询和实时分析"},
 		{"构建可复用的数据采集和浏览器自动化能力", "做网页采集和浏览器自动化"},
 		{"搭建安全可控的团队沟通与协作基础设施", "搭建自己的团队聊天和协作系统"},
@@ -1186,6 +1329,8 @@ func productScenario(repo domain.Repository) string {
 	switch {
 	case containsAny(text, "woodpecker", "continuous integration", "continuous delivery", "ci/cd", "ci-cd", "build pipeline", "pipelines"):
 		return "搭建自己的自动化构建、测试和部署流程"
+	case containsAny(text, "terragrunt", "terraform", "opentofu", "infrastructure as code", "iac"):
+		return "管理 Terraform / OpenTofu 基础设施代码和多环境配置"
 	case containsAny(text, "database", "postgres", "analytics", "warehouse", "lakehouse", "query engine", "big-data", "olap"):
 		return "提升数据查询、实时分析和湖仓链路的工程效率"
 	case containsAny(text, "crawler", "crawlee", "scraping", "web scraping", "browser automation"):
@@ -1194,7 +1339,7 @@ func productScenario(repo domain.Repository) string {
 		return "搭建安全可控的团队沟通与协作基础设施"
 	case containsAny(text, "mcp", "agent", "tool-use", "function calling"):
 		return "让 AI agent 更稳定地调用工具和完成任务"
-	case containsAny(text, "rag", "knowledge", "vector", "embedding", "retrieval"):
+	case containsAnyToken(text, "rag", "knowledge", "vector", "embedding", "retrieval"):
 		return "把文档、知识库和数据变成可检索、可追问的产品能力"
 	case containsAny(text, "prompt", "workflow", "automation", "template"):
 		return "把重复的提示词和工作流沉淀成可复用资产"
@@ -1214,6 +1359,8 @@ func targetUsers(repo domain.Repository) string {
 	switch {
 	case containsAny(text, "woodpecker", "continuous integration", "continuous delivery", "ci/cd", "ci-cd", "build pipeline", "pipelines"):
 		return "需要自动化构建、测试、部署流程的开发团队"
+	case containsAny(text, "terragrunt", "terraform", "opentofu", "infrastructure as code", "iac"):
+		return "使用 Terraform 或 OpenTofu 管理基础设施的开发和运维团队"
 	case containsAny(text, "database", "analytics", "postgres", "data"):
 		return "需要搭建数据产品、分析平台或内部数据工具的团队"
 	case containsAny(text, "crawler", "scraping", "browser automation"):
@@ -1385,6 +1532,23 @@ func repoText(repo domain.Repository) string {
 func containsAny(value string, needles ...string) bool {
 	for _, needle := range needles {
 		if strings.Contains(value, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsAnyToken(value string, needles ...string) bool {
+	tokens := map[string]bool{}
+	for _, token := range strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
+	}) {
+		if token != "" {
+			tokens[token] = true
+		}
+	}
+	for _, needle := range needles {
+		if tokens[strings.ToLower(needle)] {
 			return true
 		}
 	}

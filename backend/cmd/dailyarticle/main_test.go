@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -57,6 +59,46 @@ func TestArticleThemesUseRequiredTitles(t *testing.T) {
 				t.Fatalf("%s theme %d = %q, want %q", item.repo.FullName, index, themes[index].title, required[index])
 			}
 		}
+	}
+}
+
+func TestLoadRecentReposReadsArticlesAndAssets(t *testing.T) {
+	outputDir := t.TempDir()
+	now := time.Date(2026, 5, 10, 9, 0, 0, 0, time.FixedZone("CST", 8*60*60))
+	article := []byte("---\nprimary_repo: ValueCell-ai/ClawX\n---\n")
+	if err := os.WriteFile(filepath.Join(outputDir, "2026-05-09-github-daily.md"), article, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(outputDir, "assets", "2026-05-09-starrocks-starrocks"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(outputDir, "assets", "2026-03-01-old-owner-old-repo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	recent := loadRecentRepos(outputDir, now, 30)
+	if !recent.has("ValueCell-ai/ClawX") {
+		t.Fatalf("expected article primary repo to be excluded")
+	}
+	if !recent.has("StarRocks/starrocks") {
+		t.Fatalf("expected asset-only repo to be excluded")
+	}
+	if recent.has("old-owner/old-repo") {
+		t.Fatalf("did not expect old asset repo to be excluded")
+	}
+}
+
+func TestTerragruntIsNotClassifiedAsRAG(t *testing.T) {
+	item := testCandidate("gruntwork-io/terragrunt")
+	item.repo.Description = "Terragrunt is a flexible orchestration tool for Terraform"
+	item.repo.Summary = "Terragrunt helps keep Terraform configurations DRY and manage multiple environments"
+	item.repo.Topics = []string{"terraform", "opentofu", "infrastructure-as-code"}
+
+	if title := articleTitle(item); !strings.Contains(title, "基础设施代码") {
+		t.Fatalf("title = %q, want infrastructure scenario", title)
+	}
+	if scenario := productScenario(item.repo); strings.Contains(scenario, "知识库") || strings.Contains(scenario, "问答") {
+		t.Fatalf("scenario = %q, did not expect RAG classification", scenario)
 	}
 }
 
