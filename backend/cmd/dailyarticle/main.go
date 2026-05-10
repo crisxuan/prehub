@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -252,7 +254,7 @@ func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan
 	var lastErr error
 
 	for _, plan := range plans {
-		items, _, err := client.SearchRepositoriesWithSort(ctx, plan.query, 18, plan.sort, plan.order)
+		items, err := searchRepositoriesWithRetry(ctx, client, plan)
 		if err != nil {
 			lastErr = err
 			fmt.Fprintf(os.Stderr, "GitHub search skipped (%s): %v\n", plan.query, err)
@@ -281,9 +283,54 @@ func searchCandidates(ctx context.Context, client *gh.Client, plans []searchPlan
 	}
 
 	if len(candidates) == 0 && lastErr != nil {
-		return nil, lastErr
+		return nil, fmt.Errorf("github search unavailable after retries: %w", lastErr)
 	}
 	return candidates, nil
+}
+
+func searchRepositoriesWithRetry(ctx context.Context, client *gh.Client, plan searchPlan) ([]gh.RepositoryResponse, error) {
+	const attempts = 3
+
+	var lastErr error
+	for attempt := 1; attempt <= attempts; attempt++ {
+		items, _, err := client.SearchRepositoriesWithSort(ctx, plan.query, 18, plan.sort, plan.order)
+		if err == nil {
+			return items, nil
+		}
+		lastErr = err
+		if !isRetryableGitHubSearchError(err) || attempt == attempts {
+			break
+		}
+		delay := time.Duration(attempt) * time.Second
+		fmt.Fprintf(os.Stderr, "GitHub search retrying (%s, attempt %d/%d): %v\n", plan.query, attempt+1, attempts, err)
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, ctx.Err()
+		case <-timer.C:
+		}
+	}
+	return nil, lastErr
+}
+
+func isRetryableGitHubSearchError(err error) bool {
+	if err == nil || errors.Is(err, context.Canceled) {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var dnsErr *net.DNSError
+	if errors.As(err, &dnsErr) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		return true
+	}
+	text := strings.ToLower(err.Error())
+	return containsAny(text, "no such host", "connection reset", "connection refused", "temporary failure", "eof")
 }
 
 func enrichWithReadme(ctx context.Context, client *gh.Client, candidates []candidate, now time.Time, limit int) []candidate {
@@ -500,15 +547,7 @@ func buildArticle(date string, category string, selected []candidate, now time.T
 	builder.WriteString(markdownImage(images, "项目卡片", repoPreviewImage(date, repo, "card")))
 	builder.WriteString("\n")
 
-	builder.WriteString("## 最后\n\n")
-	builder.WriteString("今天就先聊到这里。\n\n")
-	builder.WriteString("这种项目不用想太复杂：打开、看图、看 README、跑一下。能解决眼前的问题，就是好项目。\n\n")
-
-	builder.WriteString("---\n\n")
-	for _, source := range articleSources(repo) {
-		builder.WriteString("- " + source + "\n")
-	}
-	builder.WriteString(fmt.Sprintf("- 生成时间：%s\n", now.Format("2006-01-02 15:04:05 MST")))
+	builder.WriteString("今天就先聊到这里。\n")
 	return builder.String()
 }
 
@@ -939,20 +978,20 @@ func woodpeckerThemes(item candidate, now time.Time) []articleTheme {
 			imageAlt: "Woodpecker pipeline 预览",
 		},
 		{
-			title: "怎么用起来",
-			body:  "它可以自己部署。README 里写得很实在：默认可以用 SQLite，空闲时 Server 大约 100MB 内存，Agent 大约 30MB 内存。也就是说，它不是那种一上来就要一堆机器伺候的大家伙。",
-		},
-		{
-			title: "我觉得有意思的点",
+			title: "核心看点",
 			body:  "它有插件体系。构建镜像、发通知、部署服务，这些动作都可以靠插件接起来。官方还做了插件列表页面，方便直接找现成工具。对团队来说，这比自己到处拼脚本舒服很多。",
 		},
 		{
-			title: "适合谁",
-			body:  fmt.Sprintf("适合%s。尤其是已经在用 Docker、Kubernetes，或者想自建 CI/CD 的团队。它现在有 %s stars、%s forks，Codeberg 也把它作为主要 CI/CD 引擎使用，说明不是没人踩过路的小项目。", targetUsers(repo), formatInt(repo.Stars), formatInt(repo.Forks)),
+			title: "为什么值得看",
+			body:  fmt.Sprintf("它现在有 %s stars、%s forks，轻量是一个很大的信号。README 里也写得很实在：默认可以用 SQLite，空闲时 Server 大约 100MB 内存，Agent 大约 30MB 内存。也就是说，它不是那种一上来就要一堆机器伺候的大家伙。", formatInt(repo.Stars), formatInt(repo.Forks)),
 		},
 		{
-			title: "先注意什么",
-			body:  "它再轻，也还是一套 CI/CD 系统。真要接入团队项目，别只看界面好不好看。先拿一个小仓库试：能不能连代码托管平台、能不能安全管理密钥、插件够不够用、失败日志好不好排查。跑通这些，再考虑替换现有流程。",
+			title: "怎么用起来",
+			body:  "它可以自己部署。先拿一个小仓库试，把测试、构建、部署拆成几步 pipeline。跑通之后，再接密钥、镜像仓库和通知插件。",
+		},
+		{
+			title: "适合谁，以及先注意什么",
+			body:  "适合想自建 CI/CD，又不想维护重型平台的团队。它再轻，也还是一套 CI/CD 系统。真要接入团队项目，先看能不能连代码托管平台、能不能安全管理密钥、插件够不够用、失败日志好不好排查。",
 		},
 	}
 }
@@ -975,7 +1014,7 @@ func starRocksThemes(item candidate, now time.Time) []articleTheme {
 			body:  "它的关键词有几个：MPP、向量化执行、列式存储、CBO 优化器、物化视图。听着有点数据库味，但你可以简单理解：把大查询拆开并行跑，尽量吃满 CPU，再自动挑一个更聪明的执行计划。",
 		},
 		{
-			title: "湖仓这块为什么重要",
+			title: "为什么值得看",
 			body:  "StarRocks 不只查自己库里的数据。它也能直接查 Hive、Iceberg、Delta Lake、Hudi 这些数据湖里的数据。很多团队最怕搬数据，搬来搬去又慢又容易出错。能直接查外部数据，就少了一层麻烦。",
 		},
 		{
@@ -1001,20 +1040,20 @@ func genericThemes(item candidate, now time.Time) []articleTheme {
 			body:  fmt.Sprintf("它切中的问题是：%s。对普通团队来说，这类项目最大的价值不是炫技，而是少走一点重复造轮子的路。", productScenario(repo)),
 		},
 		{
+			title: "核心看点",
+			body:  fmt.Sprintf("它的公开信号还不错：%s stars、%s forks，主要语言是 %s，最近更新是 %s。至少说明有人在看，也有人在维护。", formatInt(repo.Stars), formatInt(repo.Forks), valueOr(repo.Language, "未标注"), formatPushedAt(repo.PushedAt, now)),
+		},
+		{
+			title: "为什么值得看",
+			body:  fmt.Sprintf("这类项目的价值在于省时间。遇到%s这种问题时，先看一个维护中的开源实现，往往比自己从零拼一套更现实。", productScenario(repo)),
+		},
+		{
 			title: "怎么用起来",
 			body:  "先别急着接生产。最简单的办法是打开 README，找 quickstart 或 example，拿一个小场景跑起来。能跑通，再看配置、部署和权限这些细节。",
 		},
 		{
-			title: "我觉得有意思的点",
-			body:  fmt.Sprintf("它的公开信号还不错：%s stars、%s forks，主要语言是 %s，最近更新是 %s。至少说明有人在看，也有人在维护。", formatInt(repo.Stars), formatInt(repo.Forks), valueOr(repo.Language, "未标注"), formatPushedAt(repo.PushedAt, now)),
-		},
-		{
-			title: "适合谁",
-			body:  targetUsers(repo) + "。如果只是个人尝鲜，也可以先收藏，等遇到类似问题时再翻出来试。",
-		},
-		{
-			title: "先注意什么",
-			body:  shortCaveat(repo) + "开源项目看起来很香，但最好先跑 demo。能跑起来，再谈接入。",
+			title: "适合谁，以及先注意什么",
+			body:  targetUsers(repo) + "。如果只是个人尝鲜，也可以先收藏，等遇到类似问题时再翻出来试。" + shortCaveat(repo) + "开源项目看起来很香，但最好先跑 demo。能跑起来，再谈接入。",
 		},
 	}
 }
