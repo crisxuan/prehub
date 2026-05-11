@@ -485,27 +485,6 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 	if potentialOnly {
 		potentialFilter = "AND r.stars_count BETWEEN 10 AND 12000"
 	}
-	signalFilter := ""
-	if !potentialOnly {
-		signalFilter = `
-			AND (
-				(
-					external.repository_id IS NOT NULL
-					AND (COALESCE(external.star_delta, 0) > 0 OR COALESCE(external.activity_events, 0) > 0)
-				)
-				OR (
-					external.repository_id IS NULL
-					AND (
-						COALESCE(star_events.star_delta, 0) > 0
-						OR COALESCE(activity.activity_events, 0) > 0
-						OR COALESCE(latest.stars_count, r.stars_count) - COALESCE(base.stars_count, earliest.stars_count, r.stars_count) > 0
-						OR COALESCE(latest.forks_count, r.forks_count) - COALESCE(base.forks_count, earliest.forks_count, r.forks_count) > 0
-						OR COALESCE(latest.open_issues_count, r.open_issues_count) - COALESCE(base.open_issues_count, earliest.open_issues_count, r.open_issues_count) > 0
-					)
-				)
-			)
-		`
-	}
 
 	rows, err := s.pool.Query(ctx, `
 		SELECT
@@ -594,7 +573,7 @@ func (s *Store) ListRadarTrending(ctx context.Context, category string, window s
 			FROM repository_star_events se
 			WHERE se.repository_id = r.id AND se.starred_at >= now() - ($2::double precision * interval '1 second')
 		) star_events ON true
-		WHERE true `+potentialFilter+signalFilter+`
+		WHERE true `+potentialFilter+`
 		ORDER BY
 			CASE
 				WHEN external.repository_id IS NOT NULL THEN COALESCE(external.star_delta, 0)
@@ -722,10 +701,6 @@ func (s *Store) listExternalRadarTrending(ctx context.Context, category string, 
 	if potentialOnly {
 		potentialFilter = "AND repo.stars_count BETWEEN 10 AND 12000"
 	}
-	signalFilter := ""
-	if !potentialOnly {
-		signalFilter = "AND (external.star_delta > 0 OR external.activity_events > 0)"
-	}
 
 	rows, err := s.pool.Query(ctx, `
 		WITH scoped AS (
@@ -761,7 +736,7 @@ func (s *Store) listExternalRadarTrending(ctx context.Context, category string, 
 			JOIN repositories repo ON repo.id = scoped.repository_id
 			LEFT JOIN repository_readmes readme ON readme.repository_id = repo.id
 			LEFT JOIN repository_scores score ON score.repository_id = repo.id
-			WHERE true `+potentialFilter+signalFilter+`
+			WHERE true `+potentialFilter+`
 			ORDER BY external.star_delta DESC, COALESCE(score.quality_score, 0) DESC, repo.stars_count DESC
 			LIMIT $3
 		)
@@ -1162,14 +1137,13 @@ func radarBaselineTolerance(window string) time.Duration {
 
 func externalTrendFreshnessDuration(window string) time.Duration {
 	switch normalizeRadarWindow(window) {
-	case "1h":
-		return 24 * time.Hour
-	case "24h":
-		return 2 * time.Hour
-	case "7d", "30d", "90d":
-		return 4 * time.Hour
+	case "1h", "24h", "7d", "30d", "90d":
+		// Production backfills run from Vercel/GitHub schedules, not a resident worker.
+		// Keep the latest completed snapshot visible as a baseline; stale rows are
+		// still explained with their observed_until timestamp in the UI.
+		return 48 * time.Hour
 	default:
-		return 2 * time.Hour
+		return 48 * time.Hour
 	}
 }
 
