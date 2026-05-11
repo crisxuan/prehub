@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sin1"],
+  "ignoreCommand": "git diff --quiet HEAD -- apps/web backend packages vercel.json .vercelignore || exit 1; git rev-parse HEAD^ >/dev/null 2>&1 || exit 1; git diff --quiet HEAD^ HEAD -- apps/web backend packages vercel.json .vercelignore && exit 0 || exit 1",
   "experimentalServices": {
     "web": {
       "entrypoint": "apps/web",

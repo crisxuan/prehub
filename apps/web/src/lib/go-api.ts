@@ -5,16 +5,22 @@ type CachedResponse = {
   status: number;
 };
 
+type FetchGoAPIInit = RequestInit & {
+  timeoutMs?: number;
+};
+
+const defaultAPITimeoutMs = 8_000;
 const responseCache = new Map<string, CachedResponse>();
 
-export async function fetchGoAPI(path: string, init?: RequestInit) {
+export async function fetchGoAPI(path: string, init?: FetchGoAPIInit) {
   const baseURL = resolveGoAPIBaseURL();
   if (!baseURL) {
     console.warn("PreHub Go API base URL is not configured", { path });
     return null;
   }
 
-  const method = init?.method?.toUpperCase() ?? "GET";
+  const { timeoutMs, ...requestInit } = init ?? {};
+  const method = requestInit.method?.toUpperCase() ?? "GET";
   const cacheKey = `${method}:${path}`;
   const ttlMs = method === "GET" ? cacheTTLForPath(path) : 0;
   if (ttlMs > 0) {
@@ -24,15 +30,31 @@ export async function fetchGoAPI(path: string, init?: RequestInit) {
     }
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    timeoutMs ?? timeoutForPath(path, method),
+  );
+  const upstreamSignal = requestInit.signal;
+  if (upstreamSignal) {
+    if (upstreamSignal.aborted) {
+      controller.abort();
+    } else {
+      upstreamSignal.addEventListener("abort", () => controller.abort(), {
+        once: true,
+      });
+    }
+  }
+
+  const headers = new Headers(requestInit.headers);
+  headers.set("x-internal-token", process.env.INTERNAL_API_TOKEN ?? "");
+
   try {
     const response = await fetch(`${baseURL}${path}`, {
-      ...init,
-      headers: {
-        "x-internal-token": process.env.INTERNAL_API_TOKEN ?? "",
-        ...(init?.headers ?? {}),
-      },
-      cache: ttlMs > 0 ? "force-cache" : "no-store",
-      next: ttlMs > 0 ? { revalidate: Math.ceil(ttlMs / 1000) } : undefined,
+      ...requestInit,
+      headers,
+      cache: "no-store",
+      signal: controller.signal,
     });
     if (ttlMs > 0 && response.ok) {
       const body = await response.text();
@@ -59,6 +81,8 @@ export async function fetchGoAPI(path: string, init?: RequestInit) {
       error: error instanceof Error ? error.message : String(error),
     });
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -98,6 +122,19 @@ function cacheTTLForPath(path: string) {
     return 120_000;
   }
   return 0;
+}
+
+function timeoutForPath(path: string, method: string) {
+  if (method !== "GET") {
+    return 25_000;
+  }
+  if (path.startsWith("/v1/search")) {
+    return 15_000;
+  }
+  if (path.includes("/metrics")) {
+    return 12_000;
+  }
+  return defaultAPITimeoutMs;
 }
 
 function rememberResponse(key: string, ttlMs: number, entry: CachedResponse) {

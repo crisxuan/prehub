@@ -77,29 +77,42 @@ func (c *Client) FetchRepositoryTrends(ctx context.Context, repositories []strin
 	return trends, nil
 }
 
+func (c *Client) FetchLatestWatchEventTime(ctx context.Context) (time.Time, error) {
+	query := `
+SELECT max(created_at) AS max_created_at
+FROM github.events
+WHERE created_at >= now() - INTERVAL 6 HOUR
+	AND event_type = 'WatchEvent'
+	AND action = 'started'
+FORMAT JSON
+`
+	response, err := c.postQuery(ctx, query)
+	if err != nil {
+		return time.Time{}, err
+	}
+	defer response.Body.Close()
+
+	var payload struct {
+		Data []struct {
+			MaxCreatedAt string `json:"max_created_at"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
+		return time.Time{}, err
+	}
+	if len(payload.Data) == 0 || strings.TrimSpace(payload.Data[0].MaxCreatedAt) == "" {
+		return time.Time{}, fmt.Errorf("clickhouse returned no watch event watermark")
+	}
+	return parseClickHouseTime(payload.Data[0].MaxCreatedAt)
+}
+
 func (c *Client) fetchBatch(ctx context.Context, repositories []string, options TrendFetchOptions) (map[string]domain.ExternalRepositoryTrend, error) {
 	query := buildTrendQuery(repositories, options)
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewBufferString(query))
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set("Content-Type", "text/plain; charset=utf-8")
-	q := request.URL.Query()
-	q.Set("user", c.user)
-	if c.password != "" {
-		q.Set("password", c.password)
-	}
-	request.URL.RawQuery = q.Encode()
-
-	response, err := c.httpClient.Do(request)
+	response, err := c.postQuery(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		body, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
-		return nil, fmt.Errorf("clickhouse returned %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
-	}
 
 	var payload struct {
 		Data []trendRow `json:"data"`
@@ -156,6 +169,31 @@ func (c *Client) fetchBatch(ctx context.Context, repositories []string, options 
 		trends[key] = trend
 	}
 	return trends, nil
+}
+
+func (c *Client) postQuery(ctx context.Context, query string) (*http.Response, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewBufferString(query))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "text/plain; charset=utf-8")
+	q := request.URL.Query()
+	q.Set("user", c.user)
+	if c.password != "" {
+		q.Set("password", c.password)
+	}
+	request.URL.RawQuery = q.Encode()
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
+		response.Body.Close()
+		return nil, fmt.Errorf("clickhouse returned %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
+	}
+	return response, nil
 }
 
 type trendRow struct {

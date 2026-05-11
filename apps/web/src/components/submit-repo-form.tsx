@@ -22,17 +22,23 @@ export function SubmitRepoForm() {
     const formData = new FormData(event.currentTarget);
     const url = String(formData.get("url") ?? "");
 
-    const response = await fetch("/api/admin/repositories/submit", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        url,
-        source: "admin_submit",
-        priority: "normal",
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/admin/repositories/submit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          url,
+          source: "admin_submit",
+          priority: "normal",
+        }),
+      });
+    } catch {
+      setState({ status: "error", message: "网络请求失败，请稍后重试" });
+      return;
+    }
 
-    const payload = await response.json();
+    const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       setState({
         status: "error",

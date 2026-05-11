@@ -7,9 +7,15 @@ avatar-overlay-page-*.js
 personalization-settings-*.js
 output/
 
+docs/images/
+
+.vercel/
 postgres-data/
 redis-data/
 node_modules/
 .next/
+**/.next/
+apps/web/.next/
+apps/web/node_modules/
 coverage/
 *.log

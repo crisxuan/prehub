@@ -16,11 +16,18 @@ type CachedJSON = {
   promise: Promise<unknown | null>;
 };
 
+type FetchInternalOptions = {
+  ttlMs?: number;
+  timeoutMs?: number;
+};
+
+const defaultAPITimeoutMs = 8_000;
+
 const jsonCache = new Map<string, CachedJSON>();
 
 async function fetchInternalJSON<T>(
   path: string,
-  options: { ttlMs?: number } = {},
+  options: FetchInternalOptions = {},
 ): Promise<T | null> {
   const ttlMs = options.ttlMs ?? 0;
   const cacheKey = path;
@@ -31,7 +38,7 @@ async function fetchInternalJSON<T>(
     }
   }
 
-  const promise = fetchInternalJSONUncached<T>(path, ttlMs);
+  const promise = fetchInternalJSONUncached<T>(path, options);
   if (ttlMs > 0) {
     rememberJSON(cacheKey, ttlMs, promise);
   }
@@ -45,7 +52,7 @@ async function fetchInternalJSON<T>(
 
 async function fetchInternalJSONUncached<T>(
   path: string,
-  ttlMs: number,
+  options: FetchInternalOptions,
 ): Promise<T | null> {
   const baseURL = resolveGoAPIBaseURL();
   if (!baseURL) {
@@ -53,13 +60,19 @@ async function fetchInternalJSONUncached<T>(
     return null;
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    options.timeoutMs ?? defaultAPITimeoutMs,
+  );
+
   try {
     const response = await fetch(`${baseURL}${path}`, {
       headers: {
         "x-internal-token": process.env.INTERNAL_API_TOKEN ?? "",
       },
-      cache: ttlMs > 0 ? "force-cache" : "no-store",
-      next: ttlMs > 0 ? { revalidate: Math.ceil(ttlMs / 1000) } : undefined,
+      cache: "no-store",
+      signal: controller.signal,
     });
     if (!response.ok) {
       console.warn("PreHub Go API returned a non-OK response", {
@@ -77,6 +90,8 @@ async function fetchInternalJSONUncached<T>(
       error: error instanceof Error ? error.message : String(error),
     });
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -119,7 +134,10 @@ export async function getSearchResults(query: string) {
       query: string;
       intent: string[];
       results: Repository[];
-    }>(`/v1/search?q=${encodeURIComponent(query)}`, { ttlMs: 30_000 })) ?? {
+    }>(`/v1/search?q=${encodeURIComponent(query)}`, {
+      ttlMs: 30_000,
+      timeoutMs: 15_000,
+    })) ?? {
       query,
       intent: [],
       results: [],
@@ -185,7 +203,7 @@ export async function getRadarMetrics(
 ): Promise<RadarMetricsResponse | null> {
   const payload = await fetchInternalJSON<RadarMetricsResponse>(
     `/v1/radar/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/metrics?window=${encodeURIComponent(window)}`,
-    { ttlMs: 60_000 },
+    { ttlMs: 60_000, timeoutMs: 12_000 },
   );
   if (payload) {
     return payload;

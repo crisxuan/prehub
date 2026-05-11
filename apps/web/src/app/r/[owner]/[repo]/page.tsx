@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RepoPage({ params }: RepoPageProps) {
   const { owner, repo } = await params;
-  const repository = await getRepository(owner, repo);
+  const repository = await resolveRepository(owner, repo);
 
   if (!repository) {
     notFound();
@@ -81,5 +81,21 @@ export default async function RepoPage({ params }: RepoPageProps) {
         ) : null}
       </section>
     </main>
+  );
+}
+
+async function resolveRepository(owner: string, repo: string) {
+  const localRepository = await getRepository(owner, repo);
+  if (localRepository) {
+    return localRepository;
+  }
+
+  const exactQuery = `https://github.com/${owner}/${repo}`;
+  const search = await getSearchResults(exactQuery);
+  const requestedFullName = `${owner}/${repo}`.toLowerCase();
+  return (
+    search.results.find(
+      (item) => item.fullName.toLowerCase() === requestedFullName,
+    ) ?? null
   );
 }

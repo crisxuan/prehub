@@ -11,6 +11,7 @@ import {
 import { RepoAvatar } from "@/components/repo-visuals";
 import {
   formatCompactNumber,
+  githubUrl,
   type RadarEvent,
   type RadarMetricPoint,
   type RadarMetricsResponse,
@@ -68,6 +69,7 @@ export function RadarTrendBoard({
       return;
     }
     const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10_000);
     const repo = selectedItem.repository;
     const metricKey = repo.fullName;
 
@@ -96,10 +98,14 @@ export function RadarTrendBoard({
         setErrorRepo(metricKey);
       })
       .finally(() => {
+        window.clearTimeout(timeout);
         setLoadingRepo((current) => (current === metricKey ? "" : current));
       });
 
-    return () => controller.abort();
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
   }, [selectedItem, selectedMetrics, selectedWindow]);
 
   return (
@@ -116,7 +122,7 @@ export function RadarTrendBoard({
             </p>
             {hasPartialCoverage ? (
               <p className="mt-1 text-xs leading-5 text-amber-700">
-                部分项目缺少完整 {selectedWindow} 历史基线，标记为 sampled 的数值是已采样区间内的观测增量。
+                部分项目还没有完整 {selectedWindow} 起点；标记为“采样”的数值是已采样区间内的真实观测增量。
               </p>
             ) : null}
           </div>
@@ -144,7 +150,7 @@ export function RadarTrendBoard({
               ))}
             </div>
           ) : (
-            <EmptyState text="当前分类还没有趋势数据。先从后台 watchlist 添加项目，等待两个采样点后会生成曲线。" />
+            <EmptyState text={`当前 ${selectedWindow} 窗口没有明显 star 增量或活动信号。可以切换 24h / 7d 查看更长周期，或等待下一次 Radar 回填。`} />
           )}
         </div>
       </div>
@@ -183,6 +189,7 @@ export function RadarTrendBoard({
                       这条曲线目前只覆盖自 {formatCoverageSince(selectedMetrics.dataCoverage)} 起的采样数据。
                     </p>
                   ) : null}
+                  <MetricSummary metrics={selectedMetrics} />
                   <Sparkline points={selectedMetrics.points} />
                 </>
               ) : (
@@ -273,7 +280,7 @@ function TrendRow({
               {repo.fullName}
             </Link>
             <a
-              href={repo.htmlUrl}
+              href={githubUrl(repo)}
               target="_blank"
               rel="noreferrer"
               className="inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 hover:text-emerald-700"
@@ -293,7 +300,7 @@ function TrendRow({
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <MetricPill
-          label={item.dataCoverage?.complete ? "stars" : "sampled"}
+          label={item.dataCoverage?.complete ? "stars" : "采样"}
           value={`+${formatCompactNumber(item.starDelta)}`}
         />
         <MetricPill label="trend" value={Math.round(item.trendScore)} />
@@ -314,6 +321,26 @@ function MetricPill({ label, value }: { label: string | number; value: string | 
   );
 }
 
+function MetricSummary({ metrics }: { metrics: RadarMetricsResponse }) {
+  const latest = metrics.points[metrics.points.length - 1];
+  return (
+    <div className="mt-3 grid grid-cols-3 gap-2">
+      <MetricPill
+        label="采样点"
+        value={metrics.points.length}
+      />
+      <MetricPill
+        label="当前 stars"
+        value={latest ? formatCompactNumber(latest.stars) : "-"}
+      />
+      <MetricPill
+        label="events"
+        value={metrics.summary.activityEvents}
+      />
+    </div>
+  );
+}
+
 function Sparkline({ points }: { points: RadarMetricPoint[] }) {
   if (points.length < 2) {
     return (
@@ -326,6 +353,8 @@ function Sparkline({ points }: { points: RadarMetricPoint[] }) {
   const height = 150;
   const min = Math.min(...points.map((point) => point.stars));
   const max = Math.max(...points.map((point) => point.stars));
+  const firstPoint = points[0];
+  const lastPoint = points[points.length - 1];
   const range = Math.max(1, max - min);
   const polyline = points
     .map((point, index) => {
@@ -359,8 +388,14 @@ function Sparkline({ points }: { points: RadarMetricPoint[] }) {
         />
       </svg>
       <div className="flex justify-between text-xs font-semibold text-slate-500">
-        <span>{formatCompactNumber(min)}</span>
-        <span>{formatCompactNumber(max)}</span>
+        <span>
+          {formatMetricTime(firstPoint.capturedAt)} ·{" "}
+          {formatCompactNumber(firstPoint.stars)}
+        </span>
+        <span>
+          {formatMetricTime(lastPoint.capturedAt)} ·{" "}
+          {formatCompactNumber(lastPoint.stars)}
+        </span>
       </div>
     </div>
   );
@@ -392,6 +427,19 @@ function formatCoverageSince(coverage?: RadarTrendItem["dataCoverage"]) {
   const date = new Date(coverage.observedSince);
   if (Number.isNaN(date.getTime())) {
     return coverage.observedSince;
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatMetricTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
   }
   return new Intl.DateTimeFormat("zh-CN", {
     month: "numeric",

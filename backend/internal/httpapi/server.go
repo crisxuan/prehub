@@ -562,13 +562,22 @@ func (s *Server) handleRadarBackfill(w http.ResponseWriter, r *http.Request) {
 
 	client := clickhouse.New(s.config.ClickHouseURL, s.config.ClickHouseUser, s.config.ClickHousePass)
 	now := time.Now().UTC()
+	windowEndedAt := now
+	if latestEventAt, err := client.FetchLatestWatchEventTime(r.Context()); err != nil {
+		s.logger.Warn("radar backfill clickhouse watermark fetch failed", "error", err)
+	} else if !latestEventAt.IsZero() {
+		watermarkEnd := latestEventAt.Add(time.Second)
+		if watermarkEnd.Before(now) {
+			windowEndedAt = watermarkEnd
+		}
+	}
 	results := []domain.RadarBackfillWindowResult{}
 	for _, window := range windows {
-		startedAt := now.Add(-radarHTTPWindowDuration(window))
+		startedAt := windowEndedAt.Add(-radarHTTPWindowDuration(window))
 		trends, err := client.FetchRepositoryTrends(r.Context(), fullNames, clickhouse.TrendFetchOptions{
 			Window:        window,
 			WindowStarted: startedAt,
-			WindowEnded:   now,
+			WindowEnded:   windowEndedAt,
 			BatchSize:     input.BatchSize,
 		})
 		if err != nil {
@@ -576,7 +585,7 @@ func (s *Server) handleRadarBackfill(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, http.StatusBadGateway, map[string]string{"error": err.Error()})
 			return
 		}
-		result, err := s.store.SaveExternalRepositoryTrends(r.Context(), refs, trends, "clickhouse_gharchive", window, startedAt, now)
+		result, err := s.store.SaveExternalRepositoryTrends(r.Context(), refs, trends, "clickhouse_gharchive", window, startedAt, windowEndedAt)
 		if err != nil {
 			s.logger.Warn("radar backfill persist failed", "window", window, "error", err)
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})

@@ -64,6 +64,16 @@ export default async function AdminCandidatesPage() {
                   </td>
                 </tr>
               ))}
+              {candidates.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="border-t border-slate-100 px-4 py-10 text-center text-sm text-slate-500"
+                  >
+                    候选队列为空。先提交 GitHub URL，或等待 Radar/定时任务写入候选项目。
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

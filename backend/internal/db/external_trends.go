@@ -159,7 +159,7 @@ func (s *Store) externalTrendBuckets(ctx context.Context, repositoryID string, w
 		WHERE repository_id = $1
 			AND source = $2
 			AND trend_window = $3
-			AND window_ended_at >= now() - ($4::double precision * interval '1 second')
+			AND fetched_at >= now() - ($4::double precision * interval '1 second')
 	`, repositoryID, externalTrendSourceClickHouse, window, freshnessSeconds).Scan(&windowStartedAt, &windowEndedAt, &starDelta, &activityEvents)
 	if err != nil {
 		return nil, domain.RadarMetricSummary{}, domain.RadarDataCoverage{}, false, nil

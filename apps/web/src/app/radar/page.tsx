@@ -21,6 +21,7 @@ import {
 } from "@/lib/prehub-data";
 import {
   getRadarOverview,
+  getRadarMetrics,
 } from "@/lib/server-prehub-api";
 
 type RadarPageProps = {
@@ -36,6 +37,14 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
   const selectedCategory = normalizeCategory(category);
   const selectedWindow = normalizeWindow(window);
   const overview = await getRadarOverview(selectedCategory, selectedWindow);
+  const firstTrendingRepo = overview.topTrending[0]?.repository;
+  const initialMetrics = firstTrendingRepo
+    ? await getRadarMetrics(
+        firstTrendingRepo.owner,
+        firstTrendingRepo.name,
+        selectedWindow,
+      )
+    : null;
   const selectedCategoryLabel = categoryLabel(selectedCategory);
   const starKpiLabel = overview.dataCoverage?.complete
     ? `${selectedWindow} star 增量`
@@ -43,6 +52,9 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
   const dataCoverageValue = overview.dataCoverage?.complete
     ? "完整窗口"
     : `自 ${formatCoverageKpi(overview.dataCoverage?.observedSince)} 起`;
+  const dataObservedUntil = formatCoverageKpi(
+    overview.dataCoverage?.observedUntil,
+  );
   return (
     <main className="min-h-screen overflow-hidden bg-[#fbfdff] text-slate-950">
       <div className="page-soft-grid pointer-events-none fixed inset-0" />
@@ -124,6 +136,9 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
             <p className="mt-3 text-xs leading-5 text-slate-500">
               当前是 PreHub 的 Radar 采样池：从本地候选库和后台 watchlist 中挑选仓库持续采样，不代表 GitHub 全量仓库。
             </p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              数据截至 {dataObservedUntil}；如果调度器没有按时回填，窗口会自动降级为采样统计。
+            </p>
             {!overview.dataCoverage?.complete ? (
               <p className="mt-2 text-xs leading-5 text-amber-700">
                 {selectedWindow} 历史基线还没攒满，当前增量按已采样区间统计，完整窗口会随着持续采样自动变准。
@@ -135,7 +150,7 @@ export default async function RadarPage({ searchParams }: RadarPageProps) {
 
       <RadarTrendBoard
         categoryLabel={selectedCategoryLabel}
-        initialMetrics={null}
+        initialMetrics={initialMetrics}
         items={overview.topTrending}
         key={`${selectedCategory}:${selectedWindow}`}
         recentEvents={overview.recentEvents}

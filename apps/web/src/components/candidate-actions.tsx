@@ -30,18 +30,24 @@ export function CandidateActions({
   async function runAction(action: "approve" | "publish") {
     setState({ status: "working", action });
 
-    const response = await fetch(
-      `/api/admin/candidates/${candidateId}/${action}`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body:
-          action === "publish"
-            ? JSON.stringify({ theme: "今日开源项目", category })
-            : JSON.stringify({}),
-      },
-    );
-    const payload = await response.json();
+    let response: Response;
+    try {
+      response = await fetch(
+        `/api/admin/candidates/${candidateId}/${action}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body:
+            action === "publish"
+              ? JSON.stringify({ theme: "今日开源项目", category })
+              : JSON.stringify({}),
+        },
+      );
+    } catch {
+      setState({ status: "error", message: "网络请求失败，请稍后重试" });
+      return;
+    }
+    const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       setState({

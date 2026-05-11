@@ -3,7 +3,7 @@ name: PreHub Radar Backfill
 on:
   schedule:
     - cron: "*/15 * * * *"
-    - cron: "17 0 * * *"
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
             -H "content-type: application/json" \
             "${base_url}/api/scheduler/radar-backfill" \
             --data "{
-              \"category\": \"ai\",
+              \"category\": \"all\",
               \"windows\": [\"1h\", \"24h\"],
               \"shard\": ${SHARD},
               \"shards\": 16,
@@ -45,12 +45,18 @@ jobs:
   long-window-backfill:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 0 * * *'
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 */3 * * *'
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
       - name: Trigger long-window PreHub scheduler
         env:
           PREHUB_BASE_URL: ${{ secrets.PREHUB_BASE_URL }}
           PREHUB_SCHEDULER_SECRET: ${{ secrets.PREHUB_SCHEDULER_SECRET }}
+          SHARD: ${{ matrix.shard }}
         run: |
           set -euo pipefail
           if [ -z "${PREHUB_BASE_URL}" ] || [ -z "${PREHUB_SCHEDULER_SECRET}" ]; then
@@ -63,11 +69,10 @@ jobs:
             -H "authorization: Bearer ${PREHUB_SCHEDULER_SECRET}" \
             -H "content-type: application/json" \
             "${base_url}/api/scheduler/radar-backfill" \
-            --data '{
-              "category": "ai",
-              "windows": ["7d", "30d"],
-              "shard": 0,
-              "shards": 1,
-              "limit": 500,
-              "batchSize": 100
-            }'
+            --data "{
+              \"category\": \"all\",
+              \"windows\": [\"7d\", \"30d\"],
+              \"shard\": ${SHARD},
+              \"shards\": 8,
+              \"batchSize\": 100
+            }"

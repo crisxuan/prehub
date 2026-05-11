@@ -76,7 +76,7 @@ Content-Type: application/json
 
 ```json
 {
-  "category": "ai",
+  "category": "all",
   "windows": ["1h", "24h"],
   "shard": 0,
   "shards": 16,
@@ -86,7 +86,7 @@ Content-Type: application/json
 
 The endpoint validates the token, normalizes the request, and forwards it to the Go backfill handler. GitHub Actions, QStash, Cloudflare Cron, or a VPS cron can all use this same contract.
 
-The repository includes `.github/workflows/prehub-radar-backfill.yml`, which calls the scheduler every 15 minutes for `1h` and `24h` AI windows using 16 shards. Configure these repository secrets before enabling it:
+The repository includes `.github/workflows/prehub-radar-backfill.yml`, which calls the scheduler every 15 minutes for `1h` and `24h` windows using 16 shards, and every 3 hours for `7d` and `30d` windows using 8 shards. Configure these repository secrets before enabling it:
 
 ```text
 PREHUB_BASE_URL=https://prehub.vercel.app
