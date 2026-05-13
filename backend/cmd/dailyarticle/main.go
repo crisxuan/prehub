@@ -29,30 +29,34 @@ import (
 )
 
 const (
-	defaultCategory   = "all"
-	defaultSinceDays  = 45
-	defaultPickCount  = 5
-	defaultRecentDays = 30
-	defaultTimeZone   = "Asia/Shanghai"
-	defaultAPIVersion = "2022-11-28"
+	defaultCategory             = "all"
+	defaultSinceDays            = 45
+	defaultPickCount            = 5
+	defaultRecentDays           = 30
+	defaultTimeZone             = "Asia/Shanghai"
+	defaultAPIVersion           = "2022-11-28"
+	defaultNetworkWait          = 30 * time.Minute
+	defaultNetworkCheckInterval = 60 * time.Second
 )
 
 type options struct {
-	outputDir       string
-	category        string
-	date            string
-	timeZone        string
-	token           string
-	apiVersion      string
-	imageBedDir     string
-	imageBedBaseURL string
-	imageBedPath    string
-	sinceDays       int
-	pickCount       int
-	recentRepoDays  int
-	imageBedPush    bool
-	force           bool
-	dryRun          bool
+	outputDir            string
+	category             string
+	date                 string
+	timeZone             string
+	token                string
+	apiVersion           string
+	imageBedDir          string
+	imageBedBaseURL      string
+	imageBedPath         string
+	sinceDays            int
+	pickCount            int
+	recentRepoDays       int
+	imageBedPush         bool
+	networkWait          time.Duration
+	networkCheckInterval time.Duration
+	force                bool
+	dryRun               bool
 }
 
 type searchPlan struct {
@@ -122,19 +126,21 @@ func parseOptions() options {
 	defaultImageBedDir := filepath.Join(home, "Downloads", "picbed")
 
 	opts := options{
-		outputDir:       defaultOutputDir,
-		category:        envFrom("GITHUB_DAILY_CATEGORY", defaultCategory, localEnv),
-		date:            envFrom("GITHUB_DAILY_DATE", "", localEnv),
-		timeZone:        envFrom("PREHUB_TIMEZONE", defaultTimeZone, localEnv),
-		token:           envFrom("GITHUB_TOKEN", "", localEnv),
-		apiVersion:      envFrom("GITHUB_API_VERSION", defaultAPIVersion, localEnv),
-		imageBedDir:     envFrom("GITHUB_DAILY_IMAGE_BED_DIR", defaultImageBedDir, localEnv),
-		imageBedBaseURL: envFrom("GITHUB_DAILY_IMAGE_BED_BASE_URL", "https://cdn.jsdelivr.net/gh/doggaifan/picbed", localEnv),
-		imageBedPath:    envFrom("GITHUB_DAILY_IMAGE_BED_PATH", "", localEnv),
-		sinceDays:       envIntFrom("GITHUB_DAILY_SINCE_DAYS", defaultSinceDays, localEnv),
-		pickCount:       envIntFrom("GITHUB_DAILY_PICK_COUNT", defaultPickCount, localEnv),
-		recentRepoDays:  envIntFrom("GITHUB_DAILY_RECENT_REPO_DAYS", defaultRecentDays, localEnv),
-		imageBedPush:    envBoolFrom("GITHUB_DAILY_IMAGE_BED_PUSH", true, localEnv),
+		outputDir:            defaultOutputDir,
+		category:             envFrom("GITHUB_DAILY_CATEGORY", defaultCategory, localEnv),
+		date:                 envFrom("GITHUB_DAILY_DATE", "", localEnv),
+		timeZone:             envFrom("PREHUB_TIMEZONE", defaultTimeZone, localEnv),
+		token:                envFrom("GITHUB_TOKEN", "", localEnv),
+		apiVersion:           envFrom("GITHUB_API_VERSION", defaultAPIVersion, localEnv),
+		imageBedDir:          envFrom("GITHUB_DAILY_IMAGE_BED_DIR", defaultImageBedDir, localEnv),
+		imageBedBaseURL:      envFrom("GITHUB_DAILY_IMAGE_BED_BASE_URL", "https://cdn.jsdelivr.net/gh/doggaifan/picbed", localEnv),
+		imageBedPath:         envFrom("GITHUB_DAILY_IMAGE_BED_PATH", "", localEnv),
+		sinceDays:            envIntFrom("GITHUB_DAILY_SINCE_DAYS", defaultSinceDays, localEnv),
+		pickCount:            envIntFrom("GITHUB_DAILY_PICK_COUNT", defaultPickCount, localEnv),
+		recentRepoDays:       envIntFrom("GITHUB_DAILY_RECENT_REPO_DAYS", defaultRecentDays, localEnv),
+		imageBedPush:         envBoolFrom("GITHUB_DAILY_IMAGE_BED_PUSH", true, localEnv),
+		networkWait:          envDurationFrom("GITHUB_DAILY_NETWORK_WAIT", defaultNetworkWait, localEnv),
+		networkCheckInterval: envDurationFrom("GITHUB_DAILY_NETWORK_CHECK_INTERVAL", defaultNetworkCheckInterval, localEnv),
 	}
 
 	flag.StringVar(&opts.outputDir, "output-dir", opts.outputDir, "directory for generated markdown articles")
@@ -148,6 +154,8 @@ func parseOptions() options {
 	flag.IntVar(&opts.pickCount, "pick-count", opts.pickCount, "number of projects to include")
 	flag.IntVar(&opts.recentRepoDays, "recent-repo-days", opts.recentRepoDays, "number of recent article days to exclude from selection")
 	flag.BoolVar(&opts.imageBedPush, "image-bed-push", opts.imageBedPush, "commit and push downloaded article images to the GitHub picbed repository")
+	flag.DurationVar(&opts.networkWait, "network-wait", opts.networkWait, "maximum time to wait for GitHub network/DNS recovery before failing; set 0 to disable")
+	flag.DurationVar(&opts.networkCheckInterval, "network-check-interval", opts.networkCheckInterval, "interval between GitHub network/DNS checks while waiting")
 	flag.BoolVar(&opts.force, "force", false, "overwrite today's article if it already exists")
 	flag.BoolVar(&opts.dryRun, "dry-run", false, "print the article instead of writing a file")
 	flag.Parse()
@@ -163,6 +171,9 @@ func parseOptions() options {
 	}
 	if opts.recentRepoDays < 1 {
 		opts.recentRepoDays = 1
+	}
+	if opts.networkCheckInterval < 5*time.Second {
+		opts.networkCheckInterval = 5 * time.Second
 	}
 	return opts
 }
@@ -182,6 +193,10 @@ func run(ctx context.Context, opts options) error {
 		}
 		now = time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 12, 0, 0, 0, location)
 		articleDate = parsed.Format("2006-01-02")
+	}
+
+	if err := waitForGitHubNetwork(ctx, opts.networkWait, opts.networkCheckInterval); err != nil {
+		return err
 	}
 
 	client := gh.New(opts.token, opts.apiVersion)
@@ -452,6 +467,65 @@ func searchRepositoriesWithRetry(ctx context.Context, client *gh.Client, plan se
 		}
 	}
 	return nil, lastErr
+}
+
+func waitForGitHubNetwork(ctx context.Context, maxWait time.Duration, interval time.Duration) error {
+	if maxWait < 0 {
+		maxWait = 0
+	}
+	if interval <= 0 {
+		interval = defaultNetworkCheckInterval
+	}
+
+	start := time.Now()
+	attempt := 1
+	for {
+		checkCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		err := checkGitHubNetwork(checkCtx)
+		cancel()
+		if err == nil {
+			if attempt > 1 {
+				fmt.Fprintf(os.Stderr, "GitHub network recovered after %s\n", time.Since(start).Round(time.Second))
+			}
+			return nil
+		}
+		if maxWait == 0 || time.Since(start) >= maxWait {
+			return fmt.Errorf("github network unavailable after %s: %w", maxWait, err)
+		}
+
+		remaining := maxWait - time.Since(start)
+		delay := interval
+		if remaining < delay {
+			delay = remaining
+		}
+		fmt.Fprintf(os.Stderr, "GitHub network unavailable; retrying in %s (attempt %d): %v\n", delay.Round(time.Second), attempt+1, err)
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+		attempt++
+	}
+}
+
+func checkGitHubNetwork(ctx context.Context) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodHead, "https://api.github.com", nil)
+	if err != nil {
+		return err
+	}
+	request.Header.Set("User-Agent", "PreHub/0.1")
+	client := &http.Client{Timeout: 15 * time.Second}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 500 {
+		return fmt.Errorf("github api returned %s", response.Status)
+	}
+	return nil
 }
 
 func isRetryableGitHubSearchError(err error) bool {
@@ -1644,6 +1718,18 @@ func envIntFrom(key string, fallback int, values map[string]string) int {
 		return fallback
 	}
 	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func envDurationFrom(key string, fallback time.Duration, values map[string]string) time.Duration {
+	value := envFrom(key, "", values)
+	if value == "" {
+		return fallback
+	}
+	parsed, err := time.ParseDuration(value)
 	if err != nil {
 		return fallback
 	}
