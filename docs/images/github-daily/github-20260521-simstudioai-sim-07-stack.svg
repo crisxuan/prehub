@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="96" y="110" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="800">What is inside the repo</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700">
+    <rect x="96" y="172" width="220" height="76" rx="16" fill="#dbeafe"/>
+    <text x="138" y="220" fill="#1d4ed8">Next.js</text>
+    <rect x="346" y="172" width="220" height="76" rx="16" fill="#dcfce7"/>
+    <text x="402" y="220" fill="#166534">Bun</text>
+    <rect x="596" y="172" width="220" height="76" rx="16" fill="#fef3c7"/>
+    <text x="630" y="220" fill="#92400e">PostgreSQL</text>
+    <rect x="846" y="172" width="220" height="76" rx="16" fill="#ede9fe"/>
+    <text x="898" y="220" fill="#5b21b6">ReactFlow</text>
+    <rect x="96" y="288" width="220" height="76" rx="16" fill="#cffafe"/>
+    <text x="134" y="336" fill="#0e7490">Socket.io</text>
+    <rect x="346" y="288" width="220" height="76" rx="16" fill="#fee2e2"/>
+    <text x="390" y="336" fill="#991b1b">Trigger.dev</text>
+    <rect x="596" y="288" width="220" height="76" rx="16" fill="#e2e8f0"/>
+    <text x="674" y="336" fill="#334155">E2B</text>
+    <rect x="846" y="288" width="220" height="76" rx="16" fill="#fae8ff"/>
+    <text x="892" y="336" fill="#86198f">Turborepo</text>
+  </g>
+  <text x="96" y="458" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="26">The stack list comes from the repository README.</text>
+  <text x="96" y="506" fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="22">It is a full web app plus realtime service, database, background jobs and code execution.</text>
+</svg>
