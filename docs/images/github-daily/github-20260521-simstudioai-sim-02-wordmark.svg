@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <circle cx="218" cy="226" r="116" fill="#33c482" opacity="0.16"/>
+  <rect x="150" y="150" width="156" height="156" rx="36" fill="#33c482"/>
+  <rect x="196" y="196" width="112" height="112" rx="26" fill="#ffffff" opacity="0.95"/>
+  <rect x="236" y="236" width="112" height="112" rx="26" fill="#33c482" opacity="0.24"/>
+  <text x="395" y="236" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="800">sim</text>
+  <text x="400" y="298" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="30">Open-source AI agent workflow platform</text>
+  <line x1="150" y1="405" x2="1050" y2="405" stroke="#d1d5db" stroke-width="2"/>
+  <text x="150" y="470" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="30">Connect agents, tools, integrations and LLMs.</text>
+  <text x="150" y="520" fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="24">Project logo and positioning from the Sim README.</text>
+</svg>
