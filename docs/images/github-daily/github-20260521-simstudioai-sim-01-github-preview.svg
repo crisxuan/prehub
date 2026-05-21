@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <rect x="70" y="70" width="1060" height="490" rx="28" fill="#f8fafc"/>
+  <rect x="70" y="70" width="1060" height="92" rx="28" fill="#111827"/>
+  <circle cx="118" cy="116" r="10" fill="#ef4444"/>
+  <circle cx="152" cy="116" r="10" fill="#f59e0b"/>
+  <circle cx="186" cy="116" r="10" fill="#33c482"/>
+  <text x="230" y="125" fill="#e5e7eb" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">simstudioai/sim</text>
+  <rect x="104" y="205" width="170" height="170" rx="34" fill="#33c482"/>
+  <rect x="148" y="244" width="86" height="86" rx="22" fill="#ffffff" opacity="0.95"/>
+  <rect x="174" y="270" width="86" height="86" rx="22" fill="#ffffff" opacity="0.65"/>
+  <text x="318" y="246" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800">Sim</text>
+  <text x="318" y="296" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="28">Open-source AI agent workflow platform</text>
+  <text x="318" y="342" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="24">Build agents on a canvas, connect tools and LLMs, run workflows.</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">
+    <rect x="318" y="400" width="145" height="54" rx="14" fill="#dcfce7"/>
+    <text x="344" y="435" fill="#166534">18.6k+ stars</text>
+    <rect x="484" y="400" width="140" height="54" rx="14" fill="#e0f2fe"/>
+    <text x="510" y="435" fill="#075985">3.6k+ forks</text>
+    <rect x="645" y="400" width="170" height="54" rx="14" fill="#fef3c7"/>
+    <text x="672" y="435" fill="#92400e">Apache-2.0</text>
+    <rect x="836" y="400" width="165" height="54" rx="14" fill="#ede9fe"/>
+    <text x="863" y="435" fill="#5b21b6">TypeScript</text>
+  </g>
+  <text x="104" y="520" fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="22">README: visual workflows, Copilot, vector knowledge, self-hosting with Docker.</text>
+</svg>
