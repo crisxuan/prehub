@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#111827"/>
+  <rect x="86" y="72" width="1028" height="486" rx="24" fill="#020617" stroke="#334155"/>
+  <text x="130" y="136" fill="#e5e7eb" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="800">Self-hosted quickstart</text>
+  <rect x="132" y="180" width="936" height="260" rx="18" fill="#0f172a" stroke="#1e293b"/>
+  <text x="170" y="236" fill="#33c482" font-family="Menlo, Consolas, monospace" font-size="30">$ npx simstudio</text>
+  <text x="170" y="292" fill="#cbd5e1" font-family="Menlo, Consolas, monospace" font-size="28">→ http://localhost:3000</text>
+  <text x="170" y="350" fill="#cbd5e1" font-family="Menlo, Consolas, monospace" font-size="24">Docker required. Docker Compose is also supported.</text>
+  <text x="170" y="404" fill="#cbd5e1" font-family="Menlo, Consolas, monospace" font-size="24">Local models: Ollama and vLLM docs are linked.</text>
+  <text x="132" y="500" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="24">Manual setup uses Bun, Node.js 20+, PostgreSQL 12+ and pgvector.</text>
+</svg>
