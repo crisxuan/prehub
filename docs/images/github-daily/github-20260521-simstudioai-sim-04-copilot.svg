@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0b1220"/>
+  <rect x="86" y="78" width="1028" height="474" rx="24" fill="#111827" stroke="#334155"/>
+  <rect x="116" y="112" width="620" height="406" rx="18" fill="#f8fafc"/>
+  <rect x="778" y="112" width="306" height="406" rx="18" fill="#020617" stroke="#334155"/>
+  <text x="148" y="166" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800">Canvas</text>
+  <rect x="158" y="216" width="190" height="82" rx="16" fill="#dcfce7" stroke="#33c482" stroke-width="3"/>
+  <rect x="432" y="216" width="190" height="82" rx="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+  <rect x="290" y="364" width="210" height="82" rx="16" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+  <path d="M348 257 H432" stroke="#94a3b8" stroke-width="5"/>
+  <path d="M527 298 C512 336 450 344 406 364" stroke="#94a3b8" stroke-width="5" fill="none"/>
+  <text x="812" y="165" fill="#e5e7eb" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800">Copilot</text>
+  <rect x="812" y="208" width="236" height="58" rx="14" fill="#1e293b"/>
+  <text x="834" y="244" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="18">Add a research agent</text>
+  <rect x="812" y="292" width="210" height="58" rx="14" fill="#064e3b"/>
+  <text x="834" y="328" fill="#bbf7d0" font-family="Arial, Helvetica, sans-serif" font-size="18">Generate nodes</text>
+  <rect x="812" y="374" width="226" height="58" rx="14" fill="#172554"/>
+  <text x="834" y="410" fill="#bfdbfe" font-family="Arial, Helvetica, sans-serif" font-size="18">Fix flow errors</text>
+  <text x="148" y="500" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="22">README says Copilot can create nodes, fix errors and iterate flows from natural language.</text>
+</svg>
