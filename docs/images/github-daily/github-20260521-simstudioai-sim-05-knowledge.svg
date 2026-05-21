@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="110" y="116" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="800">Knowledge and vector retrieval</text>
+  <text x="112" y="160" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="24">Upload documents, store vectors, let agents answer with project context.</text>
+  <g stroke="#94a3b8" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M290 326 H440"/>
+    <path d="M620 326 H780"/>
+  </g>
+  <rect x="118" y="244" width="180" height="164" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+  <text x="158" y="318" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800">Docs</text>
+  <text x="146" y="356" fill="#075985" font-family="Arial, Helvetica, sans-serif" font-size="18">PDF / files / text</text>
+  <rect x="430" y="230" width="210" height="190" rx="18" fill="#dcfce7" stroke="#33c482" stroke-width="3"/>
+  <text x="474" y="306" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800">Vector store</text>
+  <text x="464" y="346" fill="#166534" font-family="Arial, Helvetica, sans-serif" font-size="18">grounded retrieval</text>
+  <rect x="778" y="244" width="286" height="164" rx="18" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+  <text x="838" y="318" fill="#92400e" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800">Agent answer</text>
+  <text x="836" y="356" fill="#92400e" font-family="Arial, Helvetica, sans-serif" font-size="18">based on your content</text>
+</svg>
