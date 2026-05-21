@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#eef2f7"/>
+  <rect x="80" y="70" width="1040" height="490" rx="24" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="80" y="70" width="1040" height="64" rx="24" fill="#111827"/>
+  <text x="118" y="111" fill="#e5e7eb" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Workflow canvas</text>
+  <g stroke="#94a3b8" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M250 284 C360 236 430 236 520 286"/>
+    <path d="M650 286 C742 240 826 242 930 285"/>
+    <path d="M250 404 C388 438 530 438 650 404"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">
+    <rect x="150" y="230" width="200" height="118" rx="18" fill="#dcfce7" stroke="#33c482" stroke-width="3"/>
+    <text x="198" y="278" fill="#166534">Trigger</text>
+    <text x="190" y="314" fill="#166534" font-size="17">webhook / schedule</text>
+    <rect x="500" y="230" width="210" height="118" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+    <text x="548" y="278" fill="#075985">Agent</text>
+    <text x="543" y="314" fill="#075985" font-size="17">LLM + instructions</text>
+    <rect x="850" y="230" width="200" height="118" rx="18" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+    <text x="900" y="278" fill="#92400e">Tools</text>
+    <text x="886" y="314" fill="#92400e" font-size="17">1,000+ integrations</text>
+    <rect x="370" y="388" width="260" height="104" rx="18" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="3"/>
+    <text x="420" y="433" fill="#5b21b6">Run workflow</text>
+    <text x="410" y="466" fill="#5b21b6" font-size="17">agentic workforce</text>
+  </g>
+</svg>
