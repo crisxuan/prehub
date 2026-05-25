@@ -1,0 +1,5 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#ffffff"/>
+  <image href="https://raw.githubusercontent.com/infiniflow/ragflow/main/web/src/assets/logo-with-text.svg" x="170" y="210" width="1260" height="420" preserveAspectRatio="xMidYMid meet"/>
+  <text x="60" y="860" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="28">RAGFlow logo from repository assets</text>
+</svg>
