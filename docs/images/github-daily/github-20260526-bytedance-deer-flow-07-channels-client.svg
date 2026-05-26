@@ -1,0 +1,29 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#f7fafc"/>
+  <text x="70" y="94" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Ways to use and integrate</text>
+  <text x="72" y="142" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="24">The project is not only a web chat surface</text>
+  <g fill="#ffffff" stroke="#cbd5e1" stroke-width="3">
+    <rect x="90" y="230" width="430" height="430" rx="18"/>
+    <rect x="585" y="230" width="430" height="430" rx="18"/>
+    <rect x="1080" y="230" width="430" height="430" rx="18"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="135" y="298" fill="#111827" font-size="34" font-weight="700">HTTP Gateway</text>
+    <text x="135" y="352" fill="#334155" font-size="24">workspace</text>
+    <text x="135" y="394" fill="#334155" font-size="24">threads</text>
+    <text x="135" y="436" fill="#334155" font-size="24">LangGraph-compatible API</text>
+    <text x="630" y="298" fill="#111827" font-size="34" font-weight="700">IM channels</text>
+    <text x="630" y="352" fill="#334155" font-size="24">Telegram</text>
+    <text x="630" y="394" fill="#334155" font-size="24">Slack</text>
+    <text x="630" y="436" fill="#334155" font-size="24">Feishu / Lark</text>
+    <text x="630" y="478" fill="#334155" font-size="24">WeChat, WeCom, DingTalk</text>
+    <text x="1125" y="298" fill="#111827" font-size="34" font-weight="700">Python client</text>
+    <text x="1125" y="352" fill="#334155" font-size="24">chat()</text>
+    <text x="1125" y="394" fill="#334155" font-size="24">stream()</text>
+    <text x="1125" y="436" fill="#334155" font-size="24">list_models()</text>
+    <text x="1125" y="478" fill="#334155" font-size="24">upload_files()</text>
+  </g>
+  <rect x="250" y="720" width="1100" height="78" rx="16" fill="#111827"/>
+  <text x="330" y="770" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="28">MCP servers and Python functions can extend the tool layer</text>
+  <text x="70" y="850" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="26">Based on README advanced sections and embedded client documentation</text>
+</svg>
