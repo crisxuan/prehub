@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#0f172a"/>
+  <text x="72" y="86" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#f8fafc">dyad-sh/dyad 仓库信息</text>
+  <text x="72" y="130" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#cbd5e1">核查时间：2026-05-27，GitHub 页面与项目文档</text>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="86" y="190" width="300" height="140" rx="22" fill="#1e293b"/>
+    <text x="124" y="250" font-size="42" font-weight="700" fill="#fbbf24">20.3k+</text>
+    <text x="124" y="294" font-size="20" fill="#cbd5e1">stars</text>
+    <rect x="450" y="190" width="300" height="140" rx="22" fill="#1e293b"/>
+    <text x="488" y="250" font-size="42" font-weight="700" fill="#38bdf8">2.4k</text>
+    <text x="488" y="294" font-size="20" fill="#cbd5e1">forks</text>
+    <rect x="814" y="190" width="300" height="140" rx="22" fill="#1e293b"/>
+    <text x="852" y="250" font-size="42" font-weight="700" fill="#86efac">TypeScript</text>
+    <text x="852" y="294" font-size="20" fill="#cbd5e1">main language</text>
+    <rect x="86" y="390" width="484" height="138" rx="22" fill="#111827" stroke="#334155"/>
+    <text x="124" y="446" font-size="24" font-weight="700" fill="#f8fafc">Latest release</text>
+    <text x="124" y="488" font-size="21" fill="#cbd5e1">v0.44.0 / Apr 29, 2026</text>
+    <rect x="630" y="390" width="484" height="138" rx="22" fill="#111827" stroke="#334155"/>
+    <text x="668" y="446" font-size="24" font-weight="700" fill="#f8fafc">License boundary</text>
+    <text x="668" y="488" font-size="21" fill="#cbd5e1">Apache-2.0 outside src/pro; FSL inside src/pro</text>
+  </g>
+</svg>

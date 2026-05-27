@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#fafaf9"/>
+  <text x="70" y="82" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#1f2937">Bring your own AI access</text>
+  <text x="70" y="122" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#4b5563">Dyad 文档把模型选择放在第一层：Auto，也可以手动切 provider。</text>
+  <rect x="88" y="178" width="1024" height="384" rx="24" fill="#ffffff" stroke="#d6d3d1"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="130" y="232" width="190" height="92" rx="18" fill="#eef2ff"/>
+    <text x="160" y="270" font-size="22" font-weight="700" fill="#3730a3">Gemini</text>
+    <text x="160" y="302" font-size="16" fill="#4f46e5">常被推荐给新手</text>
+    <rect x="358" y="232" width="190" height="92" rx="18" fill="#f0fdf4"/>
+    <text x="388" y="270" font-size="22" font-weight="700" fill="#166534">OpenRouter</text>
+    <text x="388" y="302" font-size="16" fill="#16a34a">一个 key 试多模型</text>
+    <rect x="586" y="232" width="190" height="92" rx="18" fill="#fff7ed"/>
+    <text x="616" y="270" font-size="22" font-weight="700" fill="#9a3412">Anthropic</text>
+    <text x="616" y="302" font-size="16" fill="#ea580c">编码模型强</text>
+    <rect x="814" y="232" width="190" height="92" rx="18" fill="#f1f5f9"/>
+    <text x="844" y="270" font-size="22" font-weight="700" fill="#0f172a">OpenAI</text>
+    <text x="844" y="302" font-size="16" fill="#475569">通用模型选择</text>
+    <rect x="244" y="386" width="268" height="92" rx="18" fill="#ecfeff"/>
+    <text x="280" y="424" font-size="22" font-weight="700" fill="#155e75">Local models</text>
+    <text x="280" y="456" font-size="16" fill="#0891b2">本地模型也能接入</text>
+    <rect x="608" y="386" width="268" height="92" rx="18" fill="#fef2f2"/>
+    <text x="644" y="424" font-size="22" font-weight="700" fill="#991b1b">Data policy</text>
+    <text x="644" y="456" font-size="16" fill="#dc2626">免费模型也要看数据条款</text>
+  </g>
+</svg>

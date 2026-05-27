@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <text x="70" y="82" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#0f172a">Dyad 的本地生成链路</text>
+  <text x="70" y="122" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#475569">Prompt -> LLM response -> approve -> write files -> preview locally</text>
+  <rect x="70" y="170" width="310" height="360" rx="20" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="100" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#0f172a">聊天输入</text>
+  <rect x="100" y="252" width="248" height="62" rx="12" fill="#e0f2fe"/>
+  <text x="120" y="290" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#075985">做一个任务看板</text>
+  <rect x="100" y="340" width="248" height="92" rx="12" fill="#f1f5f9"/>
+  <text x="120" y="376" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#334155">AI 生成改动</text>
+  <text x="120" y="408" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#334155">等待用户确认</text>
+  <rect x="445" y="170" width="310" height="360" rx="20" fill="#0f172a"/>
+  <text x="475" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f8fafc">本地进程执行</text>
+  <text x="475" y="264" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#cbd5e1">renderer 展示 UI</text>
+  <text x="475" y="308" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#cbd5e1">main process 写文件</text>
+  <text x="475" y="352" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#cbd5e1">安装 npm 依赖</text>
+  <text x="475" y="396" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#cbd5e1">保存版本记录</text>
+  <rect x="820" y="170" width="310" height="360" rx="20" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="850" y="215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#0f172a">右侧预览</text>
+  <rect x="850" y="252" width="248" height="176" rx="14" fill="#dcfce7"/>
+  <rect x="876" y="286" width="196" height="22" rx="6" fill="#16a34a"/>
+  <rect x="876" y="328" width="138" height="18" rx="5" fill="#86efac"/>
+  <rect x="876" y="366" width="172" height="18" rx="5" fill="#86efac"/>
+  <text x="850" y="474" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#475569">代码直接落到你的机器上</text>
+  <path d="M390 350h44" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <path d="M428 338l22 12-22 12z" fill="#64748b"/>
+  <path d="M765 350h44" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <path d="M803 338l22 12-22 12z" fill="#64748b"/>
+</svg>
