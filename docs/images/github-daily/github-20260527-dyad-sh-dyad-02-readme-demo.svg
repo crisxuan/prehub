@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#eef2f7"/>
+  <rect x="54" y="40" width="1092" height="595" rx="24" fill="#111827"/>
+  <rect x="80" y="68" width="1040" height="540" rx="16" fill="#ffffff"/>
+  <image href="https://github.com/user-attachments/assets/f6c83dfc-6ffd-4d32-93dd-4b9c46d17790" x="80" y="68" width="1040" height="540" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="80" y="68" width="1040" height="540" rx="16" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="80" y="546" width="1040" height="62" fill="#ffffff" opacity=".94"/>
+  <text x="112" y="585" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#111827">README product preview</text>
+  <text x="410" y="585" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#475569">source: GitHub README user attachment</text>
+</svg>
