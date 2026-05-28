@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#0f172a"/>
+  <image href="https://raw.githubusercontent.com/mem0ai/mem0/main/docs/images/docs%20thumbnails/light/CLI.png" x="80" y="70" width="460" height="260" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="610" y="90" width="500" height="290" rx="24" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="650" y="155" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#ffffff">mem0 init --agent</text>
+  <text x="650" y="210" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#dbeafe">API key in four commands</text>
+  <text x="650" y="260" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#dbeafe">add memory</text>
+  <text x="650" y="310" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#dbeafe">search memory</text>
+  <text x="90" y="545" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#ffffff">Agent-first setup</text>
+  <text x="90" y="595" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#cbd5e1">From README and platform quickstart</text>
+</svg>
