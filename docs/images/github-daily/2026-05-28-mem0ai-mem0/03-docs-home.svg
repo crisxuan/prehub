@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#ffffff"/>
+  <image href="https://raw.githubusercontent.com/mem0ai/mem0/main/docs/images/docs%20thumbnails/light/mem0_platform.png" x="90" y="70" width="470" height="250" preserveAspectRatio="xMidYMid meet"/>
+  <image href="https://raw.githubusercontent.com/mem0ai/mem0/main/docs/images/docs%20thumbnails/light/mem0_open_source.png" x="640" y="70" width="470" height="250" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="80" y="390" width="1040" height="150" rx="22" fill="#eef4ff"/>
+  <text x="120" y="455" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#111827">Platform and Open Source</text>
+  <text x="120" y="505" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#405069">Two entry points from the official documentation home</text>
+</svg>
