@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#0b1020"/>
+  <image href="https://opengraph.githubassets.com/20260528/mem0ai/mem0" x="0" y="0" width="1200" height="675" preserveAspectRatio="xMidYMid slice"/>
+  <rect x="0" y="500" width="1200" height="175" fill="#0b1020" opacity="0.9"/>
+  <text x="70" y="575" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#ffffff">mem0ai/mem0</text>
+  <text x="70" y="625" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#b9c7d8">GitHub OpenGraph preview for the AI memory layer project</text>
+</svg>
