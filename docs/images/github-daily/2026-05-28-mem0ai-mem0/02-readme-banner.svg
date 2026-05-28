@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f8fb"/>
+  <image href="https://raw.githubusercontent.com/mem0ai/mem0/main/docs/images/banner-sm.png" x="60" y="80" width="1080" height="360" preserveAspectRatio="xMidYMid meet"/>
+  <text x="70" y="545" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#121826">Mem0</text>
+  <text x="70" y="594" font-family="Arial, Helvetica, sans-serif" font-size="25" fill="#405069">README banner: the memory layer for personalized AI</text>
+</svg>
