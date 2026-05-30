@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7fafc"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}.mono{font-family:"SFMono-Regular",Consolas,monospace}</style>
+  <text x="64" y="86" font-size="35" font-weight="780" fill="#111827">browser-use/browser-use</text>
+  <text x="66" y="124" font-size="20" fill="#52616f">Make websites accessible for AI agents</text>
+  <rect x="64" y="164" width="1072" height="376" rx="22" fill="#ffffff" stroke="#d9e2ec"/>
+  <text x="108" y="242" font-size="70" font-weight="820" fill="#0f172a">Browser Use</text>
+  <text x="108" y="292" font-size="28" font-weight="650" fill="#334155">让 AI Agent 真的打开网页、识别元素、点击、输入、提交</text>
+  <rect x="108" y="348" width="184" height="90" rx="16" fill="#eef6ff"/>
+  <text x="134" y="388" font-size="34" font-weight="800" fill="#0f5ea8">95.8k</text>
+  <text x="136" y="418" font-size="18" fill="#52616f">stars</text>
+  <rect x="320" y="348" width="184" height="90" rx="16" fill="#eefbf4"/>
+  <text x="346" y="388" font-size="34" font-weight="800" fill="#137a47">10.8k</text>
+  <text x="348" y="418" font-size="18" fill="#52616f">forks</text>
+  <rect x="532" y="348" width="228" height="90" rx="16" fill="#fff8e6"/>
+  <text x="558" y="388" font-size="34" font-weight="800" fill="#a15c00">0.12.9</text>
+  <text x="560" y="418" font-size="18" fill="#52616f">latest release · 2026-05-26</text>
+  <rect x="788" y="348" width="238" height="90" rx="16" fill="#f4f0ff"/>
+  <text x="814" y="388" font-size="32" font-weight="800" fill="#5b3db5">Python · MIT</text>
+  <text x="816" y="418" font-size="18" fill="#52616f">AI browser automation</text>
+  <text x="108" y="494" class="mono" font-size="24" fill="#0f172a">Agent(task, llm, browser).run()</text>
+  <rect x="64" y="590" width="290" height="13" rx="7" fill="#2f80ed"/>
+  <rect x="354" y="590" width="260" height="13" rx="7" fill="#27ae60"/>
+  <rect x="614" y="590" width="220" height="13" rx="7" fill="#f2c94c"/>
+  <rect x="834" y="590" width="180" height="13" rx="7" fill="#9b51e0"/>
+</svg>
