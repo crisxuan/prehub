@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#fcfbff"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}.mono{font-family:"SFMono-Regular",Consolas,monospace}</style>
+  <text x="64" y="76" font-size="30" font-weight="760" fill="#111827">examples/use-cases 里的三个典型任务</text>
+  <text x="64" y="112" font-size="18" fill="#64748b">它的例子都指向真实网页：求职、购物、装机配置。</text>
+  <g transform="translate(82 168)">
+    <rect width="314" height="330" rx="22" fill="#ffffff" stroke="#ddd6fe"/>
+    <text x="30" y="62" font-size="27" font-weight="780" fill="#5b21b6">Apply to job</text>
+    <text x="30" y="108" font-size="18" fill="#475569">读取申请页</text>
+    <text x="30" y="142" font-size="18" fill="#475569">填写姓名、地址、问题</text>
+    <text x="30" y="176" font-size="18" fill="#475569">上传简历并提交</text>
+    <text x="30" y="252" class="mono" font-size="16" fill="#334155">examples/use-cases/apply_to_job.py</text>
+  </g>
+  <g transform="translate(443 168)">
+    <rect width="314" height="330" rx="22" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="30" y="62" font-size="27" font-weight="780" fill="#166534">Buy groceries</text>
+    <text x="30" y="108" font-size="18" fill="#475569">打开 Instacart</text>
+    <text x="30" y="142" font-size="18" fill="#475569">寻找商品并比价</text>
+    <text x="30" y="176" font-size="18" fill="#475569">输出结构化购物车</text>
+    <text x="30" y="252" class="mono" font-size="16" fill="#334155">examples/use-cases/buy_groceries.py</text>
+  </g>
+  <g transform="translate(804 168)">
+    <rect width="314" height="330" rx="22" fill="#ffffff" stroke="#fed7aa"/>
+    <text x="30" y="62" font-size="27" font-weight="780" fill="#9a3412">PC builder</text>
+    <text x="30" y="108" font-size="18" fill="#475569">打开 PCPartPicker</text>
+    <text x="30" y="142" font-size="18" fill="#475569">控制预算和兼容性</text>
+    <text x="30" y="176" font-size="18" fill="#475569">给出完整配置链接</text>
+    <text x="30" y="252" class="mono" font-size="16" fill="#334155">examples/use-cases/pcpartpicker.py</text>
+  </g>
+</svg>
