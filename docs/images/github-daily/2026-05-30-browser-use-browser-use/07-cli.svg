@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f9fb"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}.mono{font-family:"SFMono-Regular",Consolas,monospace}</style>
+  <text x="64" y="76" font-size="30" font-weight="760" fill="#111827">它还带一个持久浏览器 CLI</text>
+  <text x="64" y="112" font-size="18" fill="#64748b">CLI README 里列出了导航、检查、点击、输入、截图、Cookie、Tab 等命令。</text>
+  <rect x="96" y="160" width="1008" height="390" rx="24" fill="#101828"/>
+  <text x="136" y="220" class="mono" font-size="24" fill="#d1fadf">$ browser-use open https://example.com</text>
+  <text x="136" y="268" class="mono" font-size="24" fill="#bfdbfe">$ browser-use state</text>
+  <text x="136" y="316" class="mono" font-size="24" fill="#fde68a">$ browser-use click 5</text>
+  <text x="136" y="364" class="mono" font-size="24" fill="#fecaca">$ browser-use type "Hello"</text>
+  <text x="136" y="412" class="mono" font-size="24" fill="#ddd6fe">$ browser-use screenshot page.png</text>
+  <text x="136" y="474" font-size="20" fill="#cbd5e1">浏览器可以保持打开，适合调试 Agent 每一步到底看见了什么。</text>
+  <text x="64" y="610" font-size="20" font-weight="690" fill="#0f172a">这让它不只是一个 Python 包，也能当成本地浏览器操作工具。</text>
+</svg>
