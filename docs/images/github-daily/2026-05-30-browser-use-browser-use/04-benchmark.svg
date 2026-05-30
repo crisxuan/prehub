@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#ffffff"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}</style>
+  <text x="64" y="76" font-size="30" font-weight="760" fill="#111827">README 放了一张 Browser Use Benchmark 图</text>
+  <text x="64" y="112" font-size="18" fill="#64748b">项目用 100 个真实浏览器任务比较不同模型的完成率。</text>
+  <rect x="82" y="150" width="1036" height="408" rx="20" fill="#f8fafc" stroke="#d9e1e8"/>
+  <image href="https://raw.githubusercontent.com/browser-use/browser-use/main/static/accuracy_by_model_light.png" x="120" y="178" width="960" height="350" preserveAspectRatio="xMidYMid meet"/>
+  <text x="64" y="612" font-size="20" font-weight="690" fill="#0f172a">这类工具不能只看“能不能跑”，还要看真实网页任务里的成功率。</text>
+</svg>
