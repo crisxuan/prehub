@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#fffdfa"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}.mono{font-family:"SFMono-Regular",Consolas,monospace}</style>
+  <text x="64" y="76" font-size="30" font-weight="760" fill="#111827">从本地 Agent 到生产运行</text>
+  <text x="64" y="112" font-size="18" fill="#64748b">AGENTS.md 和 README 都提到 Cloud、远程浏览器、profile 同步和 sandbox。</text>
+  <rect x="92" y="170" width="276" height="285" rx="22" fill="#ffffff" stroke="#bae6fd"/>
+  <text x="126" y="228" font-size="25" font-weight="770" fill="#0369a1">Local</text>
+  <text x="126" y="274" font-size="18" fill="#475569">Python 代码</text>
+  <text x="126" y="308" font-size="18" fill="#475569">自己的模型 key</text>
+  <text x="126" y="342" font-size="18" fill="#475569">本机 Chromium</text>
+  <rect x="462" y="170" width="276" height="285" rx="22" fill="#ffffff" stroke="#bbf7d0"/>
+  <text x="496" y="228" font-size="25" font-weight="770" fill="#166534">Remote Browser</text>
+  <text x="496" y="274" font-size="18" fill="#475569">use_cloud=True</text>
+  <text x="496" y="308" font-size="18" fill="#475569">代理和指纹处理</text>
+  <text x="496" y="342" font-size="18" fill="#475569">可看远程流</text>
+  <rect x="832" y="170" width="276" height="285" rx="22" fill="#ffffff" stroke="#fed7aa"/>
+  <text x="866" y="228" font-size="25" font-weight="770" fill="#9a3412">Sandbox</text>
+  <text x="866" y="274" font-size="18" fill="#475569">装饰器包装任务</text>
+  <text x="866" y="308" font-size="18" fill="#475569">云端运行 Agent</text>
+  <text x="866" y="342" font-size="18" fill="#475569">处理 auth/cookies</text>
+  <path d="M386 313 H438" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M756 313 H808" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="276" y="520" width="648" height="58" rx="16" fill="#111827"/>
+  <text x="316" y="557" class="mono" font-size="23" fill="#f8fafc">@sandbox() async def task(browser): ...</text>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker></defs>
+</svg>
