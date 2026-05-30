@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#fbfbf7"/>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif}.mono{font-family:"SFMono-Regular",Consolas,monospace}</style>
+  <text x="64" y="78" font-size="31" font-weight="770" fill="#101828">AGENTS.md 里的工作方式</text>
+  <text x="64" y="116" font-size="18" fill="#667085">Chromium + 页面状态 + LLM 决策 + 动作执行，循环到任务完成。</text>
+  <g transform="translate(98 182)">
+    <rect width="210" height="118" rx="18" fill="#e8f3ff" stroke="#b8d8f8"/>
+    <text x="42" y="52" font-size="24" font-weight="760" fill="#0b5cab">用户任务</text>
+    <text x="31" y="84" font-size="16" fill="#345">找资料 / 填表 / 下单</text>
+  </g>
+  <path d="M326 241 H458" stroke="#7c8da5" stroke-width="4" marker-end="url(#arrow)"/>
+  <g transform="translate(476 182)">
+    <rect width="210" height="118" rx="18" fill="#ecfdf3" stroke="#bbefcf"/>
+    <text x="42" y="52" font-size="24" font-weight="760" fill="#127348">Browser</text>
+    <text x="32" y="84" font-size="16" fill="#345">Chromium / CDP</text>
+  </g>
+  <path d="M704 241 H836" stroke="#7c8da5" stroke-width="4" marker-end="url(#arrow)"/>
+  <g transform="translate(854 182)">
+    <rect width="210" height="118" rx="18" fill="#fff4d7" stroke="#f4d27b"/>
+    <text x="58" y="52" font-size="24" font-weight="760" fill="#9a5a00">Agent</text>
+    <text x="30" y="84" font-size="16" fill="#345">读页面，决定下一步</text>
+  </g>
+  <g transform="translate(238 395)">
+    <rect width="724" height="122" rx="20" fill="#ffffff" stroke="#d7dde7"/>
+    <text x="32" y="48" class="mono" font-size="24" fill="#111827">state → plan → click/type/extract → observe</text>
+    <text x="34" y="86" font-size="18" fill="#596579">它给模型的不是一张截图，而是更适合推理的网页结构和动作集合。</text>
+  </g>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#7c8da5"/></marker></defs>
+</svg>
