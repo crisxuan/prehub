@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#f8fafc"/>
+  <text x="72" y="96" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">v0.8.3 的两个实用信号</text>
+  <text x="74" y="136" font-family="Arial, sans-serif" font-size="20" fill="#475569">最新 release 不只是加 API，也在补训练和部署细节</text>
+  <rect x="88" y="205" width="472" height="285" rx="24" fill="#ffffff" stroke="#bfdbfe"/>
+  <rect x="640" y="205" width="472" height="285" rx="24" fill="#ffffff" stroke="#fed7aa"/>
+  <g font-family="Arial, sans-serif">
+    <text x="126" y="265" font-size="28" font-weight="700" fill="#1d4ed8">新能力</text>
+    <text x="126" y="315" font-size="21" fill="#334155">XFeat / ALIKED</text>
+    <text x="126" y="355" font-size="21" fill="#334155">VisualPrompter 批量推理</text>
+    <text x="126" y="395" font-size="21" fill="#334155">VLM / VLA 模型骨架</text>
+    <text x="126" y="435" font-size="21" fill="#334155">ONNX 和 MPS 修复</text>
+    <text x="678" y="265" font-size="28" font-weight="700" fill="#c2410c">工程细节</text>
+    <text x="678" y="315" font-size="21" fill="#334155">float16 / bfloat16 支持表</text>
+    <text x="678" y="355" font-size="21" fill="#334155">depth_to_normals 约 3x</text>
+    <text x="678" y="395" font-size="21" fill="#334155">几何点变换约 2x</text>
+    <text x="678" y="435" font-size="21" fill="#334155">更多 docstring 和测试</text>
+  </g>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#f8fafc"/>
+  <text x="72" y="94" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">几何视觉 + 特征匹配</text>
+  <text x="74" y="132" font-family="Arial, sans-serif" font-size="20" fill="#475569">Kornia 不只做滤镜，也覆盖相机、单应性、配准、局部特征和匹配</text>
+  <rect x="86" y="200" width="470" height="280" rx="24" fill="#ffffff" stroke="#bfdbfe"/>
+  <rect x="644" y="200" width="470" height="280" rx="24" fill="#ffffff" stroke="#bbf7d0"/>
+  <g font-family="Arial, sans-serif">
+    <text x="128" y="255" font-size="28" font-weight="700" fill="#1d4ed8">Geometry</text>
+    <text x="128" y="305" font-size="21" fill="#334155">camera / calibration</text>
+    <text x="128" y="345" font-size="21" fill="#334155">homography / epipolar</text>
+    <text x="128" y="385" font-size="21" fill="#334155">depth / point cloud</text>
+    <text x="128" y="425" font-size="21" fill="#334155">registration / RANSAC</text>
+    <text x="686" y="255" font-size="28" font-weight="700" fill="#15803d">Feature</text>
+    <text x="686" y="305" font-size="21" fill="#334155">Harris / DoG / KeyNet</text>
+    <text x="686" y="345" font-size="21" fill="#334155">DISK / DeDoDe / ALIKED</text>
+    <text x="686" y="385" font-size="21" fill="#334155">LoFTR / LightGlue</text>
+    <text x="686" y="425" font-size="21" fill="#334155">AdaLAM / matching</text>
+  </g>
+  <g stroke="#64748b" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M505 337h128"/>
+    <path d="M632 337l-14 -14"/>
+    <path d="M632 337l-14 14"/>
+  </g>
+</svg>

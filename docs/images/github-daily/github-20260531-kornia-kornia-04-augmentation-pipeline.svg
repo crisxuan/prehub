@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#ffffff"/>
+  <rect x="76" y="70" width="1048" height="460" rx="24" fill="#f8fafc" stroke="#dbeafe"/>
+  <text x="108" y="126" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">AugmentationSequential</text>
+  <text x="110" y="164" font-family="Arial, sans-serif" font-size="20" fill="#475569">把训练增强做成 PyTorch pipeline 的一部分</text>
+  <g font-family="Arial, sans-serif" font-size="20" font-weight="700">
+    <rect x="120" y="260" width="150" height="92" rx="14" fill="#eff6ff" stroke="#3b82f6"/>
+    <text x="163" y="312" fill="#1d4ed8">Input</text>
+    <rect x="336" y="260" width="150" height="92" rx="14" fill="#ecfeff" stroke="#0891b2"/>
+    <text x="366" y="312" fill="#0e7490">Affine</text>
+    <rect x="552" y="260" width="150" height="92" rx="14" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="580" y="312" fill="#15803d">Brightness</text>
+    <rect x="768" y="260" width="150" height="92" rx="14" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="799" y="312" fill="#c2410c">Batch</text>
+    <rect x="984" y="260" width="90" height="92" rx="14" fill="#f5f3ff" stroke="#8b5cf6"/>
+    <text x="1002" y="312" fill="#6d28d9">GPU</text>
+  </g>
+  <g stroke="#94a3b8" stroke-width="4" fill="none" stroke-linecap="round">
+    <path d="M272 306h58"/>
+    <path d="M488 306h58"/>
+    <path d="M704 306h58"/>
+    <path d="M920 306h58"/>
+  </g>
+  <text x="120" y="435" font-family="Arial, sans-serif" font-size="19" fill="#334155">常见增强：裁剪、翻转、仿射、透视、颜色扰动、噪声、MixUp、CutMix、Mosaic</text>
+</svg>

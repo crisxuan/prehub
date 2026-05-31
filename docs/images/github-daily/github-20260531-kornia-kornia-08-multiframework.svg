@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#ffffff"/>
+  <rect x="72" y="72" width="1056" height="456" rx="24" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="104" y="130" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">多框架方向</text>
+  <text x="106" y="168" font-family="Arial, sans-serif" font-size="20" fill="#475569">核心是 PyTorch，但文档也在展示 NumPy、TensorFlow、JAX 的使用路径</text>
+  <rect x="455" y="240" width="290" height="112" rx="20" fill="#111827"/>
+  <text x="520" y="305" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Kornia</text>
+  <text x="512" y="333" font-family="Arial, sans-serif" font-size="17" fill="#cbd5e1">vision operators</text>
+  <g font-family="Arial, sans-serif" font-size="22" font-weight="700">
+    <rect x="115" y="248" width="180" height="72" rx="14" fill="#eff6ff" stroke="#60a5fa"/>
+    <text x="158" y="292" fill="#1d4ed8">PyTorch</text>
+    <rect x="905" y="165" width="180" height="72" rx="14" fill="#f0fdf4" stroke="#4ade80"/>
+    <text x="958" y="210" fill="#15803d">NumPy</text>
+    <rect x="905" y="280" width="180" height="72" rx="14" fill="#fff7ed" stroke="#fb923c"/>
+    <text x="938" y="325" fill="#c2410c">TensorFlow</text>
+    <rect x="905" y="395" width="180" height="72" rx="14" fill="#f5f3ff" stroke="#a78bfa"/>
+    <text x="970" y="440" fill="#6d28d9">JAX</text>
+  </g>
+  <g stroke="#94a3b8" stroke-width="4" fill="none" stroke-linecap="round">
+    <path d="M296 284h152"/>
+    <path d="M745 285c60 -90 100 -88 155 -84"/>
+    <path d="M745 305h152"/>
+    <path d="M745 325c60 90 100 96 155 106"/>
+  </g>
+</svg>
