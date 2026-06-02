@@ -1,0 +1,22 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#f4f7fb"/>
+  <text x="70" y="92" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Sandbox and file system</text>
+  <text x="72" y="140" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="24">DeerFlow gives each task a working computer-like environment</text>
+  <rect x="110" y="215" width="620" height="520" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="155" y="275" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700">/mnt/user-data/</text>
+  <g font-family="Menlo, Consolas, monospace" font-size="30" fill="#334155">
+    <text x="170" y="355">uploads/</text>
+    <text x="210" y="410">user files</text>
+    <text x="170" y="500">workspace/</text>
+    <text x="210" y="555">agent working dir</text>
+    <text x="170" y="645">outputs/</text>
+    <text x="210" y="700">final deliverables</text>
+  </g>
+  <rect x="870" y="235" width="560" height="155" rx="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+  <rect x="870" y="450" width="560" height="155" rx="16" fill="#fee2e2" stroke="#ef4444" stroke-width="3"/>
+  <text x="920" y="292" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">AioSandboxProvider</text>
+  <text x="920" y="338" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="24">shell runs in isolated containers</text>
+  <text x="920" y="507" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">LocalSandboxProvider</text>
+  <text x="920" y="553" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="24">host bash is disabled by default</text>
+  <text x="70" y="840" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="26">Important for agents that read, write, edit files or run commands during long tasks</text>
+</svg>
