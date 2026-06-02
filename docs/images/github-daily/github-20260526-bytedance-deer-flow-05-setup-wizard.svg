@@ -1,0 +1,16 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#f7fafc"/>
+  <text x="72" y="96" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Local startup path</text>
+  <text x="74" y="142" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="24">The README keeps the first run explicit</text>
+  <rect x="80" y="210" width="1440" height="560" rx="18" fill="#0f172a"/>
+  <g font-family="Menlo, Consolas, monospace" font-size="28">
+    <text x="130" y="285" fill="#93c5fd">$ git clone https://github.com/bytedance/deer-flow.git</text>
+    <text x="130" y="345" fill="#93c5fd">$ cd deer-flow</text>
+    <text x="130" y="430" fill="#86efac">$ make setup</text>
+    <text x="130" y="490" fill="#e2e8f0">choose LLM provider, optional search, sandbox and file tools</text>
+    <text x="130" y="575" fill="#86efac">$ make doctor</text>
+    <text x="130" y="635" fill="#e2e8f0">verify config and receive actionable fix hints</text>
+    <text x="130" y="720" fill="#86efac">$ make docker-start  or  make dev</text>
+  </g>
+  <text x="72" y="838" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="26">Docker path exposes the app at localhost:2026; production uses make up / make down</text>
+</svg>
