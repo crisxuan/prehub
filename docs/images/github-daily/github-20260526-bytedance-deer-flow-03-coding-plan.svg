@@ -1,0 +1,6 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#f6f8fb"/>
+  <rect x="32" y="32" width="1536" height="804" rx="18" fill="#ffffff" stroke="#d8dee9"/>
+  <image href="https://github.com/user-attachments/assets/2ecc7b9d-50be-4185-b1f7-5542d222fb2d" x="56" y="56" width="1488" height="756" preserveAspectRatio="xMidYMid meet"/>
+  <text x="60" y="860" fill="#5c6470" font-family="Arial, Helvetica, sans-serif" font-size="28">DeerFlow README visual: recommended coding models</text>
+</svg>
