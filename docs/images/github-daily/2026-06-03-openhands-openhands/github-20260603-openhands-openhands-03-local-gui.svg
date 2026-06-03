@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands local GUI workflow</title>
+  <desc id="desc">OpenHands local GUI connects a chat task to a sandbox runtime and repository changes.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="76" y="92" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700">本地 GUI 的核心感觉</text>
+  <text x="78" y="137" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="24">官方文档说它本机跑在 localhost:3000，需要配置模型和 API key。</text>
+  <rect x="76" y="190" width="520" height="318" rx="16" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <rect x="76" y="190" width="520" height="56" rx="16" fill="#1f2937"/>
+  <circle cx="116" cy="218" r="8" fill="#f87171"/>
+  <circle cx="146" cy="218" r="8" fill="#fbbf24"/>
+  <circle cx="176" cy="218" r="8" fill="#34d399"/>
+  <text x="104" y="296" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700">任务</text>
+  <text x="104" y="340" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="24">“修一下这个 issue，跑测试，</text>
+  <text x="104" y="377" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="24">把改动整理成 PR。”</text>
+  <rect x="104" y="426" width="430" height="42" rx="10" fill="#e0f2fe"/>
+  <text x="126" y="455" fill="#075985" font-family="Inter, Arial, sans-serif" font-size="22">GUI 负责对话、状态和可见性</text>
+  <path d="M630 350h110" stroke="#f97316" stroke-width="8" stroke-linecap="round"/>
+  <path d="M724 325l38 25-38 25z" fill="#f97316"/>
+  <rect x="782" y="190" width="342" height="318" rx="16" fill="#111827"/>
+  <text x="826" y="263" fill="#fef3c7" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">Sandbox runtime</text>
+  <text x="826" y="318" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="24">读仓库</text>
+  <text x="826" y="354" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="24">改文件</text>
+  <text x="826" y="390" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="24">跑命令</text>
+  <text x="826" y="426" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="24">给结果</text>
+  <text x="78" y="562" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="22">重点不是“生成一段代码”，而是给 agent 一个能动手的隔离环境。</text>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands CLI setup</title>
+  <desc id="desc">The OpenHands docs show uv, openhands serve, Docker, local models, and search setup.</desc>
+  <rect width="1200" height="630" fill="#0b1220"/>
+  <text x="70" y="92" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="700">上手方式很工程化</text>
+  <text x="72" y="138" fill="#cbd5e1" font-family="Inter, Arial, sans-serif" font-size="24">官方安装页给了 uv、pip 和 Docker 几条路径。</text>
+  <rect x="72" y="190" width="1056" height="330" rx="16" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <text x="112" y="258" fill="#86efac" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="25">$ uv tool install openhands --python 3.12</text>
+  <text x="112" y="309" fill="#86efac" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="25">$ openhands serve</text>
+  <text x="112" y="360" fill="#93c5fd" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="25">$ openhands serve --mount-cwd</text>
+  <text x="112" y="411" fill="#fde68a" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="25">$ docker run ... -p 3000:3000 ... openhands:1.7</text>
+  <text x="112" y="462" fill="#fca5a5" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="25">LLM Provider + Model + API Key</text>
+  <text x="72" y="567" fill="#94a3b8" font-family="Inter, Arial, sans-serif" font-size="22">文档还提到本地模型、Tavily 搜索、headless mode、CLI mode 和 GitHub Action 用法。</text>
+</svg>

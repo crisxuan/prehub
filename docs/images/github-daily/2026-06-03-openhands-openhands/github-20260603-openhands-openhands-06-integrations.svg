@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands integrations</title>
+  <desc id="desc">OpenHands connects with repositories, Slack, Jira, Linear, APIs, SDKs, and model providers.</desc>
+  <rect width="1200" height="630" fill="#f0fdfa"/>
+  <text x="74" y="96" fill="#134e4a" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="700">它想接进真实研发环境</text>
+  <text x="76" y="143" fill="#0f766e" font-family="Inter, Arial, sans-serif" font-size="24">README 和官网都把集成能力放在前面。</text>
+  <circle cx="600" cy="340" r="92" fill="#0f172a"/>
+  <text x="535" y="330" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">OpenHands</text>
+  <text x="552" y="370" fill="#99f6e4" font-family="Inter, Arial, sans-serif" font-size="23">coding agent</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">
+    <rect x="124" y="220" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="164" y="264" fill="#0f172a">GitHub</text>
+    <rect x="155" y="402" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="195" y="446" fill="#0f172a">GitLab</text>
+    <rect x="442" y="496" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="492" y="540" fill="#0f172a">Slack</text>
+    <rect x="703" y="496" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="763" y="540" fill="#0f172a">Jira</text>
+    <rect x="899" y="402" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="950" y="446" fill="#0f172a">Linear</text>
+    <rect x="888" y="220" width="188" height="70" rx="14" fill="#ffffff" stroke="#14b8a6" stroke-width="3"/>
+    <text x="938" y="264" fill="#0f172a">API</text>
+  </g>
+  <g stroke="#0f766e" stroke-width="4" stroke-linecap="round">
+    <path d="M312 255L512 315"/>
+    <path d="M343 437L518 375"/>
+    <path d="M536 496L576 430"/>
+    <path d="M797 496L648 424"/>
+    <path d="M899 437L682 374"/>
+    <path d="M888 255L688 315"/>
+  </g>
+  <text x="76" y="586" fill="#0f766e" font-family="Inter, Arial, sans-serif" font-size="22">Enterprise/Cloud 侧还提到多用户、RBAC、协作和自托管部署。</text>
+</svg>

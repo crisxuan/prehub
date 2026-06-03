@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands workflows</title>
+  <desc id="desc">OpenHands official site lists vulnerability fixing, PR reviews, code migration, and incident triage workflows.</desc>
+  <rect width="1200" height="630" fill="#fff7ed"/>
+  <text x="72" y="96" fill="#7c2d12" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="700">官网强调的是“外圈工作”</text>
+  <text x="74" y="143" fill="#9a3412" font-family="Inter, Arial, sans-serif" font-size="24">不是补全一行代码，而是处理完整工程任务。</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="88" y="210" width="460" height="110" rx="16" fill="#ffffff" stroke="#fb923c" stroke-width="3"/>
+    <text x="122" y="258" fill="#111827" font-size="28" font-weight="700">Fix Vulnerabilities</text>
+    <text x="122" y="295" fill="#475569" font-size="22">扫描仓库，修安全问题，再开 PR。</text>
+    <rect x="652" y="210" width="460" height="110" rx="16" fill="#ffffff" stroke="#38bdf8" stroke-width="3"/>
+    <text x="686" y="258" fill="#111827" font-size="28" font-weight="700">Review PRs</text>
+    <text x="686" y="295" fill="#475569" font-size="22">看质量、安全和最佳实践。</text>
+    <rect x="88" y="370" width="460" height="110" rx="16" fill="#ffffff" stroke="#22c55e" stroke-width="3"/>
+    <text x="122" y="418" fill="#111827" font-size="28" font-weight="700">Migrate Code</text>
+    <text x="122" y="455" fill="#475569" font-size="22">迁移旧系统，并把测试验证接上。</text>
+    <rect x="652" y="370" width="460" height="110" rx="16" fill="#ffffff" stroke="#a78bfa" stroke-width="3"/>
+    <text x="686" y="418" fill="#111827" font-size="28" font-weight="700">Triage Incidents</text>
+    <text x="686" y="455" fill="#475569" font-size="22">看错误、找原因、给可执行修复。</text>
+  </g>
+  <text x="74" y="558" fill="#9a3412" font-family="Inter, Arial, sans-serif" font-size="22">这也是它和普通代码补全工具最大的区别。</text>
+</svg>

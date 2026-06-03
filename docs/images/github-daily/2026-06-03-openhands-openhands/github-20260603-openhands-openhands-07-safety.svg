@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands safety notes</title>
+  <desc id="desc">OpenHands agents need sandboxing, repository permissions, model cost control, and license awareness.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="72" y="96" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="700">先注意几件事</text>
+  <text x="74" y="143" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="24">能动手改代码的 agent，边界要先想清楚。</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="92" y="210" width="470" height="100" rx="16" fill="#fee2e2"/>
+    <text x="124" y="252" fill="#991b1b" font-size="28" font-weight="700">Sandbox</text>
+    <text x="124" y="286" fill="#7f1d1d" font-size="22">Docker socket、挂载目录、网络权限都要管。</text>
+    <rect x="638" y="210" width="470" height="100" rx="16" fill="#dbeafe"/>
+    <text x="670" y="252" fill="#1e3a8a" font-size="28" font-weight="700">Repository Access</text>
+    <text x="670" y="286" fill="#1e40af" font-size="22">给 issue、PR、分支权限时不要太宽。</text>
+    <rect x="92" y="368" width="470" height="100" rx="16" fill="#fef3c7"/>
+    <text x="124" y="410" fill="#92400e" font-size="28" font-weight="700">Model Cost</text>
+    <text x="124" y="444" fill="#78350f" font-size="22">长任务会调用很多轮模型，要设预算。</text>
+    <rect x="638" y="368" width="470" height="100" rx="16" fill="#dcfce7"/>
+    <text x="670" y="410" fill="#166534" font-size="28" font-weight="700">License</text>
+    <text x="670" y="444" fill="#14532d" font-size="22">核心 MIT；enterprise 目录另看许可。</text>
+  </g>
+  <text x="74" y="552" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="22">这类工具适合从小仓库、小任务、清晰验收条件开始试。</text>
+</svg>

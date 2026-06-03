@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands GitHub project preview</title>
+  <desc id="desc">A project card for OpenHands/OpenHands with verified GitHub metadata.</desc>
+  <rect width="1200" height="630" fill="#f7f5ef"/>
+  <rect x="54" y="54" width="1092" height="522" rx="18" fill="#111827"/>
+  <circle cx="134" cy="130" r="38" fill="#f97316"/>
+  <path d="M116 130c18-32 54-21 54 9 0 34-45 47-45 72" fill="none" stroke="#fff7ed" stroke-width="16" stroke-linecap="round"/>
+  <text x="198" y="139" fill="#fff7ed" font-family="Inter, Arial, sans-serif" font-size="50" font-weight="700">OpenHands / OpenHands</text>
+  <text x="198" y="190" fill="#fed7aa" font-family="Inter, Arial, sans-serif" font-size="28">AI-Driven Development</text>
+  <line x1="90" y1="240" x2="1110" y2="240" stroke="#374151" stroke-width="2"/>
+  <text x="94" y="314" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="700">让 AI Agent 真正接手工程任务</text>
+  <text x="98" y="370" fill="#d1d5db" font-family="Inter, Arial, sans-serif" font-size="27">读代码、改代码、运行命令、处理仓库任务，不只是给代码建议。</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700">
+    <rect x="94" y="432" width="210" height="72" rx="12" fill="#fff7ed"/>
+    <text x="124" y="476" fill="#111827">75.6k stars</text>
+    <rect x="332" y="432" width="202" height="72" rx="12" fill="#ecfeff"/>
+    <text x="362" y="476" fill="#111827">9.6k forks</text>
+    <rect x="562" y="432" width="188" height="72" rx="12" fill="#eef2ff"/>
+    <text x="592" y="476" fill="#111827">Python</text>
+    <rect x="778" y="432" width="268" height="72" rx="12" fill="#f0fdf4"/>
+    <text x="808" y="476" fill="#111827">pushed Jun 2</text>
+  </g>
+  <text x="94" y="542" fill="#9ca3af" font-family="Inter, Arial, sans-serif" font-size="20">Verified from GitHub API and official README/docs on 2026-06-03.</text>
+</svg>

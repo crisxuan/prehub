@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">OpenHands quick start path</title>
+  <desc id="desc">A practical OpenHands starting path from local install to a small repository task.</desc>
+  <rect width="1200" height="630" fill="#fdf2f8"/>
+  <text x="74" y="96" fill="#831843" font-family="Inter, Arial, sans-serif" font-size="46" font-weight="700">可以这样试起来</text>
+  <text x="76" y="143" fill="#9d174d" font-family="Inter, Arial, sans-serif" font-size="24">先把它当成一个能跑命令的开发代理，而不是魔法按钮。</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="100" y="220" width="230" height="230" rx="18" fill="#ffffff" stroke="#db2777" stroke-width="3"/>
+    <text x="134" y="282" fill="#111827" font-size="31" font-weight="700">1. 本地启动</text>
+    <text x="134" y="332" fill="#475569" font-size="23">uv 或 Docker</text>
+    <text x="134" y="366" fill="#475569" font-size="23">跑到 3000</text>
+    <rect x="365" y="220" width="230" height="230" rx="18" fill="#ffffff" stroke="#db2777" stroke-width="3"/>
+    <text x="399" y="282" fill="#111827" font-size="31" font-weight="700">2. 接模型</text>
+    <text x="399" y="332" fill="#475569" font-size="23">Claude / GPT</text>
+    <text x="399" y="366" fill="#475569" font-size="23">或本地模型</text>
+    <rect x="630" y="220" width="230" height="230" rx="18" fill="#ffffff" stroke="#db2777" stroke-width="3"/>
+    <text x="664" y="282" fill="#111827" font-size="31" font-weight="700">3. 挂仓库</text>
+    <text x="664" y="332" fill="#475569" font-size="23">用 --mount-cwd</text>
+    <text x="664" y="366" fill="#475569" font-size="23">从小任务开始</text>
+    <rect x="895" y="220" width="230" height="230" rx="18" fill="#ffffff" stroke="#db2777" stroke-width="3"/>
+    <text x="929" y="282" fill="#111827" font-size="31" font-weight="700">4. 看结果</text>
+    <text x="929" y="332" fill="#475569" font-size="23">检查 diff</text>
+    <text x="929" y="366" fill="#475569" font-size="23">跑测试再合并</text>
+  </g>
+  <text x="76" y="552" fill="#9d174d" font-family="Inter, Arial, sans-serif" font-size="22">更深入时再看 headless、CLI、GitHub Action、SDK 和企业部署。</text>
+</svg>
