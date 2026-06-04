@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot WebUI and plugin system</title>
+  <desc id="desc">AstrBot has WebUI, ChatUI and a plugin system called Star.</desc>
+  <rect width="1200" height="630" fill="#fdf2f8"/>
+  <text x="72" y="86" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">WebUI、ChatUI、插件系统</text>
+  <text x="72" y="128" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">README 写到 WebUI 和 Web ChatUI；文档里把插件命名为 Star。</text>
+  <rect x="82" y="188" width="470" height="330" rx="18" fill="#111827"/>
+  <rect x="112" y="230" width="410" height="48" rx="10" fill="#334155"/>
+  <rect x="112" y="306" width="190" height="116" rx="12" fill="#e0f2fe"/>
+  <rect x="322" y="306" width="190" height="116" rx="12" fill="#dcfce7"/>
+  <text x="142" y="374" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">模型配置</text>
+  <text x="356" y="374" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">平台适配</text>
+  <text x="118" y="474" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="22">控制台里管理提供商、平台、插件和运行状态。</text>
+  <rect x="640" y="188" width="420" height="330" rx="18" fill="#ffffff"/>
+  <text x="680" y="250" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800">Star 插件</text>
+  <text x="680" y="304" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="24">/plugin 可查看插件</text>
+  <text x="680" y="354" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="24">管理面板可安装和管理</text>
+  <text x="680" y="404" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="24">README 标注 1000+ 社区插件</text>
+  <rect x="680" y="446" width="260" height="50" rx="10" fill="#be185d"/>
+  <text x="710" y="479" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">插件扩展能力</text>
+</svg>

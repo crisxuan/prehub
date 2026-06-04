@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot knowledge base</title>
+  <desc id="desc">AstrBot docs describe native knowledge base support with embeddings and reranking.</desc>
+  <rect width="1200" height="630" fill="#ecfeff"/>
+  <text x="72" y="86" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">知识库是原生能力</text>
+  <text x="72" y="128" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">中文文档写明：4.5.0 后重新设计知识库系统，支持多知识库管理。</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="88" y="206" width="320" height="112" rx="16" fill="#ffffff"/>
+    <text x="120" y="252" fill="#111827" font-size="28" font-weight="800">Embedding</text>
+    <text x="120" y="290" fill="#475569" font-size="22">OpenAI API 兼容 / Gemini</text>
+    <rect x="464" y="206" width="320" height="112" rx="16" fill="#ffffff"/>
+    <text x="496" y="252" fill="#111827" font-size="28" font-weight="800">Rerank</text>
+    <text x="496" y="290" fill="#475569" font-size="22">可选，用来提高召回结果质量</text>
+    <rect x="840" y="206" width="320" height="112" rx="16" fill="#ffffff"/>
+    <text x="872" y="252" fill="#111827" font-size="28" font-weight="800">Files</text>
+    <text x="872" y="290" fill="#475569" font-size="22">最多 10 个文件，单个 128 MB</text>
+    <rect x="88" y="382" width="1072" height="86" rx="16" fill="#164e63"/>
+    <text x="124" y="436" fill="#ffffff" font-size="25" font-weight="700">最近 release 还加入 Markdown-aware chunker，改进结构化文档导入后的分块质量。</text>
+  </g>
+</svg>

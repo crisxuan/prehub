@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot Agent sandbox</title>
+  <desc id="desc">AstrBot docs describe Agent sandbox drivers Shipyard Neo, Shipyard and CUA.</desc>
+  <rect width="1200" height="630" fill="#f5f5f4"/>
+  <text x="72" y="86" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">Agent 沙盒是技术预览</text>
+  <text x="72" y="128" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">文档说 v4.12.0 后引入，用来替代旧的代码执行器能力。</text>
+  <rect x="84" y="188" width="332" height="330" rx="18" fill="#111827"/>
+  <text x="126" y="250" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800">Shipyard Neo</text>
+  <text x="126" y="308" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="23">Bay：控制面 API</text>
+  <text x="126" y="358" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="23">Ship：Python / Shell / 文件</text>
+  <text x="126" y="408" fill="#d6d3d1" font-family="Inter, Arial, sans-serif" font-size="23">Gull：浏览器自动化</text>
+  <rect x="460" y="188" width="332" height="330" rx="18" fill="#ffffff"/>
+  <text x="502" y="250" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800">CUA</text>
+  <text x="502" y="308" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="23">截图、鼠标、键盘</text>
+  <text x="502" y="358" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="23">Linux / macOS / Windows / Android</text>
+  <text x="502" y="408" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="23">可本地或云端运行</text>
+  <rect x="836" y="188" width="284" height="330" rx="18" fill="#e0f2fe"/>
+  <text x="878" y="250" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">注意边界</text>
+  <text x="878" y="308" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="22">技术预览</text>
+  <text x="878" y="358" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="22">需要收紧 token</text>
+  <text x="878" y="408" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="22">资源建议看文档</text>
+</svg>

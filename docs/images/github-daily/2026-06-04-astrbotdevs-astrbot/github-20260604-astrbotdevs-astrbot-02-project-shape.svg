@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot project shape</title>
+  <desc id="desc">AstrBot connects instant messaging platforms, LLM providers, plugins, WebUI and ChatUI.</desc>
+  <rect width="1200" height="630" fill="#fff7ed"/>
+  <text x="72" y="92" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800">项目形态</text>
+  <text x="72" y="132" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">开源 Agentic 个人和群聊助手，一套可部署的聊天机器人平台。</text>
+  <rect x="392" y="230" width="384" height="150" rx="18" fill="#111827"/>
+  <text x="470" y="291" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="800">AstrBot</text>
+  <text x="432" y="336" fill="#fed7aa" font-family="Inter, Arial, sans-serif" font-size="24">Agent / MCP / Skills / KB</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">
+    <rect x="72" y="214" width="250" height="84" rx="14" fill="#dbeafe"/>
+    <text x="104" y="266" fill="#111827">消息平台</text>
+    <rect x="72" y="344" width="250" height="84" rx="14" fill="#dcfce7"/>
+    <text x="104" y="396" fill="#111827">模型服务</text>
+    <rect x="874" y="214" width="250" height="84" rx="14" fill="#fef3c7"/>
+    <text x="906" y="266" fill="#111827">插件市场</text>
+    <rect x="874" y="344" width="250" height="84" rx="14" fill="#fae8ff"/>
+    <text x="906" y="396" fill="#111827">WebUI / ChatUI</text>
+  </g>
+  <g stroke="#9ca3af" stroke-width="5" stroke-linecap="round">
+    <line x1="322" y1="256" x2="392" y2="286"/>
+    <line x1="322" y1="386" x2="392" y2="334"/>
+    <line x1="776" y1="286" x2="874" y2="256"/>
+    <line x1="776" y1="334" x2="874" y2="386"/>
+  </g>
+  <text x="72" y="538" fill="#374151" font-family="Inter, Arial, sans-serif" font-size="25">README 中文版：支持 QQ、企业微信、飞书、钉钉、微信公众号、Telegram、Slack 等。</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot messaging platforms</title>
+  <desc id="desc">AstrBot supports many instant messaging platforms.</desc>
+  <rect width="1200" height="630" fill="#f0fdf4"/>
+  <text x="72" y="88" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">重点在“聊天入口”</text>
+  <text x="72" y="128" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">它不是只给浏览器做一个聊天页，而是把 AI 放回用户平时聊天的地方。</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700">
+    <rect x="74" y="190" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="120" y="240" fill="#111827">QQ</text>
+    <rect x="316" y="190" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="364" y="240" fill="#111827">企业微信</text>
+    <rect x="558" y="190" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="618" y="240" fill="#111827">飞书</text>
+    <rect x="800" y="190" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="860" y="240" fill="#111827">钉钉</text>
+    <rect x="74" y="314" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="112" y="364" fill="#111827">微信公众号</text>
+    <rect x="316" y="314" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="360" y="364" fill="#111827">Telegram</text>
+    <rect x="558" y="314" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="618" y="364" fill="#111827">Slack</text>
+    <rect x="800" y="314" width="210" height="80" rx="14" fill="#ffffff"/>
+    <text x="848" y="364" fill="#111827">Discord</text>
+  </g>
+  <rect x="74" y="488" width="940" height="64" rx="12" fill="#14532d"/>
+  <text x="108" y="529" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="24">README 还列出 LINE、Mattermost、KOOK、Misskey、Satori、Matrix、Rocket.Chat、VoceChat 等。</text>
+</svg>

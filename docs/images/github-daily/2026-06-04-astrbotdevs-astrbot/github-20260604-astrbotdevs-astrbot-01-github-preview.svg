@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AstrBot GitHub project preview</title>
+  <desc id="desc">A project card for AstrBotDevs/AstrBot with verified GitHub metadata.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <rect x="56" y="56" width="1092" height="522" rx="18" fill="#0f172a"/>
+  <circle cx="136" cy="132" r="38" fill="#38bdf8"/>
+  <text x="118" y="146" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">A</text>
+  <text x="198" y="139" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="50" font-weight="700">AstrBotDevs / AstrBot</text>
+  <text x="198" y="190" fill="#bae6fd" font-family="Inter, Arial, sans-serif" font-size="28">AI Agent Assistant for IM workflows</text>
+  <line x1="92" y1="240" x2="1110" y2="240" stroke="#334155" stroke-width="2"/>
+  <text x="94" y="316" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="700">把 AI 助手接进群聊工作流</text>
+  <text x="98" y="372" fill="#cbd5e1" font-family="Inter, Arial, sans-serif" font-size="27">连接 QQ、企微、飞书、钉钉、Telegram、Slack，也带 WebUI 和 ChatUI。</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700">
+    <rect x="94" y="432" width="212" height="72" rx="12" fill="#e0f2fe"/>
+    <text x="124" y="476" fill="#0f172a">33.7k stars</text>
+    <rect x="334" y="432" width="202" height="72" rx="12" fill="#dcfce7"/>
+    <text x="364" y="476" fill="#0f172a">2.3k forks</text>
+    <rect x="564" y="432" width="188" height="72" rx="12" fill="#fef3c7"/>
+    <text x="594" y="476" fill="#0f172a">Python</text>
+    <rect x="780" y="432" width="242" height="72" rx="12" fill="#fae8ff"/>
+    <text x="810" y="476" fill="#0f172a">AGPL-3.0</text>
+  </g>
+  <text x="94" y="542" fill="#94a3b8" font-family="Inter, Arial, sans-serif" font-size="20">Verified from GitHub API, README, docs and latest release on 2026-06-04.</text>
+</svg>

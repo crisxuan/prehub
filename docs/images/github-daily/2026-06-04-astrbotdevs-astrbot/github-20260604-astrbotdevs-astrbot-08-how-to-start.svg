@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">How to start AstrBot</title>
+  <desc id="desc">AstrBot can be installed with uv or deployed with Docker.</desc>
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <text x="72" y="88" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">怎么跑起来</text>
+  <text x="72" y="128" fill="#4b5563" font-family="Inter, Arial, sans-serif" font-size="24">README 和 Docker 文档给了两条常用路径。</text>
+  <rect x="82" y="190" width="508" height="316" rx="18" fill="#0f172a"/>
+  <text x="122" y="252" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800">uv 一键部署</text>
+  <text x="122" y="316" fill="#dbeafe" font-family="Menlo, Consolas, monospace" font-size="24">uv tool install astrbot --python 3.12</text>
+  <text x="122" y="366" fill="#dbeafe" font-family="Menlo, Consolas, monospace" font-size="24">astrbot init</text>
+  <text x="122" y="416" fill="#dbeafe" font-family="Menlo, Consolas, monospace" font-size="24">astrbot run</text>
+  <rect x="650" y="190" width="508" height="316" rx="18" fill="#ffffff"/>
+  <text x="690" y="252" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800">Docker 部署</text>
+  <text x="690" y="316" fill="#334155" font-family="Menlo, Consolas, monospace" font-size="24">git clone AstrBot</text>
+  <text x="690" y="366" fill="#334155" font-family="Menlo, Consolas, monospace" font-size="24">docker compose up -d</text>
+  <text x="690" y="416" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="23">管理面板启动后，按日志里的初始密码登录。</text>
+  <text x="82" y="562" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="24">如果要带 Agent 沙盒，可看 compose-with-shipyard.yml 和 Agent 沙盒文档。</text>
+</svg>
