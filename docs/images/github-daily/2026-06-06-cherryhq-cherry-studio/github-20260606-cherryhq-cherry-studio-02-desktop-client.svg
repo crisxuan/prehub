@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#eef5f2"/>
+  <rect x="86" y="76" width="1028" height="523" rx="22" fill="#1f2933"/>
+  <rect x="86" y="76" width="1028" height="56" rx="22" fill="#334252"/>
+  <circle cx="125" cy="104" r="8" fill="#ff6b6b"/>
+  <circle cx="153" cy="104" r="8" fill="#ffd166"/>
+  <circle cx="181" cy="104" r="8" fill="#59d98e"/>
+  <rect x="120" y="166" width="240" height="380" rx="18" fill="#f9fafb"/>
+  <rect x="390" y="166" width="670" height="380" rx="18" fill="#ffffff"/>
+  <text x="145" y="215" font-size="30" font-family="Arial, sans-serif" font-weight="700" fill="#1f2933">Providers</text>
+  <text x="145" y="270" font-size="26" font-family="Arial, sans-serif" fill="#52606d">OpenAI</text>
+  <text x="145" y="320" font-size="26" font-family="Arial, sans-serif" fill="#52606d">Gemini</text>
+  <text x="145" y="370" font-size="26" font-family="Arial, sans-serif" fill="#52606d">Anthropic</text>
+  <text x="145" y="420" font-size="26" font-family="Arial, sans-serif" fill="#52606d">Ollama</text>
+  <text x="145" y="470" font-size="26" font-family="Arial, sans-serif" fill="#52606d">LM Studio</text>
+  <text x="430" y="225" font-size="46" font-family="Arial, sans-serif" font-weight="700" fill="#1f2933">一个桌面入口</text>
+  <text x="430" y="292" font-size="32" font-family="Arial, sans-serif" fill="#3e4c59">把云端模型、本地模型、网页 AI 服务放在一起用</text>
+  <text x="430" y="360" font-size="31" font-family="Arial, sans-serif" fill="#3e4c59">README 明确支持 Windows、Mac、Linux</text>
+  <text x="430" y="428" font-size="31" font-family="Arial, sans-serif" fill="#3e4c59">不用把每个模型都装成一个单独客户端</text>
+  <rect x="430" y="480" width="268" height="42" rx="21" fill="#d94040"/>
+  <text x="564" y="510" text-anchor="middle" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">Desktop AI Client</text>
+</svg>
