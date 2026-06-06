@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f4f7f5"/>
+  <text x="82" y="105" font-size="48" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">知识库不是只有聊天框</text>
+  <text x="82" y="154" font-size="28" font-family="Arial, sans-serif" fill="#52635a">官方文档写到可导入多种文件和网页，再用嵌入模型做检索</text>
+  <rect x="90" y="220" width="220" height="150" rx="18" fill="#ffffff" stroke="#d7e0da"/>
+  <rect x="360" y="220" width="220" height="150" rx="18" fill="#ffffff" stroke="#d7e0da"/>
+  <rect x="630" y="220" width="220" height="150" rx="18" fill="#ffffff" stroke="#d7e0da"/>
+  <rect x="900" y="220" width="220" height="150" rx="18" fill="#ffffff" stroke="#d7e0da"/>
+  <text x="200" y="286" text-anchor="middle" font-size="31" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">PDF / Office</text>
+  <text x="470" y="286" text-anchor="middle" font-size="31" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">TXT / MD</text>
+  <text x="740" y="286" text-anchor="middle" font-size="31" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">URL</text>
+  <text x="1010" y="286" text-anchor="middle" font-size="31" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">Sitemap</text>
+  <path d="M200 405 C200 475 350 515 600 515 C850 515 1000 475 1000 405" fill="none" stroke="#d94040" stroke-width="12" stroke-linecap="round"/>
+  <text x="600" y="535" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#26382f">向量化、重排、检索，再交给模型回答</text>
+  <text x="600" y="585" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#52635a">适合个人资料、产品文档、团队内部说明</text>
+</svg>
