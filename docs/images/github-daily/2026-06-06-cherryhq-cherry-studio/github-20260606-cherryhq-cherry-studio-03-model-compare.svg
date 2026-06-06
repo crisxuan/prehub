@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f2f6fb"/>
+  <text x="86" y="105" font-size="46" font-family="Arial, sans-serif" font-weight="700" fill="#152234">多模型同时对话</text>
+  <text x="86" y="152" font-size="28" font-family="Arial, sans-serif" fill="#52606d">README 写到支持多模型同时会话，适合对比回答质量和风格</text>
+  <rect x="80" y="205" width="320" height="340" rx="20" fill="#ffffff" stroke="#d8e1ec"/>
+  <rect x="440" y="205" width="320" height="340" rx="20" fill="#ffffff" stroke="#d8e1ec"/>
+  <rect x="800" y="205" width="320" height="340" rx="20" fill="#ffffff" stroke="#d8e1ec"/>
+  <text x="120" y="260" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#23354d">GPT 系列</text>
+  <text x="480" y="260" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#23354d">Claude 系列</text>
+  <text x="840" y="260" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#23354d">本地模型</text>
+  <text x="120" y="330" font-size="24" font-family="Arial, sans-serif" fill="#52606d">同一问题</text>
+  <text x="120" y="376" font-size="24" font-family="Arial, sans-serif" fill="#52606d">看结构</text>
+  <text x="120" y="422" font-size="24" font-family="Arial, sans-serif" fill="#52606d">看速度</text>
+  <text x="480" y="330" font-size="24" font-family="Arial, sans-serif" fill="#52606d">同一上下文</text>
+  <text x="480" y="376" font-size="24" font-family="Arial, sans-serif" fill="#52606d">看推理</text>
+  <text x="480" y="422" font-size="24" font-family="Arial, sans-serif" fill="#52606d">看成本</text>
+  <text x="840" y="330" font-size="24" font-family="Arial, sans-serif" fill="#52606d">Ollama / LM Studio</text>
+  <text x="840" y="376" font-size="24" font-family="Arial, sans-serif" fill="#52606d">离线或内网</text>
+  <text x="840" y="422" font-size="24" font-family="Arial, sans-serif" fill="#52606d">更好控数据</text>
+  <rect x="80" y="580" width="1040" height="14" rx="7" fill="#d94040"/>
+</svg>
