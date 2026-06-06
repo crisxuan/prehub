@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#fff8ef"/>
+  <rect x="72" y="72" width="1056" height="531" rx="28" fill="#ffffff" stroke="#eadfcf"/>
+  <text x="118" y="142" font-size="48" font-family="Arial, sans-serif" font-weight="700" fill="#302a22">助手和话题</text>
+  <text x="118" y="192" font-size="29" font-family="Arial, sans-serif" fill="#6b6258">README 写到内置 300+ 预配置 AI Assistants，也支持自定义助手</text>
+  <rect x="118" y="250" width="260" height="220" rx="22" fill="#fbefe7"/>
+  <rect x="470" y="250" width="260" height="220" rx="22" fill="#eef5ff"/>
+  <rect x="822" y="250" width="260" height="220" rx="22" fill="#eef8f0"/>
+  <text x="248" y="330" text-anchor="middle" font-size="36" font-family="Arial, sans-serif" font-weight="700" fill="#b33a25">写作</text>
+  <text x="248" y="385" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">固定角色</text>
+  <text x="248" y="425" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">固定提示词</text>
+  <text x="600" y="330" text-anchor="middle" font-size="36" font-family="Arial, sans-serif" font-weight="700" fill="#245a9b">翻译</text>
+  <text x="600" y="385" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">多轮上下文</text>
+  <text x="600" y="425" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">Markdown 渲染</text>
+  <text x="952" y="330" text-anchor="middle" font-size="36" font-family="Arial, sans-serif" font-weight="700" fill="#236b45">开发</text>
+  <text x="952" y="385" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">代码高亮</text>
+  <text x="952" y="425" text-anchor="middle" font-size="25" font-family="Arial, sans-serif" fill="#6b6258">Mermaid 图表</text>
+  <text x="118" y="540" font-size="28" font-family="Arial, sans-serif" fill="#6b6258">适合把常用工作流整理成可复用的桌面助手。</text>
+</svg>
