@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <rect width="1200" height="675" fill="#f7f4ee"/>
+  <rect x="70" y="70" width="1060" height="535" rx="26" fill="#ffffff" stroke="#ded8cc"/>
+  <circle cx="150" cy="150" r="46" fill="#d94040"/>
+  <text x="150" y="166" text-anchor="middle" font-size="52" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">C</text>
+  <text x="220" y="140" font-size="54" font-family="Arial, sans-serif" font-weight="700" fill="#25211b">Cherry Studio</text>
+  <text x="220" y="188" font-size="28" font-family="Arial, sans-serif" fill="#5f5a50">Multi-provider AI desktop client for Windows, macOS and Linux</text>
+  <rect x="115" y="245" width="970" height="1" fill="#e6dfd2"/>
+  <text x="120" y="315" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#2d2a24">项目定位</text>
+  <text x="120" y="365" font-size="31" font-family="Arial, sans-serif" fill="#4a453e">跨平台 AI 桌面客户端，不是模型服务本身</text>
+  <text x="120" y="430" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#2d2a24">仓库信号</text>
+  <text x="120" y="480" font-size="31" font-family="Arial, sans-serif" fill="#4a453e">约 46k+ stars / 4k+ forks / AGPL-3.0</text>
+  <text x="120" y="545" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#2d2a24">最近发布</text>
+  <text x="120" y="590" font-size="30" font-family="Arial, sans-serif" fill="#4a453e">v1.9.9 on GitHub Releases, 2026-06-02</text>
+</svg>
