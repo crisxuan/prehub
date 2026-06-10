@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Human in the loop workflow">
+  <rect width="1000" height="560" fill="#fbf9f7"/>
+  <text x="62" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#2b2018">Human-in-the-loop 不是装饰项</text>
+  <text x="62" y="108" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#6e6259">CopilotKit 让 Agent 在关键步骤停下来，请用户确认、补充或修改。</text>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="92" y="174" width="210" height="108" rx="16" fill="#ffffff" stroke="#ead9c9"/>
+    <text x="132" y="218" font-size="23" font-weight="700" fill="#4d2d16">提出动作</text>
+    <text x="132" y="253" font-size="18" fill="#705b4a">Agent 准备调用工具</text>
+    <path d="M318 228h120" stroke="#9c6b3a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M438 228l-16-10v20z" fill="#9c6b3a"/>
+    <rect x="454" y="174" width="210" height="108" rx="16" fill="#ffffff" stroke="#ead9c9"/>
+    <text x="494" y="218" font-size="23" font-weight="700" fill="#4d2d16">用户确认</text>
+    <text x="494" y="253" font-size="18" fill="#705b4a">接受、拒绝或编辑</text>
+    <path d="M680 228h120" stroke="#9c6b3a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M800 228l-16-10v20z" fill="#9c6b3a"/>
+    <rect x="816" y="174" width="96" height="108" rx="16" fill="#4d2d16"/>
+    <text x="838" y="236" font-size="22" font-weight="700" fill="#fff">执行</text>
+  </g>
+  <rect x="132" y="374" width="736" height="74" rx="18" fill="#fff1e5" stroke="#ead9c9"/>
+  <text x="172" y="420" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#4d2d16">适合表单、审批、生成内容、数据修改等不能完全交给模型的场景。</text>
+</svg>
