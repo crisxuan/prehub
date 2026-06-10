@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="CopilotKit adoption notes">
+  <rect width="1000" height="560" fill="#f8fafc"/>
+  <text x="62" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#172033">先看清楚它适合的边界</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="21" fill="#293241">
+    <rect x="92" y="136" width="816" height="74" rx="16" fill="#ffffff" stroke="#d6dde8"/>
+    <text x="128" y="182">它偏前端和交互层，不替你设计 Agent 推理策略。</text>
+    <rect x="92" y="236" width="816" height="74" rx="16" fill="#ffffff" stroke="#d6dde8"/>
+    <text x="128" y="282">Slack、Teams 等 beyond browser 能力还在 beta / early access。</text>
+    <rect x="92" y="336" width="816" height="74" rx="16" fill="#ffffff" stroke="#d6dde8"/>
+    <text x="128" y="382">Generative UI 很有用，但要守住权限、确认和回滚设计。</text>
+  </g>
+  <rect x="162" y="468" width="676" height="52" rx="26" fill="#172033"/>
+  <text x="215" y="502" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffff">适合已经有产品界面、正在补 Agent 体验的团队。</text>
+</svg>
