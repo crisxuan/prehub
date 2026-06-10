@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="CopilotKit quickstart">
+  <rect width="1000" height="560" fill="#f6f8fb"/>
+  <text x="58" y="68" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#192033">上手路径很短</text>
+  <text x="58" y="106" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#5e6879">README 和文档都把创建命令放得很靠前。</text>
+  <rect x="92" y="164" width="816" height="118" rx="18" fill="#182033"/>
+  <text x="132" y="236" font-family="Menlo, Consolas, monospace" font-size="30" fill="#d7e2ff">npx copilotkit@latest create</text>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <circle cx="154" cy="368" r="28" fill="#6d5dfc"/>
+    <text x="145" y="377" font-size="24" font-weight="700" fill="#fff">1</text>
+    <text x="202" y="376" font-size="22" fill="#283244">创建示例应用</text>
+    <circle cx="154" cy="434" r="28" fill="#38a169"/>
+    <text x="145" y="443" font-size="24" font-weight="700" fill="#fff">2</text>
+    <text x="202" y="442" font-size="22" fill="#283244">接入模型 key 和 Agent 后端</text>
+    <circle cx="604" cy="368" r="28" fill="#d97706"/>
+    <text x="595" y="377" font-size="24" font-weight="700" fill="#fff">3</text>
+    <text x="652" y="376" font-size="22" fill="#283244">把组件放进产品页面</text>
+    <circle cx="604" cy="434" r="28" fill="#7c3aed"/>
+    <text x="595" y="443" font-size="24" font-weight="700" fill="#fff">4</text>
+    <text x="652" y="442" font-size="22" fill="#283244">用状态和工具补齐业务逻辑</text>
+  </g>
+</svg>
