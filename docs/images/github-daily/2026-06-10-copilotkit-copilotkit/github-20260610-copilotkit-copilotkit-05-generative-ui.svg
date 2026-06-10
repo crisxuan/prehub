@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Generative UI modes">
+  <rect width="1000" height="560" fill="#f8f7ff"/>
+  <text x="58" y="68" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#211a3d">Generative UI 是核心看点</text>
+  <text x="58" y="106" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#625b78">Agent 不只回复文字，还可以把结果变成真实组件。</text>
+  <rect x="86" y="162" width="248" height="254" rx="18" fill="#ffffff" stroke="#d8d2f4"/>
+  <text x="120" y="214" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#35265f">Static</text>
+  <text x="120" y="260" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">固定组件</text>
+  <text x="120" y="294" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">Agent 传参数</text>
+  <rect x="376" y="162" width="248" height="254" rx="18" fill="#ffffff" stroke="#d8d2f4"/>
+  <text x="410" y="214" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#35265f">Declarative</text>
+  <text x="410" y="260" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">用结构描述界面</text>
+  <text x="410" y="294" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">再由前端渲染</text>
+  <rect x="666" y="162" width="248" height="254" rx="18" fill="#ffffff" stroke="#d8d2f4"/>
+  <text x="700" y="214" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#35265f">Open-ended</text>
+  <text x="700" y="260" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">更自由的 UI 输出</text>
+  <text x="700" y="294" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#5d5474">适合复杂交互</text>
+  <path d="M224 456h552" stroke="#6d5dfc" stroke-width="4" stroke-linecap="round"/>
+  <path d="M776 456l-18-10v20z" fill="#6d5dfc"/>
+  <text x="300" y="498" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#514969">从可控组件到开放组件，选择空间逐步变大。</text>
+</svg>
