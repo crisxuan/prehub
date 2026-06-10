@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Agent interaction loop">
+  <rect width="1000" height="560" fill="#f7faf9"/>
+  <text x="62" y="68" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#15241f">一个循环里处理 UI、工具和 Agent</text>
+  <circle cx="500" cy="292" r="142" fill="#ffffff" stroke="#bdd8d0" stroke-width="3"/>
+  <circle cx="500" cy="292" r="74" fill="#22332f"/>
+  <text x="447" y="284" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#ffffff">AG-UI</text>
+  <text x="431" y="319" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#d9eee7">双向协议</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#1d2b27">
+    <text x="118" y="202">用户界面</text>
+    <text x="725" y="202">Agent 后端</text>
+    <text x="120" y="420">业务状态</text>
+    <text x="746" y="420">工具结果</text>
+  </g>
+  <g stroke="#5c8377" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M242 205 C330 145 424 145 480 203"/>
+    <path d="M520 203 C578 145 672 145 758 205"/>
+    <path d="M760 380 C672 440 578 440 520 381"/>
+    <path d="M480 381 C424 440 330 440 242 380"/>
+  </g>
+  <g fill="#5c8377">
+    <path d="M478 204l-18-4 10-15z"/>
+    <path d="M758 205l-18 4 7-17z"/>
+    <path d="M522 382l18 4-10 15z"/>
+    <path d="M242 380l18-4-7 17z"/>
+  </g>
+  <text x="148" y="502" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#52645f">CopilotKit 的重点是把这些连接做成可复用的 SDK，而不是让每个应用自己拼协议。</text>
+</svg>
