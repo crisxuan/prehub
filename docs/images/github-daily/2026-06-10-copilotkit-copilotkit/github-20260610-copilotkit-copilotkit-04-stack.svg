@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Supported surfaces and frameworks">
+  <rect width="1000" height="560" fill="#fffdfa"/>
+  <text x="58" y="66" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#221d16">一个 Agent 后端，多种前端表面</text>
+  <text x="58" y="104" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#665c50">README 和文档里重点提到这些接入面。</text>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="82" y="154" width="210" height="72" rx="14" fill="#eef1ff" stroke="#ccd3ff"/>
+    <text x="112" y="199" font-size="24" font-weight="700" fill="#263261">React / Next.js</text>
+    <rect x="322" y="154" width="170" height="72" rx="14" fill="#eef8f3" stroke="#c8eadb"/>
+    <text x="363" y="199" font-size="24" font-weight="700" fill="#174837">Angular</text>
+    <rect x="522" y="154" width="170" height="72" rx="14" fill="#eaf7fb" stroke="#bfe3ee"/>
+    <text x="579" y="199" font-size="24" font-weight="700" fill="#174656">Vue</text>
+    <rect x="722" y="154" width="196" height="72" rx="14" fill="#fff3e6" stroke="#f5d2a8"/>
+    <text x="758" y="199" font-size="24" font-weight="700" fill="#5b3510">React Native</text>
+    <rect x="164" y="298" width="190" height="72" rx="14" fill="#f4f0ff" stroke="#d9cdf8"/>
+    <text x="222" y="343" font-size="24" font-weight="700" fill="#48336b">Slack</text>
+    <rect x="404" y="298" width="190" height="72" rx="14" fill="#f7edf8" stroke="#e3c7e9"/>
+    <text x="449" y="343" font-size="24" font-weight="700" fill="#55275e">MS Teams</text>
+    <rect x="644" y="298" width="190" height="72" rx="14" fill="#eef1f4" stroke="#d1d8e0"/>
+    <text x="687" y="343" font-size="24" font-weight="700" fill="#334155">Discord</text>
+  </g>
+  <rect x="154" y="444" width="692" height="58" rx="29" fill="#262626"/>
+  <text x="208" y="481" font-family="Arial, Helvetica, sans-serif" font-size="21" fill="#ffffff">AG-UI 负责连线，CopilotKit 负责用户能摸到的界面层。</text>
+</svg>
