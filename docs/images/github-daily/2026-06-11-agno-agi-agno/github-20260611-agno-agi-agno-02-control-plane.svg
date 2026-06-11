@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">AgentOS control plane</title>
+  <desc id="desc">Illustration of AgentOS control plane managing runs, traces, memory and knowledge.</desc>
+  <rect width="1280" height="720" fill="#f6f7fb"/>
+  <rect x="70" y="66" width="1140" height="588" rx="24" fill="#ffffff" stroke="#d9dee8"/>
+  <rect x="70" y="66" width="250" height="588" rx="24" fill="#151b2d"/>
+  <text x="112" y="126" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#ffffff">AgentOS</text>
+  <text x="112" y="182" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#a7b1c8">Control Plane</text>
+  <g fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="22">
+    <text x="112" y="258">Chat</text>
+    <text x="112" y="314">Sessions</text>
+    <text x="112" y="370">Traces</text>
+    <text x="112" y="426">Memory</text>
+    <text x="112" y="482">Knowledge</text>
+    <text x="112" y="538">Approvals</text>
+  </g>
+  <text x="370" y="132" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#111827">同一个地方看运行状态</text>
+  <text x="372" y="178" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#4b5563">连接本地或云端 AgentOS API，调试、监控、管理 agent</text>
+  <g transform="translate(372 230)">
+    <rect width="320" height="142" rx="18" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="28" y="46" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#1d4ed8">Runs</text>
+    <text x="28" y="90" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">stream / background</text>
+    <text x="28" y="120" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">cancel / continue</text>
+  </g>
+  <g transform="translate(732 230)">
+    <rect width="320" height="142" rx="18" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="28" y="46" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#15803d">Traces</text>
+    <text x="28" y="90" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">LLM calls</text>
+    <text x="28" y="120" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">tools / hooks / latency</text>
+  </g>
+  <g transform="translate(372 410)">
+    <rect width="320" height="142" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="28" y="46" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#c2410c">Memory</text>
+    <text x="28" y="90" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">sessions</text>
+    <text x="28" y="120" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">user memories</text>
+  </g>
+  <g transform="translate(732 410)">
+    <rect width="320" height="142" rx="18" fill="#fdf2f8" stroke="#fbcfe8"/>
+    <text x="28" y="46" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#be185d">Approvals</text>
+    <text x="28" y="90" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">user confirmation</text>
+    <text x="28" y="120" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#1f2937">admin approval</text>
+  </g>
+  <text x="372" y="608" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#4b5563">README 和 docs 都强调：数据、上下文、工具权限、记忆和人工审核由你自己掌控。</text>
+</svg>
