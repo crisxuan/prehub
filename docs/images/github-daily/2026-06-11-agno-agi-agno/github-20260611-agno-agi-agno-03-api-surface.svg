@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Agent API surface</title>
+  <desc id="desc">AgentOS API surface with runs, sessions, memory, knowledge, traces, schedules and approvals.</desc>
+  <rect width="1280" height="720" fill="#fbfbf8"/>
+  <text x="78" y="105" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#111827">不是只有一个 /run 接口</text>
+  <text x="80" y="154" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#4b5563">AgentOS 自动给 agent、team、workflow 生成一整层 API</text>
+  <g transform="translate(80 215)" font-family="Arial, Helvetica, sans-serif">
+    <rect width="1120" height="390" rx="24" fill="#ffffff" stroke="#d4d4d8"/>
+    <g transform="translate(46 42)">
+      <rect width="220" height="86" rx="18" fill="#dbeafe"/><text x="30" y="53" font-size="24" font-weight="700" fill="#1e3a8a">Runs</text>
+      <rect x="260" width="220" height="86" rx="18" fill="#dcfce7"/><text x="290" y="53" font-size="24" font-weight="700" fill="#166534">Sessions</text>
+      <rect x="520" width="220" height="86" rx="18" fill="#fef3c7"/><text x="550" y="53" font-size="24" font-weight="700" fill="#92400e">Memory</text>
+      <rect x="780" width="220" height="86" rx="18" fill="#fce7f3"/><text x="810" y="53" font-size="24" font-weight="700" fill="#9d174d">Knowledge</text>
+      <rect y="128" width="220" height="86" rx="18" fill="#ede9fe"/><text x="30" y="181" font-size="24" font-weight="700" fill="#5b21b6">Traces</text>
+      <rect x="260" y="128" width="220" height="86" rx="18" fill="#e0f2fe"/><text x="290" y="181" font-size="24" font-weight="700" fill="#075985">Metrics</text>
+      <rect x="520" y="128" width="220" height="86" rx="18" fill="#fae8ff"/><text x="550" y="181" font-size="24" font-weight="700" fill="#86198f">Schedules</text>
+      <rect x="780" y="128" width="220" height="86" rx="18" fill="#ffedd5"/><text x="810" y="181" font-size="24" font-weight="700" fill="#9a3412">Approvals</text>
+      <rect y="256" width="480" height="72" rx="16" fill="#f3f4f6"/><text x="30" y="302" font-size="22" fill="#374151">REST / SSE / WebSocket / MCP / A2A</text>
+      <rect x="520" y="256" width="480" height="72" rx="16" fill="#f3f4f6"/><text x="550" y="302" font-size="22" fill="#374151">OpenAPI + FastAPI 扩展路由</text>
+    </g>
+  </g>
+  <text x="80" y="660" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#4b5563">文档写得很直：活的 agent 需要会流式运行、后台执行、查 trace、排 schedule、等审批。</text>
+</svg>
