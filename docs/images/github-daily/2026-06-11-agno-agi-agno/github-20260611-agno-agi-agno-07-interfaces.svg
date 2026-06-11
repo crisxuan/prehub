@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Interfaces and scheduling</title>
+  <desc id="desc">Agno exposes agents through multiple interfaces and includes a cron-style scheduler.</desc>
+  <rect width="1280" height="720" fill="#f7f5ff"/>
+  <text x="80" y="100" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#111827">Agent 要跑在很多入口里</text>
+  <text x="82" y="148" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#51416d">同一份 agent 代码，可以接不同接口，也可以定时跑</text>
+  <g transform="translate(90 220)" font-family="Arial, Helvetica, sans-serif">
+    <rect width="1100" height="360" rx="28" fill="#ffffff" stroke="#ddd6fe"/>
+    <circle cx="550" cy="180" r="84" fill="#312e81"/>
+    <text x="493" y="174" font-size="26" font-weight="700" fill="#ffffff">Agent</text>
+    <text x="500" y="212" font-size="22" fill="#ddd6fe">same code</text>
+    <g font-size="24" font-weight="700" fill="#3730a3">
+      <rect x="80" y="58" width="210" height="68" rx="18" fill="#ede9fe"/><text x="124" y="102">REST / SSE</text>
+      <rect x="80" y="224" width="210" height="68" rx="18" fill="#ede9fe"/><text x="133" y="268">MCP</text>
+      <rect x="810" y="58" width="210" height="68" rx="18" fill="#ede9fe"/><text x="864" y="102">A2A</text>
+      <rect x="810" y="224" width="210" height="68" rx="18" fill="#ede9fe"/><text x="854" y="268">Slack</text>
+    </g>
+    <path d="M290 92 C390 90 424 118 474 154" stroke="#a78bfa" stroke-width="6" fill="none"/>
+    <path d="M290 258 C390 258 424 226 474 206" stroke="#a78bfa" stroke-width="6" fill="none"/>
+    <path d="M810 92 C710 90 676 118 626 154" stroke="#a78bfa" stroke-width="6" fill="none"/>
+    <path d="M810 258 C710 258 676 226 626 206" stroke="#a78bfa" stroke-width="6" fill="none"/>
+  </g>
+  <text x="90" y="642" font-family="Arial, Helvetica, sans-serif" font-size="23" fill="#51416d">Scheduling 文档里也写了 morning briefing、daily triage、weekly digest、hourly health checks 这类用法。</text>
+</svg>

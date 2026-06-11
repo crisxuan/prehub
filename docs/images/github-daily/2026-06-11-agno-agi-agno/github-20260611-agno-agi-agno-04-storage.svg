@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Agent storage</title>
+  <desc id="desc">Agno storage model for sessions, memories, knowledge, traces, approvals, schedules and metrics.</desc>
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <text x="80" y="100" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#111827">Agent 的记忆要落进数据库</text>
+  <text x="82" y="148" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#475569">Agno 把 sessions、memory、knowledge、traces、approvals 都当成可存储对象</text>
+  <g transform="translate(90 210)">
+    <rect width="420" height="400" rx="24" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="36" y="56" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#0f172a">写入什么</text>
+    <text x="36" y="112" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">agno_sessions</text>
+    <text x="36" y="158" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">agno_memories</text>
+    <text x="36" y="204" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">agno_knowledge</text>
+    <text x="36" y="250" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">agno_traces / spans</text>
+    <text x="36" y="296" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">agno_approvals</text>
+    <text x="36" y="342" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#334155">schedules / metrics / evals</text>
+  </g>
+  <g transform="translate(560 210)">
+    <rect width="630" height="400" rx="24" fill="#111827"/>
+    <text x="36" y="58" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#ffffff">可选后端</text>
+    <g font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#e5e7eb">
+      <text x="36" y="118">Postgres + PgVector</text>
+      <text x="36" y="162">SQLite / JSON files</text>
+      <text x="36" y="206">MongoDB / MySQL</text>
+      <text x="36" y="250">Redis / DynamoDB / Firestore</text>
+      <text x="36" y="294">SingleStore</text>
+      <text x="36" y="338">Qdrant / Weaviate / Pinecone / Chroma / Milvus...</text>
+    </g>
+  </g>
+  <text x="88" y="662" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#475569">这点对 RAG、长期记忆、审计和多用户隔离都很实际。</text>
+</svg>
