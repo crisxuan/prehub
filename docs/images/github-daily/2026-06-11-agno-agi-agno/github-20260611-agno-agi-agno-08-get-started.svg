@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Agno getting started</title>
+  <desc id="desc">Agno setup path from Python environment to AgentOS service and UI.</desc>
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <text x="82" y="100" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#111827">上手路径不绕</text>
+  <text x="84" y="148" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#475569">官方 quickstart 从 20 行 agent，到 FastAPI service，再到 UI 管理</text>
+  <g transform="translate(110 230)" font-family="Arial, Helvetica, sans-serif">
+    <rect width="1060" height="330" rx="28" fill="#0f172a"/>
+    <text x="44" y="64" font-size="24" fill="#93c5fd">$ uv venv --python 3.12</text>
+    <text x="44" y="108" font-size="24" fill="#93c5fd">$ uv pip install -U agno openai</text>
+    <text x="44" y="152" font-size="24" fill="#86efac">from agno.agent import Agent</text>
+    <text x="44" y="196" font-size="24" fill="#86efac">sorting_hat = Agent(model=&quot;openai:gpt-5.5&quot;, tools=[Workspace(...)])</text>
+    <text x="44" y="240" font-size="24" fill="#fbbf24">agent_os = AgentOS(agents=[workbench], tracing=True)</text>
+    <text x="44" y="284" font-size="24" fill="#fbbf24">fastapi dev workbench.py</text>
+  </g>
+  <g transform="translate(110 600)">
+    <rect width="240" height="46" rx="14" fill="#dbeafe"/>
+    <text x="28" y="31" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#1d4ed8">20 lines</text>
+    <rect x="276" width="240" height="46" rx="14" fill="#dcfce7"/>
+    <text x="304" y="31" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#166534">local database</text>
+    <rect x="552" width="240" height="46" rx="14" fill="#ffedd5"/>
+    <text x="580" y="31" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#9a3412">FastAPI</text>
+    <rect x="828" width="240" height="46" rx="14" fill="#fce7f3"/>
+    <text x="856" y="31" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#be185d">AgentOS UI</text>
+  </g>
+</svg>
