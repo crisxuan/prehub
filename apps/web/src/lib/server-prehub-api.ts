@@ -128,19 +128,32 @@ export async function getRecentDailyPicks(
   };
 }
 
-export async function getSearchResults(query: string) {
+export async function getSearchResults(query: string, page?: number, limit?: number) {
+  const pageNum = page ?? 1;
+  const limitNum = limit ?? 20;
+
+  const url = `/v1/search?q=${encodeURIComponent(query)}&page=${pageNum}&limit=${limitNum}`;
+
   return (
     (await fetchInternalJSON<{
       query: string;
       intent: string[];
       results: Repository[];
-    }>(`/v1/search?q=${encodeURIComponent(query)}`, {
+      total: number;
+      hasMore: boolean;
+      page: number;
+      pageSize: number;
+    }>(url, {
       ttlMs: 30_000,
       timeoutMs: 15_000,
     })) ?? {
       query,
       intent: [],
       results: [],
+      total: 0,
+      hasMore: false,
+      page: pageNum,
+      pageSize: limitNum,
     }
   );
 }

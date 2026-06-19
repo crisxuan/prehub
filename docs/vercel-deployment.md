@@ -4,7 +4,7 @@ PreHub can run on Vercel as a multi-service deployment:
 
 - `web`: Next.js app at `/`
 - `api`: Go API at `/api-go`
-- Vercel Cron: calls the Next.js cron route, which triggers Radar trend backfill in the Go API
+- Vercel Cron: calls the Next.js cron routes for Radar trend backfill and daily pick generation
 
 The long-running Go worker is not deployed as a persistent process on Vercel. For the first Vercel version, use the HTTP admin endpoints and Vercel Cron for scheduled work. If PreHub later needs continuous queue processing, run the worker on a small external service such as Fly.io, Railway, Render, or a VM.
 
@@ -17,6 +17,7 @@ The long-running Go worker is not deployed as a persistent process on Vercel. Fo
    - `apps/web` as the Next.js service.
    - `backend` as the Go service.
    - `/api/cron/radar-backfill` as the scheduled Radar backfill job.
+   - `/api/cron/daily-pick` as the scheduled daily pick generation job.
 
 ## Required Environment Variables
 
@@ -25,15 +26,21 @@ Set these in Vercel Project Settings:
 ```text
 DATABASE_URL=postgres://...
 INTERNAL_API_TOKEN=...
+ADMIN_PASSWORD=...
 CRON_SECRET=...
+SCHEDULER_SECRET=...
 GITHUB_TOKEN=...
 GITHUB_API_VERSION=2026-03-10
+OPENAI_API_KEY=
+PREHUB_DISCOVERY_INTERVAL_MINUTES=360
 PREHUB_CLICKHOUSE_URL=https://sql-clickhouse.clickhouse.com/
 PREHUB_CLICKHOUSE_USER=demo
 PREHUB_CLICKHOUSE_PASSWORD=
 ```
 
 `GO_API_URL` is optional on Vercel Services. Vercel injects `API_URL` for the Go service, and the Next.js BFF uses `GO_API_URL` first, then falls back to `API_URL`.
+
+`OPENAI_API_KEY` is optional. Without it, semantic embeddings are disabled and search falls back to full-text ranking.
 
 Use a managed Postgres database with SSL enabled, for example Neon, Supabase, or Vercel Postgres. Redis is not required for the current Vercel MVP path.
 

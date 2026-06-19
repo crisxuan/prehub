@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { fetchGoAPI } from "@/lib/go-api";
+import { readOptionalJSON } from "@/lib/request-json";
 
 type CandidateActionContext = {
   params: Promise<{ candidateId: string }>;
@@ -10,12 +11,9 @@ export async function POST(
   context: CandidateActionContext,
 ) {
   const { candidateId } = await context.params;
-  let body: unknown = {};
-
-  try {
-    body = await request.json();
-  } catch {
-    body = {};
+  const input = await readOptionalJSON(request);
+  if (!input.ok) {
+    return input.response;
   }
 
   const goResponse = await fetchGoAPI(
@@ -23,7 +21,7 @@ export async function POST(
     {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(input.value),
     },
   );
 

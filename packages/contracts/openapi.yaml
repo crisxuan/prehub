@@ -76,6 +76,21 @@ paths:
           required: false
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         "200":
           description: Search results
@@ -394,6 +409,28 @@ paths:
                 $ref: "#/components/schemas/RadarBackfillResponse"
         "502":
           description: External trend source failed
+  /admin/daily-picks/generate:
+    post:
+      operationId: generateDailyPicks
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+      responses:
+        "200":
+          description: Daily picks generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateDailyPicksResponse"
+        "400":
+          description: Invalid date
 components:
   schemas:
     HealthResponse:
@@ -519,10 +556,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Repository"
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+        page:
+          type: integer
+        pageSize:
+          type: integer
       required:
         - query
         - intent
         - results
+        - total
+        - hasMore
+        - page
+        - pageSize
     FeedbackInput:
       type: object
       properties:
@@ -861,6 +910,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RadarWindow"
+        window:
+          $ref: "#/components/schemas/RadarWindow"
         limit:
           type: integer
           minimum: 1
@@ -868,6 +919,13 @@ components:
           type: integer
           minimum: 1
           maximum: 1000
+        shard:
+          type: integer
+          minimum: 0
+        shards:
+          type: integer
+          minimum: 1
+          maximum: 128
     RadarBackfillWindowResult:
       type: object
       properties:
@@ -913,6 +971,30 @@ components:
         - source
         - category
         - results
+    GenerateDailyPicksResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        generated:
+          type: integer
+        skipped:
+          type: integer
+        picks:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyPick"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecommendationCategory"
+      required:
+        - date
+        - generated
+        - skipped
+        - picks
+        - categories
     RecommendationCategory:
       type: string
       enum:

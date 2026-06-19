@@ -18,19 +18,14 @@ export async function GET(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const goResponse = await fetchGoAPI("/v1/admin/radar/backfill", {
+  const goResponse = await fetchGoAPI("/v1/admin/daily-picks/generate", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      category: "all",
-      windows: ["1h", "24h", "7d", "30d"],
-      batchSize: 250,
-    }),
   });
 
   if (!goResponse) {
     return Response.json(
-      { error: "Go API is not reachable; Radar backfill requires the backend." },
+      { error: "Go API is not reachable; Daily pick generation requires the backend." },
       { status: 503 },
     );
   }

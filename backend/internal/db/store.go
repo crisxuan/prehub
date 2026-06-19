@@ -2,8 +2,11 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/url"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -86,6 +89,9 @@ func (s *Store) SaveCandidate(ctx context.Context, repo domain.Repository, score
 		return SubmitCandidateResult{}, err
 	}
 	if err := upsertReadme(ctx, tx, repositoryID, repo.Summary); err != nil {
+		return SubmitCandidateResult{}, err
+	}
+	if err := refreshRepositorySearchVector(ctx, tx, repositoryID); err != nil {
 		return SubmitCandidateResult{}, err
 	}
 	if err := upsertScore(ctx, tx, repositoryID, score); err != nil {
@@ -199,6 +205,9 @@ func (s *Store) SaveRepository(ctx context.Context, repo domain.Repository, scor
 	if err := upsertReadme(ctx, tx, repositoryID, repo.Summary); err != nil {
 		return domain.Repository{}, err
 	}
+	if err := refreshRepositorySearchVector(ctx, tx, repositoryID); err != nil {
+		return domain.Repository{}, err
+	}
 	if err := upsertScore(ctx, tx, repositoryID, score); err != nil {
 		return domain.Repository{}, err
 	}
@@ -276,12 +285,24 @@ func (s *Store) AdminOverview(ctx context.Context) (domain.AdminOverview, error)
 	return overview, err
 }
 
-func (s *Store) SearchRepositories(ctx context.Context, query string, limit int) ([]domain.Repository, error) {
+func (s *Store) SearchRepositories(ctx context.Context, query string, limit int, offset int) ([]domain.Repository, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 50
 	}
+	if offset < 0 {
+		offset = 0
+	}
 	term := strings.TrimSpace(query)
-	like := "%" + term + "%"
+
+	var total int
+	countQuery := `
+		SELECT count(*) FROM repositories r
+		WHERE $1 = '' OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+	`
+	err := s.pool.QueryRow(ctx, countQuery, term).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	rows, err := s.pool.Query(ctx, `
 		SELECT
@@ -304,19 +325,16 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int)
 		LEFT JOIN repository_topics t ON t.repository_id = r.id
 		WHERE
 			$1 = ''
-			OR r.full_name ILIKE $2
-			OR r.description ILIKE $2
-			OR r.primary_language ILIKE $2
-			OR EXISTS (
-				SELECT 1 FROM repository_topics rt
-				WHERE rt.repository_id = r.id AND rt.topic ILIKE $2
-			)
+			OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
 		GROUP BY r.id, rr.summary, sc.quality_score
-		ORDER BY COALESCE(sc.quality_score, 0) DESC, r.stars_count DESC
-		LIMIT $3
-	`, term, like, limit)
+		ORDER BY
+			CASE WHEN $1 = '' THEN 0 ELSE ts_rank_cd(COALESCE(r.search_vector, ''::tsvector), plainto_tsquery('simple', $1)) END DESC,
+			COALESCE(sc.quality_score, 0) DESC,
+			r.stars_count DESC
+		LIMIT $2 OFFSET $3
+	`, term, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -324,11 +342,40 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int)
 	for rows.Next() {
 		repo, err := scanRepositoryRow(rows)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		repositories = append(repositories, repo)
 	}
-	return repositories, rows.Err()
+	return repositories, total, rows.Err()
+}
+
+func (s *Store) SaveSearchQuery(ctx context.Context, rawQuery string, intent []string, resultCount int) error {
+	intentBytes, err := json.Marshal(intent)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.pool.Exec(ctx, `
+		INSERT INTO search_queries (raw_query, parsed_intent_json, result_count)
+		VALUES ($1, $2::jsonb, $3)
+	`, rawQuery, string(intentBytes), resultCount)
+	return err
+}
+
+func (s *Store) SaveFeedback(ctx context.Context, action string, fullName string, feedbackContext string) error {
+	tag, err := s.pool.Exec(ctx, `
+		INSERT INTO user_feedback (action, repository_id, context)
+		SELECT $1, r.id, $3
+		FROM repositories r
+		WHERE r.full_name = $2
+	`, action, fullName, feedbackContext)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
 }
 
 func (s *Store) GetRepository(ctx context.Context, owner string, repoName string) (domain.Repository, bool, error) {
@@ -374,18 +421,6 @@ func (s *Store) GetTodayPick(ctx context.Context, date time.Time, category strin
 	repositories, err := s.repositoriesForDailyPick(ctx, pickDate, category)
 	if err != nil {
 		return domain.DailyPick{}, false, err
-	}
-	if len(repositories) == 0 {
-		created, err := s.createAutomaticDailyPick(ctx, pickDate, category)
-		if err != nil {
-			return domain.DailyPick{}, false, err
-		}
-		if created {
-			repositories, err = s.repositoriesForDailyPick(ctx, pickDate, category)
-			if err != nil {
-				return domain.DailyPick{}, false, err
-			}
-		}
 	}
 	if len(repositories) == 0 {
 		repositories, err = s.SearchRepositoriesByCategory(ctx, category, 4)
@@ -471,6 +506,53 @@ func (s *Store) createAutomaticDailyPick(ctx context.Context, pickDate string, c
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *Store) GenerateDailyPicks(ctx context.Context, date time.Time) (domain.GenerateDailyPicksResponse, error) {
+	pickDate := date.Format("2006-01-02")
+	categories := []string{"ai", "ai-image", "ai-prompts", "ai-skills", "devtools", "web", "data", "backend"}
+
+	response := domain.GenerateDailyPicksResponse{
+		Date:       pickDate,
+		Generated:  0,
+		Skipped:    0,
+		Picks:      []domain.DailyPick{},
+		Categories: []string{},
+	}
+
+	for _, category := range categories {
+		// Check if already published for this date/category
+		var status string
+		err := s.pool.QueryRow(ctx, `SELECT status FROM daily_picks WHERE date = $1 AND category = $2`, pickDate, category).Scan(&status)
+		if err == nil && status == "published" {
+			response.Skipped++
+			continue
+		}
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return response, err
+		}
+
+		// Create automatic daily pick for this category
+		created, err := s.createAutomaticDailyPick(ctx, pickDate, category)
+		if err != nil {
+			return response, err
+		}
+
+		if created {
+			response.Generated++
+			response.Categories = append(response.Categories, category)
+
+			// Fetch the created pick to include in response
+			pick, ok, err := s.GetTodayPick(ctx, date, category)
+			if err == nil && ok {
+				response.Picks = append(response.Picks, pick)
+			}
+		} else {
+			response.Skipped++
+		}
+	}
+
+	return response, nil
 }
 
 func (s *Store) SearchRepositoriesByCategory(ctx context.Context, category string, limit int) ([]domain.Repository, error) {
@@ -1088,6 +1170,28 @@ func upsertReadme(ctx context.Context, tx pgx.Tx, repositoryID string, summary s
 	return err
 }
 
+func refreshRepositorySearchVector(ctx context.Context, tx pgx.Tx, repositoryID string) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE repositories r
+		SET search_vector =
+			setweight(to_tsvector('simple', COALESCE(r.full_name, '')), 'A') ||
+			setweight(to_tsvector('simple', COALESCE(r.description, '')), 'B') ||
+			setweight(to_tsvector('simple', COALESCE(r.primary_language, '')), 'C') ||
+			setweight(to_tsvector('simple', COALESCE((
+				SELECT rr.summary
+				FROM repository_readmes rr
+				WHERE rr.repository_id = r.id
+			), '')), 'B') ||
+			setweight(to_tsvector('simple', COALESCE((
+				SELECT array_to_string(array_agg(t.topic ORDER BY t.topic), ' ')
+				FROM repository_topics t
+				WHERE t.repository_id = r.id
+			), '')), 'C')
+		WHERE r.id = $1
+	`, repositoryID)
+	return err
+}
+
 func upsertScore(ctx context.Context, tx pgx.Tx, repositoryID string, score domain.ScoreBreakdown) error {
 	_, err := tx.Exec(ctx, `
 		INSERT INTO repository_scores (
@@ -1265,4 +1369,219 @@ func isEditorialReason(reason string) bool {
 	default:
 		return true
 	}
+}
+
+// Embedding methods for semantic search
+
+func (s *Store) UpsertEmbedding(ctx context.Context, repositoryID string, embedding []float32) error {
+	embeddingStr := formatEmbedding(embedding)
+	_, err := s.pool.Exec(ctx, `
+		INSERT INTO repository_embeddings (repository_id, embedding, updated_at)
+		VALUES ($1::uuid, $2::vector, now())
+		ON CONFLICT (repository_id) DO UPDATE SET embedding = EXCLUDED.embedding, updated_at = now()
+	`, repositoryID, embeddingStr)
+	return err
+}
+
+func formatEmbedding(embedding []float32) string {
+	parts := make([]string, len(embedding))
+	for i, v := range embedding {
+		parts[i] = strconv.FormatFloat(float64(v), 'f', -1, 32)
+	}
+	return "[" + strings.Join(parts, ",") + "]"
+}
+
+type EmbeddingSearchResult struct {
+	Repository domain.Repository
+	Similarity float64
+}
+
+func (s *Store) SearchByEmbedding(ctx context.Context, embedding []float32, limit int) ([]EmbeddingSearchResult, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+
+	embeddingStr := formatEmbedding(embedding)
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			r.full_name, r.owner, r.name, r.html_url, COALESCE(r.avatar_url, ''),
+			r.description, COALESCE(r.primary_language, ''), r.stars_count, r.forks_count,
+			COALESCE(r.license_key, 'unknown'), COALESCE(r.pushed_at, now()),
+			COALESCE(rr.summary, r.description),
+			COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}'),
+			1 - (re.embedding <=> $1::vector) AS similarity
+		FROM repository_embeddings re
+		JOIN repositories r ON r.id = re.repository_id
+		LEFT JOIN repository_scores sc ON sc.repository_id = r.id
+		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
+		LEFT JOIN repository_topics t ON t.repository_id = r.id
+		GROUP BY r.id, re.embedding, rr.summary, sc.quality_score
+		ORDER BY re.embedding <=> $1::vector
+		LIMIT $2
+	`, embeddingStr, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []EmbeddingSearchResult
+	for rows.Next() {
+		var repo domain.Repository
+		var similarity float64
+		var pushedAt time.Time
+		err := rows.Scan(
+			&repo.FullName, &repo.Owner, &repo.Name, &repo.HTMLURL, &repo.AvatarURL,
+			&repo.Description, &repo.Language, &repo.Stars, &repo.Forks,
+			&repo.License, &pushedAt, &repo.Summary, &repo.Topics, &similarity,
+		)
+		if err != nil {
+			return nil, err
+		}
+		repo.PushedAt = pushedAt.UTC().Format(time.RFC3339)
+		repo = applyRepositoryNarrative(repo, "")
+		results = append(results, EmbeddingSearchResult{
+			Repository: repo,
+			Similarity: similarity,
+		})
+	}
+	return results, rows.Err()
+}
+
+func (s *Store) SearchRepositoriesHybrid(ctx context.Context, query string, queryEmbedding []float32, limit int, offset int) ([]domain.Repository, int, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	if queryEmbedding == nil || len(queryEmbedding) == 0 {
+		return s.SearchRepositories(ctx, query, limit, offset)
+	}
+
+	candidateLimit := offset + limit
+	if candidateLimit < limit*2 {
+		candidateLimit = limit * 2
+	}
+	if candidateLimit > 100 {
+		candidateLimit = 100
+	}
+
+	ftResults, total, err := s.SearchRepositories(ctx, query, candidateLimit, 0)
+	if err != nil {
+		return nil, 0, err
+	}
+	if offset >= candidateLimit {
+		return s.SearchRepositories(ctx, query, limit, offset)
+	}
+
+	embResults, err := s.SearchByEmbedding(ctx, queryEmbedding, candidateLimit)
+	if err != nil || len(embResults) == 0 {
+		return s.SearchRepositories(ctx, query, limit, offset)
+	}
+
+	const k = 60
+	const ftWeight = 0.6
+	const embWeight = 0.4
+
+	type scoredRepo struct {
+		repo  domain.Repository
+		score float64
+	}
+	merged := make(map[string]*scoredRepo)
+
+	for rank, repo := range ftResults {
+		score := 1.0 / float64(k+rank+1) * ftWeight
+		if existing, ok := merged[repo.FullName]; ok {
+			existing.score += score
+		} else {
+			merged[repo.FullName] = &scoredRepo{repo: repo, score: score}
+		}
+	}
+
+	for rank, result := range embResults {
+		score := 1.0 / float64(k+rank+1) * embWeight
+		if existing, ok := merged[result.Repository.FullName]; ok {
+			existing.score += score
+		} else {
+			merged[result.Repository.FullName] = &scoredRepo{repo: result.Repository, score: score}
+		}
+	}
+
+	sorted := make([]scoredRepo, 0, len(merged))
+	for _, sr := range merged {
+		sorted = append(sorted, *sr)
+	}
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].score > sorted[j].score
+	})
+
+	if offset >= len(sorted) {
+		return s.SearchRepositories(ctx, query, limit, offset)
+	}
+	end := offset + limit
+	if end > len(sorted) {
+		end = len(sorted)
+	}
+
+	result := make([]domain.Repository, end-offset)
+	for i, sr := range sorted[offset:end] {
+		result[i] = sr.repo
+	}
+
+	reportedTotal := total
+	if len(sorted) > reportedTotal {
+		reportedTotal = len(sorted)
+	}
+	return result, reportedTotal, nil
+}
+
+func (s *Store) ListRepositoriesWithoutEmbedding(ctx context.Context, limit int) ([]domain.Repository, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			r.id, r.full_name, r.owner, r.name, r.html_url, COALESCE(r.avatar_url, ''),
+			r.description, COALESCE(r.primary_language, ''), r.stars_count, r.forks_count,
+			COALESCE(r.license_key, 'unknown'), COALESCE(r.pushed_at, now()),
+			COALESCE(rr.summary, r.description),
+			COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}')
+		FROM repositories r
+		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
+		LEFT JOIN repository_topics t ON t.repository_id = r.id
+		LEFT JOIN repository_embeddings re ON re.repository_id = r.id
+		WHERE re.repository_id IS NULL
+		GROUP BY r.id, rr.summary
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var repos []domain.Repository
+	for rows.Next() {
+		var repo domain.Repository
+		var id string
+		var pushedAt time.Time
+		err := rows.Scan(
+			&id, &repo.FullName, &repo.Owner, &repo.Name, &repo.HTMLURL, &repo.AvatarURL,
+			&repo.Description, &repo.Language, &repo.Stars, &repo.Forks,
+			&repo.License, &pushedAt, &repo.Summary, &repo.Topics,
+		)
+		if err != nil {
+			return nil, err
+		}
+		repo.PushedAt = pushedAt.Format(time.RFC3339)
+		repos = append(repos, repo)
+	}
+	return repos, rows.Err()
+}
+
+func (s *Store) GetRepositoryID(ctx context.Context, fullName string) (string, error) {
+	var id string
+	err := s.pool.QueryRow(ctx, `SELECT id FROM repositories WHERE full_name = $1`, fullName).Scan(&id)
+	return id, err
 }

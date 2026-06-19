@@ -1,6 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { AlertTriangle, Check, ExternalLink, ThumbsUp } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { AlertTriangle, Check, ExternalLink, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   formatCompactNumber,
   githubUrl,
@@ -14,6 +16,26 @@ type RepoCardProps = {
 };
 
 export function RepoCard({ repo, highlight = false }: RepoCardProps) {
+  const [feedbackState, setFeedbackState] = useState<"none" | "like" | "dislike">("none");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleFeedback(action: "like" | "dislike") {
+    if (feedbackState !== "none" || submitting) return;
+    setSubmitting(true);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, repositoryFullName: repo.fullName }),
+      });
+      setFeedbackState(action);
+    } catch {
+      // Silently fail - feedback is non-critical
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (highlight) {
     return (
       <article className="relative overflow-hidden rounded-lg border border-emerald-300 bg-white p-5 shadow-[0_22px_70px_rgba(15,118,110,0.12)]">
@@ -77,6 +99,12 @@ export function RepoCard({ repo, highlight = false }: RepoCardProps) {
               {repo.caveat}
             </InfoBlock>
           </div>
+
+          <FeedbackButtons
+            feedbackState={feedbackState}
+            submitting={submitting}
+            onFeedback={handleFeedback}
+          />
         </div>
       </article>
     );
@@ -132,6 +160,12 @@ export function RepoCard({ repo, highlight = false }: RepoCardProps) {
             {repo.caveat}
           </p>
         </div>
+
+        <FeedbackButtons
+          feedbackState={feedbackState}
+          submitting={submitting}
+          onFeedback={handleFeedback}
+        />
       </div>
     </article>
   );
@@ -268,6 +302,50 @@ function InfoBlock({
         <br />
         {children}
       </p>
+    </div>
+  );
+}
+
+function FeedbackButtons({
+  feedbackState,
+  submitting,
+  onFeedback,
+}: {
+  feedbackState: "none" | "like" | "dislike";
+  submitting: boolean;
+  onFeedback: (action: "like" | "dislike") => void;
+}) {
+  return (
+    <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+      <span className="text-xs font-medium text-slate-500">这个推荐有帮助吗？</span>
+      <button
+        onClick={() => onFeedback("like")}
+        disabled={feedbackState !== "none" || submitting}
+        className={[
+          "inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition",
+          feedbackState === "like"
+            ? "bg-emerald-100 text-emerald-700"
+            : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-700",
+          submitting || feedbackState !== "none" ? "cursor-not-allowed opacity-50" : "",
+        ].join(" ")}
+      >
+        <ThumbsUp className="h-3.5 w-3.5" />
+        {feedbackState === "like" ? "已感谢" : "有用"}
+      </button>
+      <button
+        onClick={() => onFeedback("dislike")}
+        disabled={feedbackState !== "none" || submitting}
+        className={[
+          "inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition",
+          feedbackState === "dislike"
+            ? "bg-slate-100 text-slate-700"
+            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+          submitting || feedbackState !== "none" ? "cursor-not-allowed opacity-50" : "",
+        ].join(" ")}
+      >
+        <ThumbsDown className="h-3.5 w-3.5" />
+        {feedbackState === "dislike" ? "已记录" : "无用"}
+      </button>
     </div>
   );
 }

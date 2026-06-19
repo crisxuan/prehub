@@ -13,6 +13,7 @@ import (
 	"github.com/prehub/prehub/backend/internal/domain"
 	"github.com/prehub/prehub/backend/internal/editorial"
 	"github.com/prehub/prehub/backend/internal/github"
+	"github.com/prehub/prehub/backend/internal/openai"
 	"github.com/prehub/prehub/backend/internal/scoring"
 )
 
@@ -36,6 +37,13 @@ func main() {
 	}
 	cancel()
 
+	// Initialize OpenAI client if API key is configured
+	var openaiClient *openai.Client
+	if cfg.OpenAIAPIKey != "" {
+		openaiClient = openai.New(cfg.OpenAIAPIKey)
+		logger.Info("OpenAI embedding client initialized")
+	}
+
 	jobs := []string{
 		"github.search_candidates",
 		"github.refresh_repo",
@@ -51,8 +59,7 @@ func main() {
 	}
 
 	if store != nil {
-		runCandidateDiscovery(context.Background(), logger, cfg, store)
-		seedRadarWatchlist(context.Background(), logger, store)
+		runDiscoveryCycle(context.Background(), logger, cfg, store, openaiClient)
 		refreshDueRadarRepositories(context.Background(), logger, cfg, store)
 	}
 
@@ -61,16 +68,41 @@ func main() {
 		return
 	}
 
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
+	radarTicker := time.NewTicker(30 * time.Second)
+	defer radarTicker.Stop()
+
+	var discoveryC <-chan time.Time
+	var discoveryTicker *time.Ticker
+	if interval := discoveryInterval(); interval > 0 {
+		discoveryTicker = time.NewTicker(interval)
+		discoveryC = discoveryTicker.C
+		logger.Info("candidate discovery scheduled", "interval", interval.String())
+	} else {
+		logger.Info("candidate discovery schedule disabled")
+	}
+	if discoveryTicker != nil {
+		defer discoveryTicker.Stop()
+	}
 
 	for {
-		<-ticker.C
-		if store != nil {
-			refreshDueRadarRepositories(context.Background(), logger, cfg, store)
+		select {
+		case <-radarTicker.C:
+			if store != nil {
+				refreshDueRadarRepositories(context.Background(), logger, cfg, store)
+			}
+			logger.Info("worker heartbeat", "status", "idle")
+		case <-discoveryC:
+			if store != nil {
+				runDiscoveryCycle(context.Background(), logger, cfg, store, openaiClient)
+			}
 		}
-		logger.Info("worker heartbeat", "status", "idle")
 	}
+}
+
+func runDiscoveryCycle(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store, openaiClient *openai.Client) {
+	runCandidateDiscovery(ctx, logger, cfg, store, openaiClient)
+	backfillEmbeddings(ctx, logger, store, openaiClient)
+	seedRadarWatchlist(ctx, logger, store)
 }
 
 func seedRadarWatchlist(ctx context.Context, logger *slog.Logger, store *db.Store) {
@@ -148,7 +180,7 @@ func radarStargazerMaxPages() int {
 	return value
 }
 
-func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store) {
+func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.Config, store *db.Store, openaiClient *openai.Client) {
 	runCtx, cancel := context.WithTimeout(ctx, time.Duration(discoveryTimeoutSeconds())*time.Second)
 	defer cancel()
 
@@ -243,11 +275,24 @@ func runCandidateDiscovery(ctx context.Context, logger *slog.Logger, cfg config.
 						}
 					}
 
-					if _, err := store.SaveCandidate(runCtx, repo, score, "global_discovery_"+category, "pending_review"); err != nil {
+					result, err := store.SaveCandidate(runCtx, repo, score, "global_discovery_"+category, "pending_review")
+					if err != nil {
 						logger.Warn("candidate persist failed", "repo", repo.FullName, "category", category, "error", err)
 						continue
 					}
 					persisted++
+
+					// Generate and store embedding for the repository
+					if openaiClient != nil && result.RepositoryID != "" {
+						input := openai.BuildEmbeddingInput(repo)
+						if embedding, embErr := openaiClient.GenerateEmbedding(runCtx, input); embErr != nil {
+							logger.Warn("embedding generation failed", "repo", repo.FullName, "error", embErr)
+						} else if err := store.UpsertEmbedding(runCtx, result.RepositoryID, embedding); err != nil {
+							logger.Warn("embedding upsert failed", "repo", repo.FullName, "error", err)
+						} else {
+							logger.Debug("embedding generated", "repo", repo.FullName)
+						}
+					}
 
 					if _, err := store.SaveMonitoredRepository(runCtx, repo, category, "candidate"); err != nil {
 						logger.Warn("radar auto-watch persist failed", "repo", repo.FullName, "category", category, "error", err)
@@ -400,6 +445,20 @@ func discoveryTimeoutSeconds() int {
 	return value
 }
 
+func discoveryInterval() time.Duration {
+	minutes := envInt("PREHUB_DISCOVERY_INTERVAL_MINUTES", 360)
+	if minutes <= 0 {
+		return 0
+	}
+	if minutes < 15 {
+		minutes = 15
+	}
+	if minutes > 24*60 {
+		minutes = 24 * 60
+	}
+	return time.Duration(minutes) * time.Minute
+}
+
 func seedRadarLimit() int {
 	value := envInt("PREHUB_RADAR_SEED_LIMIT", 50)
 	if value <= 0 {
@@ -427,4 +486,80 @@ func workerRunOnce() bool {
 func rateLimitDepleted(rate github.RateLimitSnapshot) bool {
 	remaining, err := strconv.Atoi(strings.TrimSpace(rate.Remaining))
 	return err == nil && remaining <= 0
+}
+
+func backfillEmbeddings(ctx context.Context, logger *slog.Logger, store *db.Store, openaiClient *openai.Client) {
+	if openaiClient == nil {
+		return
+	}
+
+	limit := embeddingBackfillLimit()
+	if limit <= 0 {
+		logger.Info("embedding backfill skipped", "reason", "PREHUB_EMBEDDING_BACKFILL_LIMIT disabled")
+		return
+	}
+
+	repos, err := store.ListRepositoriesWithoutEmbedding(ctx, limit)
+	if err != nil {
+		logger.Warn("embedding backfill list failed", "error", err)
+		return
+	}
+
+	if len(repos) == 0 {
+		logger.Info("embedding backfill skipped", "reason", "no repositories without embedding")
+		return
+	}
+
+	logger.Info("embedding backfill started", "count", len(repos))
+	processed := 0
+	failed := 0
+
+	for _, repo := range repos {
+		if ctx.Err() != nil {
+			logger.Info("embedding backfill stopped", "reason", "context cancelled")
+			break
+		}
+
+		// Need to get repository ID from full_name
+		repoID, err := getRepositoryIDByFullName(ctx, store, repo.FullName)
+		if err != nil {
+			logger.Warn("embedding backfill lookup failed", "repo", repo.FullName, "error", err)
+			failed++
+			continue
+		}
+
+		input := openai.BuildEmbeddingInput(repo)
+		embedding, embErr := openaiClient.GenerateEmbedding(ctx, input)
+		if embErr != nil {
+			logger.Warn("embedding generation failed", "repo", repo.FullName, "error", embErr)
+			failed++
+			continue
+		}
+
+		if err := store.UpsertEmbedding(ctx, repoID, embedding); err != nil {
+			logger.Warn("embedding upsert failed", "repo", repo.FullName, "error", err)
+			failed++
+			continue
+		}
+
+		processed++
+		logger.Debug("embedding backfilled", "repo", repo.FullName)
+	}
+
+	logger.Info("embedding backfill finished", "processed", processed, "failed", failed)
+}
+
+func embeddingBackfillLimit() int {
+	value := envInt("PREHUB_EMBEDDING_BACKFILL_LIMIT", 100)
+	if value <= 0 {
+		return 0
+	}
+	if value > 500 {
+		return 500
+	}
+	return value
+}
+
+func getRepositoryIDByFullName(ctx context.Context, store *db.Store, fullName string) (string, error) {
+	return store.GetRepositoryID(ctx, fullName)
 }

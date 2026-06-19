@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { fetchGoAPI } from "@/lib/go-api";
 import { normalizeCategory } from "@/lib/prehub-data";
+import { bearerTokenMatches } from "@/lib/secrets";
 
 const allowedWindows = new Set(["1h", "24h", "7d", "30d"]);
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   }
 
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${secret}`) {
+  if (!bearerTokenMatches(authHeader, secret)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
