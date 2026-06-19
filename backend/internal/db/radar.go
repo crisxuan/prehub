@@ -109,6 +109,12 @@ func (s *Store) SeedRadarFromCandidates(ctx context.Context, category string, li
 	defer rows.Close()
 
 	seeded := 0
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(ctx)
+
 	for rows.Next() {
 		var repositoryID string
 		var repo domain.Repository
@@ -134,24 +140,21 @@ func (s *Store) SeedRadarFromCandidates(ctx context.Context, category string, li
 		}
 		repo.PushedAt = pushedAt.UTC().Format(time.RFC3339)
 		repo.Topics = topics
-		tx, err := s.pool.Begin(ctx)
-		if err != nil {
-			return seeded, err
-		}
 		if err := upsertMonitoredRepository(ctx, tx, repositoryID, category, "candidate"); err != nil {
-			tx.Rollback(ctx)
 			return seeded, err
 		}
 		if err := recordMetricSnapshot(ctx, tx, repositoryID, repo); err != nil {
-			tx.Rollback(ctx)
-			return seeded, err
-		}
-		if err := tx.Commit(ctx); err != nil {
 			return seeded, err
 		}
 		seeded++
 	}
-	return seeded, rows.Err()
+	if err := rows.Err(); err != nil {
+		return seeded, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return seeded, err
+	}
+	return seeded, nil
 }
 
 func (s *Store) ListDueMonitoredRepositories(ctx context.Context, limit int) ([]domain.MonitoredRepository, error) {
@@ -1009,37 +1012,39 @@ func (s *Store) SaveRepositoryStarEvents(ctx context.Context, owner string, repo
 	if err != nil {
 		return 0, err
 	}
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback(ctx)
 
-	inserted := int64(0)
+	// Filter and collect valid events into parallel arrays
+	userIDs := make([]int64, 0, len(events))
+	logins := make([]string, 0, len(events))
+	starredAts := make([]time.Time, 0, len(events))
 	for _, event := range events {
 		if event.GitHubUserID == 0 || event.StarredAt.IsZero() {
 			continue
 		}
-		tag, err := tx.Exec(ctx, `
-			INSERT INTO repository_star_events (
-				repository_id,
-				github_user_id,
-				login,
-				starred_at,
-				ingested_at
-			)
-			VALUES ($1, $2, $3, $4, now())
-			ON CONFLICT (repository_id, github_user_id) DO NOTHING
-		`, repositoryID, event.GitHubUserID, event.Login, event.StarredAt.UTC())
-		if err != nil {
-			return int(inserted), err
-		}
-		inserted += tag.RowsAffected()
+		userIDs = append(userIDs, event.GitHubUserID)
+		logins = append(logins, event.Login)
+		starredAts = append(starredAts, event.StarredAt.UTC())
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return int(inserted), err
+	if len(userIDs) == 0 {
+		return 0, nil
 	}
-	return int(inserted), nil
+
+	tag, err := s.pool.Exec(ctx, `
+		INSERT INTO repository_star_events (
+			repository_id,
+			github_user_id,
+			login,
+			starred_at,
+			ingested_at
+		)
+		SELECT $1, uid, login, starred_at, now()
+		FROM unnest($2::bigint[], $3::text[], $4::timestamptz[]) AS t(uid, login, starred_at)
+		ON CONFLICT (repository_id, github_user_id) DO NOTHING
+	`, repositoryID, userIDs, logins, starredAts)
+	if err != nil {
+		return 0, err
+	}
+	return int(tag.RowsAffected()), nil
 }
 
 func (s *Store) repositoryID(ctx context.Context, owner string, repoName string) (string, error) {

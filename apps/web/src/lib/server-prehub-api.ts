@@ -143,6 +143,7 @@ export async function getSearchResults(query: string, page?: number, limit?: num
       hasMore: boolean;
       page: number;
       pageSize: number;
+      backendError?: boolean;
     }>(url, {
       ttlMs: 30_000,
       timeoutMs: 15_000,
@@ -154,6 +155,7 @@ export async function getSearchResults(query: string, page?: number, limit?: num
       hasMore: false,
       page: pageNum,
       pageSize: limitNum,
+      backendError: true,
     }
   );
 }

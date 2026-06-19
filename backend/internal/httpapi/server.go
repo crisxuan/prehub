@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -30,6 +31,7 @@ type Server struct {
 	store        *db.Store
 	mux          *http.ServeMux
 	openaiClient *openai.Client
+	wg           sync.WaitGroup
 }
 
 func New(cfg config.Config, logger *slog.Logger, store *db.Store) *Server {
@@ -48,6 +50,12 @@ func New(cfg config.Config, logger *slog.Logger, store *db.Store) *Server {
 
 func (s *Server) Handler() http.Handler {
 	return s.withLogging(s.mux)
+}
+
+// Drain waits for all background goroutines (e.g. search query logging) to finish.
+// Call this during graceful shutdown after httpServer.Shutdown returns.
+func (s *Server) Drain() {
+	s.wg.Wait()
 }
 
 func (s *Server) productNow() time.Time {
@@ -213,7 +221,9 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	intent := searchIntent(query)
+	s.wg.Add(1)
 	go func() {
+		defer s.wg.Done()
 		logCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		if err := s.store.SaveSearchQuery(logCtx, query, intent, len(repositories)); err != nil {

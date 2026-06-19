@@ -88,7 +88,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-xl font-black text-slate-950">
-                {hasQuery ? `搜索结果 / ${search.total}` : "开始探索"}
+                {hasQuery
+                  ? search.backendError
+                    ? "搜索结果"
+                    : `搜索结果 / ${search.total}`
+                  : "开始探索"}
               </h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">
                 {hasQuery
@@ -115,9 +119,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <RepoCard key={repo.fullName} repo={repo} />
             ))}
             {!hasQuery ? <SearchGuide /> : null}
-            {hasQuery && results.length === 0 ? (
+            {hasQuery && results.length === 0 && !search.backendError ? (
               <div className="rounded-lg border border-slate-200 bg-white p-8 text-sm leading-6 text-slate-600">
                 没有找到匹配项目。优先试试完整 GitHub URL 或 owner/repo；如果仓库是新的、星标很少，也可以先提交到候选队列。
+              </div>
+            ) : null}
+            {hasQuery && search.backendError ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-8 text-sm leading-6 text-amber-800">
+                搜索服务暂时不可用，请稍后再试。如果问题持续，请联系管理员检查后端连接。
               </div>
             ) : null}
           </div>

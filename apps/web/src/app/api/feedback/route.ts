@@ -3,6 +3,7 @@ import { fetchGoAPI } from "@/lib/go-api";
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_MAP_MAX = 1_000;
 const hits = new Map<string, number[]>();
 
 function isRateLimited(ip: string): boolean {
@@ -12,6 +13,10 @@ function isRateLimited(ip: string): boolean {
   );
   if (recent.length >= RATE_LIMIT_MAX) return true;
   recent.push(now);
+  if (hits.size >= RATE_LIMIT_MAP_MAX && !hits.has(ip)) {
+    const oldest = hits.keys().next().value;
+    if (oldest !== undefined) hits.delete(oldest);
+  }
   hits.set(ip, recent);
   return false;
 }

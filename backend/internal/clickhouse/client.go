@@ -177,12 +177,10 @@ func (c *Client) postQuery(ctx context.Context, query string) (*http.Response, e
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "text/plain; charset=utf-8")
-	q := request.URL.Query()
-	q.Set("user", c.user)
+	request.Header.Set("X-ClickHouse-User", c.user)
 	if c.password != "" {
-		q.Set("password", c.password)
+		request.Header.Set("X-ClickHouse-Key", c.password)
 	}
-	request.URL.RawQuery = q.Encode()
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {

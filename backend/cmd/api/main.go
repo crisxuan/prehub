@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/prehub/prehub/backend/internal/config"
@@ -37,9 +39,31 @@ func main() {
 	server := httpapi.New(cfg, logger, store)
 	addr := ":" + cfg.Port
 
-	logger.Info("starting api", "addr", addr)
-	if err := http.ListenAndServe(addr, server.Handler()); err != nil {
-		logger.Error("api stopped", "error", err)
-		os.Exit(1)
+	httpServer := &http.Server{
+		Addr:    addr,
+		Handler: server.Handler(),
 	}
+
+	// Graceful shutdown on SIGINT / SIGTERM
+	shutdownCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		logger.Info("starting api", "addr", addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("api stopped", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	<-shutdownCtx.Done()
+	logger.Info("shutdown signal received, draining connections")
+
+	drainCtx, drainCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer drainCancel()
+	if err := httpServer.Shutdown(drainCtx); err != nil {
+		logger.Error("shutdown failed", "error", err)
+	}
+	server.Drain()
+	logger.Info("api stopped gracefully")
 }

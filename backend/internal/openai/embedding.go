@@ -70,7 +70,7 @@ func (c *Client) GenerateEmbedding(ctx context.Context, input string) ([]float32
 	}
 	defer resp.Body.Close()
 
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20)) // 1 MB cap
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response: %w", err)
 	}

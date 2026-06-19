@@ -285,6 +285,28 @@ func (s *Store) AdminOverview(ctx context.Context) (domain.AdminOverview, error)
 	return overview, err
 }
 
+// buildOrTsQuery splits query text into words and builds a tsquery string
+// that matches ANY word (OR semantics). Each word is individually escaped
+// through to_tsquery('simple', word) via SQL-level evaluation, so the
+// returned string is a safe tsquery expression like "word1 | word2 | word3".
+// Returns empty string for single-word or empty input (no OR needed).
+func buildOrTsQuery(query string) string {
+	words := strings.Fields(query)
+	if len(words) < 2 {
+		return ""
+	}
+	parts := make([]string, 0, len(words))
+	for _, w := range words {
+		parts = append(parts, "to_tsquery('simple', "+pgQuoteLiteral(w)+")")
+	}
+	return strings.Join(parts, " | ")
+}
+
+// pgQuoteLiteral wraps a string in SQL single quotes with proper escaping.
+func pgQuoteLiteral(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
+}
+
 func (s *Store) SearchRepositories(ctx context.Context, query string, limit int, offset int) ([]domain.Repository, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 50
@@ -293,13 +315,16 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int,
 		offset = 0
 	}
 	term := strings.TrimSpace(query)
+	orQuery := buildOrTsQuery(term)
 
 	var total int
 	countQuery := `
 		SELECT count(*) FROM repositories r
-		WHERE $1 = '' OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+		WHERE $1 = ''
+			OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+			OR ($4 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ $4::tsquery)
 	`
-	err := s.pool.QueryRow(ctx, countQuery, term).Scan(&total)
+	err := s.pool.QueryRow(ctx, countQuery, term, 0, 0, orQuery).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -326,13 +351,18 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int,
 		WHERE
 			$1 = ''
 			OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+			OR ($4 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ $4::tsquery)
 		GROUP BY r.id, rr.summary, sc.quality_score
 		ORDER BY
+			CASE
+				WHEN $1 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+				THEN 1 ELSE 0
+			END DESC,
 			CASE WHEN $1 = '' THEN 0 ELSE ts_rank_cd(COALESCE(r.search_vector, ''::tsvector), plainto_tsquery('simple', $1)) END DESC,
 			COALESCE(sc.quality_score, 0) DESC,
 			r.stars_count DESC
 		LIMIT $2 OFFSET $3
-	`, term, limit, offset)
+	`, term, limit, offset, orQuery)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -707,16 +737,58 @@ func (s *Store) ApproveCandidate(ctx context.Context, candidateID string) (domai
 	if err != nil {
 		return domain.Candidate{}, err
 	}
-	candidates, err := s.ListCandidates(ctx, 100)
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			c.id::text,
+			c.status,
+			c.source,
+			COALESCE(sc.quality_score, 0),
+			r.full_name,
+			r.owner,
+			r.name,
+			r.html_url,
+			COALESCE(r.avatar_url, ''),
+			r.description,
+			COALESCE(r.primary_language, ''),
+			r.stars_count,
+			r.forks_count,
+			COALESCE(r.license_key, 'unknown'),
+			COALESCE(r.pushed_at, now()),
+			COALESCE(rr.summary, r.description),
+			COALESCE(sc.popularity_score, 0),
+			COALESCE(sc.freshness_score, 0),
+			COALESCE(sc.momentum_score, 0),
+			COALESCE(sc.documentation_score, 0),
+			COALESCE(sc.maintenance_score, 0),
+			COALESCE(sc.community_score, 0),
+			COALESCE(sc.license_score, 0),
+			COALESCE(sc.novelty_score, 0),
+			COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}')
+		FROM repository_candidates c
+		JOIN repositories r ON r.id = c.repository_id
+		LEFT JOIN repository_scores sc ON sc.repository_id = r.id
+		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
+		LEFT JOIN repository_topics t ON t.repository_id = r.id
+		WHERE c.id = $1
+		GROUP BY c.id, c.status, c.source, sc.quality_score, r.id, rr.summary,
+			sc.popularity_score, sc.freshness_score, sc.momentum_score,
+			sc.documentation_score, sc.maintenance_score, sc.community_score,
+			sc.license_score, sc.novelty_score
+	`, candidateID)
 	if err != nil {
 		return domain.Candidate{}, err
 	}
-	for _, candidate := range candidates {
-		if candidate.ID == candidateID {
-			return candidate, nil
-		}
+	defer rows.Close()
+
+	candidates, err := scanCandidates(rows)
+	if err != nil {
+		return domain.Candidate{}, err
 	}
-	return domain.Candidate{}, pgx.ErrNoRows
+	if len(candidates) == 0 {
+		return domain.Candidate{}, pgx.ErrNoRows
+	}
+	return candidates[0], nil
 }
 
 func (s *Store) PublishCandidateToday(ctx context.Context, candidateID string, date time.Time, theme string, category string) (domain.DailyPick, error) {

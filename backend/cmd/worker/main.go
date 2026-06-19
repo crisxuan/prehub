@@ -4,8 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/prehub/prehub/backend/internal/config"
@@ -84,8 +86,14 @@ func main() {
 		defer discoveryTicker.Stop()
 	}
 
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
 	for {
 		select {
+		case <-sigCh:
+			logger.Info("shutdown signal received, worker stopping")
+			return
 		case <-radarTicker.C:
 			if store != nil {
 				refreshDueRadarRepositories(context.Background(), logger, cfg, store)
