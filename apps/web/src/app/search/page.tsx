@@ -5,19 +5,21 @@ import { SiteHeader } from "@/components/site-header";
 import { getSearchResults } from "@/lib/server-prehub-api";
 
 type SearchPageProps = {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { q = "" } = await searchParams;
+  const { q = "", page: pageStr = "" } = await searchParams;
   const query = q.trim();
+  const page = parseInt(pageStr, 10) || 1;
   const search = query
-    ? await getSearchResults(query)
-    : { query: "", intent: [], results: [] };
+    ? await getSearchResults(query, page)
+    : { query: "", intent: [], results: [], total: 0, hasMore: false, page: 1, pageSize: 20 };
   const results = search.results;
   const hasQuery = query.length > 0;
+  const totalPages = Math.max(1, Math.ceil(search.total / search.pageSize));
 
   return (
     <main className="min-h-screen bg-[#fbfdff] text-slate-950">
@@ -86,7 +88,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-xl font-black text-slate-950">
-                {hasQuery ? `搜索结果 / ${results.length}` : "开始探索"}
+                {hasQuery ? `搜索结果 / ${search.total}` : "开始探索"}
               </h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">
                 {hasQuery
@@ -119,9 +121,55 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </div>
             ) : null}
           </div>
+
+          {hasQuery && (search.hasMore || search.page > 1) && (
+            <SearchPagination
+              page={search.page}
+              totalPages={totalPages}
+              query={query}
+            />
+          )}
         </div>
       </section>
     </main>
+  );
+}
+
+function SearchPagination({ page, totalPages, query }: { page: number; totalPages: number; query: string }) {
+  return (
+    <div className="mt-6 flex items-center justify-center gap-3">
+      {page > 1 ? (
+        <Link
+          href={`/search?q=${encodeURIComponent(query)}&page=${page - 1}`}
+          prefetch={false}
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:text-emerald-700"
+        >
+          ← 上一页
+        </Link>
+      ) : (
+        <span className="invisible rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+          ← 上一页
+        </span>
+      )}
+
+      <span className="text-sm font-medium text-slate-600">
+        第 {page} / {totalPages} 页
+      </span>
+
+      {page < totalPages ? (
+        <Link
+          href={`/search?q=${encodeURIComponent(query)}&page=${page + 1}`}
+          prefetch={false}
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:text-emerald-700"
+        >
+          下一页 →
+        </Link>
+      ) : (
+        <span className="invisible rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+          下一页 →
+        </span>
+      )}
+    </div>
   );
 }
 

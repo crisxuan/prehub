@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Test
+        working-directory: backend
+        run: go test ./...
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Test
+        working-directory: apps/web
+        run: npm test
+
+  compose:
+    name: Compose Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose config
+        env:
+          ADMIN_PASSWORD: ci-admin-password
+          CRON_SECRET: ci-cron-secret
+          INTERNAL_API_TOKEN: ci-internal-token
+          POSTGRES_PASSWORD: ci-postgres-password
+          SCHEDULER_SECRET: ci-scheduler-secret
+        run: docker compose config --quiet

@@ -13,6 +13,7 @@ type Config struct {
 	ClickHouseURL    string
 	ClickHouseUser   string
 	ClickHousePass   string
+	OpenAIAPIKey     string
 }
 
 func Load() Config {
@@ -27,6 +28,7 @@ func Load() Config {
 		ClickHouseURL:    env("PREHUB_CLICKHOUSE_URL", "https://sql-clickhouse.clickhouse.com/"),
 		ClickHouseUser:   env("PREHUB_CLICKHOUSE_USER", "demo"),
 		ClickHousePass:   env("PREHUB_CLICKHOUSE_PASSWORD", ""),
+		OpenAIAPIKey:     env("OPENAI_API_KEY", ""),
 	}
 }
 

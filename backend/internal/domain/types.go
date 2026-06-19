@@ -49,9 +49,13 @@ type DailyPickHistory struct {
 }
 
 type SearchResponse struct {
-	Query   string       `json:"query"`
-	Intent  []string     `json:"intent"`
-	Results []Repository `json:"results"`
+	Query      string       `json:"query"`
+	Intent     []string     `json:"intent"`
+	Results    []Repository `json:"results"`
+	Total      int          `json:"total"`
+	HasMore    bool         `json:"hasMore"`
+	Page       int          `json:"page"`
+	PageSize   int          `json:"pageSize"`
 }
 
 type Candidate struct {
@@ -232,4 +236,12 @@ type RadarBackfillResponse struct {
 	Source   string                      `json:"source"`
 	Category string                      `json:"category"`
 	Results  []RadarBackfillWindowResult `json:"results"`
+}
+
+type GenerateDailyPicksResponse struct {
+	Date       string      `json:"date"`
+	Generated  int         `json:"generated"`
+	Skipped    int         `json:"skipped"`
+	Picks      []DailyPick `json:"picks"`
+	Categories []string    `json:"categories"`
 }

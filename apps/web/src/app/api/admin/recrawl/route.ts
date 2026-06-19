@@ -1,12 +1,17 @@
 import { NextRequest } from "next/server";
 import { fetchGoAPI } from "@/lib/go-api";
+import { readRequiredJSON } from "@/lib/request-json";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const input = await readRequiredJSON(request);
+  if (!input.ok) {
+    return input.response;
+  }
+
   const goResponse = await fetchGoAPI("/v1/admin/recrawl", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(input.value),
   });
 
   if (goResponse) {

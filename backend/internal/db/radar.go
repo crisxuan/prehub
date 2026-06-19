@@ -36,6 +36,9 @@ func (s *Store) SaveMonitoredRepository(ctx context.Context, repo domain.Reposit
 			return domain.Repository{}, err
 		}
 	}
+	if err := refreshRepositorySearchVector(ctx, tx, repositoryID); err != nil {
+		return domain.Repository{}, err
+	}
 	if err := upsertScore(ctx, tx, repositoryID, scoring.ScoreRepository(repo, time.Now().UTC())); err != nil {
 		return domain.Repository{}, err
 	}

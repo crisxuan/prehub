@@ -4,9 +4,9 @@ services:
     environment:
       POSTGRES_DB: prehub
       POSTGRES_USER: prehub
-      POSTGRES_PASSWORD: prehub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./packages/db/migrations:/docker-entrypoint-initdb.d:ro
@@ -19,7 +19,7 @@ services:
   redis:
     image: mirror.gcr.io/library/redis:7-alpine
     ports:
-      - "56379:6379"
+      - "127.0.0.1:56379:6379"
     volumes:
       - redis-data:/data
 
@@ -29,17 +29,18 @@ services:
     command: ["/app/api"]
     environment:
       PORT: 8080
-      DATABASE_URL: postgres://prehub:prehub@postgres:5432/prehub?sslmode=disable
+      DATABASE_URL: postgres://prehub:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/prehub?sslmode=disable
       REDIS_ADDR: redis:6379
-      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN is required}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITHUB_API_VERSION: ${GITHUB_API_VERSION:-2026-03-10}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       PREHUB_TIMEZONE: ${PREHUB_TIMEZONE:-Asia/Shanghai}
       PREHUB_CLICKHOUSE_URL: ${PREHUB_CLICKHOUSE_URL:-https://sql-clickhouse.clickhouse.com/}
       PREHUB_CLICKHOUSE_USER: ${PREHUB_CLICKHOUSE_USER:-demo}
       PREHUB_CLICKHOUSE_PASSWORD: ${PREHUB_CLICKHOUSE_PASSWORD:-}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,12 +52,14 @@ services:
       context: ./backend
     command: ["/app/worker"]
     environment:
-      DATABASE_URL: postgres://prehub:prehub@postgres:5432/prehub?sslmode=disable
+      DATABASE_URL: postgres://prehub:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/prehub?sslmode=disable
       REDIS_ADDR: redis:6379
-      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN is required}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITHUB_API_VERSION: ${GITHUB_API_VERSION:-2026-03-10}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       PREHUB_TIMEZONE: ${PREHUB_TIMEZONE:-Asia/Shanghai}
+      PREHUB_DISCOVERY_INTERVAL_MINUTES: ${PREHUB_DISCOVERY_INTERVAL_MINUTES:-360}
       PREHUB_DISCOVERY_CATEGORIES: ${PREHUB_DISCOVERY_CATEGORIES:-ai,ai-image,ai-prompts,ai-skills,devtools,web,data,backend}
       PREHUB_DISCOVERY_PER_PAGE: ${PREHUB_DISCOVERY_PER_PAGE:-30}
       PREHUB_DISCOVERY_PAGES: ${PREHUB_DISCOVERY_PAGES:-2}
@@ -77,9 +80,12 @@ services:
       context: ./apps/web
     environment:
       GO_API_URL: http://api:8080
-      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN is required}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+      CRON_SECRET: ${CRON_SECRET:?CRON_SECRET is required}
+      SCHEDULER_SECRET: ${SCHEDULER_SECRET:?SCHEDULER_SECRET is required}
     ports:
-      - "3100:3000"
+      - "127.0.0.1:3100:3000"
     depends_on:
       - api
 
