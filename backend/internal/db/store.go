@@ -290,7 +290,7 @@ func (s *Store) AdminOverview(ctx context.Context) (domain.AdminOverview, error)
 // common punctuation (dots, hyphens, underscores, slashes), lowercased, and
 // filtered (≤1 char). Returns empty string when fewer than 2 tokens remain
 // (no OR needed for a single token — plainto_tsquery handles it).
-// The output is a valid tsquery literal like: 'next' | 'js'
+// The output is a valid tsquery text literal like: next | js
 func buildOrTsQuery(query string) string {
 	tokens := strings.FieldsFunc(query, func(r rune) bool {
 		return r == ' ' || r == '\t' || r == '.' || r == '-' || r == '_' || r == '/'
@@ -301,12 +301,21 @@ func buildOrTsQuery(query string) string {
 		if len(t) <= 1 {
 			continue
 		}
-		parts = append(parts, pgQuoteLiteral(t))
+		parts = append(parts, escapeTsqueryToken(t))
 	}
 	if len(parts) < 2 {
 		return ""
 	}
 	return strings.Join(parts, " | ")
+}
+
+// escapeTsqueryToken prepares a single token for use in a tsquery text string.
+// If the token contains tsquery operator characters, it is wrapped in double quotes.
+func escapeTsqueryToken(s string) string {
+	if strings.ContainsAny(s, "|&!():<>*\\\"") {
+		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
+	}
+	return s
 }
 
 // pgQuoteLiteral wraps a string in SQL single quotes with proper escaping.
@@ -322,54 +331,91 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int,
 		offset = 0
 	}
 	term := strings.TrimSpace(query)
-	orQuery := buildOrTsQuery(term)
 
-	var total int
-	countQuery := `
-		SELECT count(*) FROM repositories r
-		WHERE $1 = ''
-			OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
-			OR ($4 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ $4::tsquery)
-	`
-	err := s.pool.QueryRow(ctx, countQuery, term, 0, 0, orQuery).Scan(&total)
+	// Step 1: strict AND search (plainto_tsquery uses AND semantics).
+	repos, total, err := s.runSearchQuery(ctx, term, limit, offset, false)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	rows, err := s.pool.Query(ctx, `
-		SELECT
-			r.full_name,
-			r.owner,
-			r.name,
-			r.html_url,
-			COALESCE(r.avatar_url, ''),
-			r.description,
-			COALESCE(r.primary_language, ''),
-			r.stars_count,
-			r.forks_count,
-			COALESCE(r.license_key, 'unknown'),
-			COALESCE(r.pushed_at, now()),
-			COALESCE(rr.summary, r.description),
-			COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}')
-		FROM repositories r
-		LEFT JOIN repository_scores sc ON sc.repository_id = r.id
-		LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
-		LEFT JOIN repository_topics t ON t.repository_id = r.id
-		WHERE
-			$1 = ''
-			OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
-			OR ($4 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ $4::tsquery)
-		GROUP BY r.id, rr.summary, sc.quality_score
-		ORDER BY
-			CASE
-				WHEN $1 != '' AND COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
-				THEN 1 ELSE 0
-			END DESC,
-			CASE WHEN $1 = '' THEN 0 ELSE ts_rank_cd(COALESCE(r.search_vector, ''::tsvector), plainto_tsquery('simple', $1)) END DESC,
-			COALESCE(sc.quality_score, 0) DESC,
-			r.stars_count DESC
-		LIMIT $2 OFFSET $3
-	`, term, limit, offset, orQuery)
+	// Step 2: if AND returned nothing and we have an OR query, try OR fallback.
+	if total == 0 && term != "" {
+		orQuery := buildOrTsQuery(term)
+		if orQuery != "" {
+			orRepos, orTotal, orErr := s.runSearchQuery(ctx, orQuery, limit, offset, true)
+			if orErr == nil && orTotal > 0 {
+				return orRepos, orTotal, nil
+			}
+		}
+	}
+
+	return repos, total, nil
+}
+
+// runSearchQuery executes a single full-text search.
+// When isOR is false, term is used with plainto_tsquery (AND semantics).
+// When isOR is true, term is a pre-built OR tsquery string like "next | js"
+// used with to_tsquery('simple', term).
+func (s *Store) runSearchQuery(ctx context.Context, term string, limit int, offset int, isOR bool) ([]domain.Repository, int, error) {
+	var total int
+	var err error
+	if isOR {
+		err = s.pool.QueryRow(ctx, `
+			SELECT count(*) FROM repositories r
+			WHERE COALESCE(r.search_vector, ''::tsvector) @@ to_tsquery('simple', $1)
+		`, term).Scan(&total)
+	} else {
+		err = s.pool.QueryRow(ctx, `
+			SELECT count(*) FROM repositories r
+			WHERE $1 = '' OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+		`, term).Scan(&total)
+	}
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var rows pgx.Rows
+	if isOR {
+		rows, err = s.pool.Query(ctx, `
+			SELECT
+				r.full_name, r.owner, r.name, r.html_url, COALESCE(r.avatar_url, ''),
+				r.description, COALESCE(r.primary_language, ''), r.stars_count, r.forks_count,
+				COALESCE(r.license_key, 'unknown'), COALESCE(r.pushed_at, now()),
+				COALESCE(rr.summary, r.description),
+				COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}')
+			FROM repositories r
+			LEFT JOIN repository_scores sc ON sc.repository_id = r.id
+			LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
+			LEFT JOIN repository_topics t ON t.repository_id = r.id
+			WHERE COALESCE(r.search_vector, ''::tsvector) @@ to_tsquery('simple', $1)
+			GROUP BY r.id, rr.summary, sc.quality_score
+			ORDER BY
+				ts_rank_cd(COALESCE(r.search_vector, ''::tsvector), to_tsquery('simple', $1)) DESC,
+				COALESCE(sc.quality_score, 0) DESC,
+				r.stars_count DESC
+			LIMIT $2 OFFSET $3
+		`, term, limit, offset)
+	} else {
+		rows, err = s.pool.Query(ctx, `
+			SELECT
+				r.full_name, r.owner, r.name, r.html_url, COALESCE(r.avatar_url, ''),
+				r.description, COALESCE(r.primary_language, ''), r.stars_count, r.forks_count,
+				COALESCE(r.license_key, 'unknown'), COALESCE(r.pushed_at, now()),
+				COALESCE(rr.summary, r.description),
+				COALESCE(array_remove(array_agg(t.topic ORDER BY t.topic), NULL), '{}')
+			FROM repositories r
+			LEFT JOIN repository_scores sc ON sc.repository_id = r.id
+			LEFT JOIN repository_readmes rr ON rr.repository_id = r.id
+			LEFT JOIN repository_topics t ON t.repository_id = r.id
+			WHERE $1 = '' OR COALESCE(r.search_vector, ''::tsvector) @@ plainto_tsquery('simple', $1)
+			GROUP BY r.id, rr.summary, sc.quality_score
+			ORDER BY
+				CASE WHEN $1 = '' THEN 0 ELSE ts_rank_cd(COALESCE(r.search_vector, ''::tsvector), plainto_tsquery('simple', $1)) END DESC,
+				COALESCE(sc.quality_score, 0) DESC,
+				r.stars_count DESC
+			LIMIT $2 OFFSET $3
+		`, term, limit, offset)
+	}
 	if err != nil {
 		return nil, 0, err
 	}
@@ -377,9 +423,9 @@ func (s *Store) SearchRepositories(ctx context.Context, query string, limit int,
 
 	repositories := []domain.Repository{}
 	for rows.Next() {
-		repo, err := scanRepositoryRow(rows)
-		if err != nil {
-			return nil, 0, err
+		repo, scanErr := scanRepositoryRow(rows)
+		if scanErr != nil {
+			return nil, 0, scanErr
 		}
 		repositories = append(repositories, repo)
 	}
