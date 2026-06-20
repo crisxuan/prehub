@@ -49,13 +49,14 @@ type DailyPickHistory struct {
 }
 
 type SearchResponse struct {
-	Query      string       `json:"query"`
-	Intent     []string     `json:"intent"`
-	Results    []Repository `json:"results"`
-	Total      int          `json:"total"`
-	HasMore    bool         `json:"hasMore"`
-	Page       int          `json:"page"`
-	PageSize   int          `json:"pageSize"`
+	Query        string       `json:"query"`
+	Intent       []string     `json:"intent"`
+	Results      []Repository `json:"results"`
+	Total        int          `json:"total"`
+	HasMore      bool         `json:"hasMore"`
+	Page         int          `json:"page"`
+	PageSize     int          `json:"pageSize"`
+	BackendError bool         `json:"backendError,omitempty"`
 }
 
 type Candidate struct {

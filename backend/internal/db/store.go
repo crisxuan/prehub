@@ -286,18 +286,25 @@ func (s *Store) AdminOverview(ctx context.Context) (domain.AdminOverview, error)
 }
 
 // buildOrTsQuery splits query text into words and builds a tsquery string
-// that matches ANY word (OR semantics). Each word is individually escaped
-// through to_tsquery('simple', word) via SQL-level evaluation, so the
-// returned string is a safe tsquery expression like "word1 | word2 | word3".
-// Returns empty string for single-word or empty input (no OR needed).
+// that matches ANY word (OR semantics). Tokens are split on whitespace and
+// common punctuation (dots, hyphens, underscores, slashes), lowercased, and
+// filtered (≤1 char). Returns empty string when fewer than 2 tokens remain
+// (no OR needed for a single token — plainto_tsquery handles it).
+// The output is a valid tsquery literal like: 'next' | 'js'
 func buildOrTsQuery(query string) string {
-	words := strings.Fields(query)
-	if len(words) < 2 {
-		return ""
+	tokens := strings.FieldsFunc(query, func(r rune) bool {
+		return r == ' ' || r == '\t' || r == '.' || r == '-' || r == '_' || r == '/'
+	})
+	var parts []string
+	for _, t := range tokens {
+		t = strings.ToLower(t)
+		if len(t) <= 1 {
+			continue
+		}
+		parts = append(parts, pgQuoteLiteral(t))
 	}
-	parts := make([]string, 0, len(words))
-	for _, w := range words {
-		parts = append(parts, "to_tsquery('simple', "+pgQuoteLiteral(w)+")")
+	if len(parts) < 2 {
+		return ""
 	}
 	return strings.Join(parts, " | ")
 }

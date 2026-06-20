@@ -213,7 +213,17 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 		repos, count, err := s.store.SearchRepositoriesHybrid(r.Context(), query, queryEmbedding, limit, offset)
 		if err != nil {
 			s.logger.Warn("search db read failed", "error", err)
-			writeDatabaseError(w)
+			intent := searchIntent(query)
+			writeJSON(w, http.StatusOK, domain.SearchResponse{
+				Query:        query,
+				Intent:       intent,
+				Results:      []domain.Repository{},
+				Total:        0,
+				HasMore:      false,
+				Page:         page,
+				PageSize:     limit,
+				BackendError: true,
+			})
 			return
 		}
 		repositories = repos

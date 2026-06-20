@@ -26,22 +26,42 @@ func TestBuildOrTsQuery(t *testing.T) {
 		{
 			name:  "two words builds OR query",
 			query: "prompt workflow",
-			want:  "to_tsquery('simple', 'prompt') | to_tsquery('simple', 'workflow')",
+			want:  "'prompt' | 'workflow'",
 		},
 		{
 			name:  "multiple words builds OR chain",
 			query: "self hosted prompt workflow library",
-			want:  "to_tsquery('simple', 'self') | to_tsquery('simple', 'hosted') | to_tsquery('simple', 'prompt') | to_tsquery('simple', 'workflow') | to_tsquery('simple', 'library')",
+			want:  "'self' | 'hosted' | 'prompt' | 'workflow' | 'library'",
+		},
+		{
+			name:  "dot-separated like Next.js splits into tokens",
+			query: "Next.js",
+			want:  "'next' | 'js'",
+		},
+		{
+			name:  "hyphen-separated splits into tokens",
+			query: "self-hosted",
+			want:  "'self' | 'hosted'",
 		},
 		{
 			name:  "extra whitespace is trimmed",
 			query: "  go   cli   tool  ",
-			want:  "to_tsquery('simple', 'go') | to_tsquery('simple', 'cli') | to_tsquery('simple', 'tool')",
+			want:  "'go' | 'cli' | 'tool'",
 		},
 		{
 			name:  "single quote is escaped",
 			query: "it's good",
-			want:  "to_tsquery('simple', 'it''s') | to_tsquery('simple', 'good')",
+			want:  "'it''s' | 'good'",
+		},
+		{
+			name:  "single-char tokens filtered out",
+			query: "a react b cli",
+			want:  "'react' | 'cli'",
+		},
+		{
+			name:  "owner/repo format splits on slash",
+			query: "vercel/next.js",
+			want:  "'vercel' | 'next' | 'js'",
 		},
 	}
 
