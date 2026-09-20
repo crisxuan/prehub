@@ -1,0 +1,261 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 284" role="img" aria-label="Enterprise corpus — codebase, slack, meeting notes, docs — flowing live through the CocoIndex incremental engine into a production agent with always-fresh context.">
+  <defs>
+    <!-- light palette (tuned for white GitHub READMEs — every token >=4.5:1 on #ffffff,
+         or >=3:1 for large/icon shapes) -->
+    <!-- indigo #2563EB · violet #7C3AED · coral #BE5133 · amber #B45309 · emerald #16A534 ·
+         ink #2A121B · maroon #532638 · peach #E59A63 · cream #FCF3D8 -->
+
+    <marker id="eh-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#16A534"/>
+    </marker>
+
+    <radialGradient id="eh-engine-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#16A534" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#16A534" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#16A534" stop-opacity="0"/>
+    </radialGradient>
+
+    <style>
+      .pulse   { animation: p 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes p { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
+      .pulse2  { animation: p 2s ease-in-out infinite; animation-delay: 0.6s; transform-origin: center; transform-box: fill-box; }
+      .pulse3  { animation: p 2s ease-in-out infinite; animation-delay: 1.2s; transform-origin: center; transform-box: fill-box; }
+      .flow    { stroke-dasharray: 5 7; animation: mv 1.4s linear infinite; }
+      @keyframes mv { from { stroke-dashoffset: 0 } to { stroke-dashoffset: -24 } }
+      .heartbeat { animation: hb 1.3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes hb { 0%,100% { transform: scale(1) } 50% { transform: scale(1.35) } }
+      .spin    { animation: sp 9s linear infinite; transform-origin: 420px 160px; }
+      @keyframes sp { to { transform: rotate(360deg) } }
+      .spin-r  { animation: sp-r 14s linear infinite; transform-origin: 420px 160px; }
+      @keyframes sp-r { to { transform: rotate(-360deg) } }
+      .delta-float { animation: df 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes df { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-3px) } }
+      .blink   { animation: bl 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes bl { 0%,92%,100% { transform: scaleY(1) } 95% { transform: scaleY(0.1) } }
+      /* coco mascot eye blink (canonical face; each eye scales around its own bbox center) */
+      .coco-eye   { transform-box: fill-box; transform-origin: center; animation: cocoBlink 4.5s ease-in-out infinite; }
+      @keyframes cocoBlink {
+        0%, 40%, 44%, 92%, 100% { transform: scaleY(1) }
+        42%                     { transform: scaleY(0.08) }   /* quick single blink */
+        95%                     { transform: scaleY(0.08) }   /* second blink near end — cute double-blink feel */
+      }
+      /* tiny mouth-wiggle so the coco looks alive */
+      .coco-mouth { transform-box: fill-box; transform-origin: center; animation: cocoMouth 4.5s ease-in-out infinite; }
+      @keyframes cocoMouth {
+        0%, 100%    { transform: translateY(0) scale(1) }
+        50%         { transform: translateY(0.6px) scale(1.04) }
+      }
+    </style>
+  </defs>
+
+  <!-- section labels -->
+  <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" letter-spacing="0.22em" font-weight="700">
+    <text x="28"  y="30" fill="#BE5133">CORPUS · LIVE</text>
+    <text x="420" y="30" fill="#16A534" text-anchor="middle">INCREMENTAL · SYNC</text>
+    <text x="852" y="30" fill="#B45309" text-anchor="end">AGENT · FRESH</text>
+  </g>
+
+  <!-- ====================== LEFT: CORPUS ====================== -->
+  <g font-family="Inter, -apple-system, system-ui, sans-serif">
+    <!-- codebase · maroon tint -->
+    <g transform="translate(16,52)">
+      <rect x="0" y="0" width="300" height="48" rx="10" fill="rgba(83,38,56,0.08)"/>
+      <g transform="translate(22,24)">
+        <text x="0" y="5" font-family="JetBrains Mono, ui-monospace, monospace" font-size="16" font-weight="800" fill="#532638" text-anchor="middle">&lt;/&gt;</text>
+      </g>
+      <text x="48" y="22" font-size="14" font-weight="700" fill="#2A121B">codebase</text>
+      <text x="48" y="38" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="rgba(42,18,27,0.65)">main.py · <tspan fill="#16A534" font-weight="700">commit · now</tspan></text>
+      <circle class="pulse" cx="284" cy="24" r="4.2" fill="#16A534"/>
+    </g>
+
+    <!-- slack · pink tint (brand pink) — actual Slack multi-color mark -->
+    <g transform="translate(16,108)">
+      <rect x="0" y="0" width="300" height="48" rx="10" fill="rgba(251,106,118,0.1)"/>
+      <g transform="translate(22,24)">
+        <!-- Slack mark — 4-capsule pinwheel in official Slack colors -->
+        <rect x="-2" y="-10" width="4" height="7" rx="2" fill="#2EB67D"/>
+        <rect x="3"  y="-2" width="7" height="4" rx="2" fill="#36C5F0"/>
+        <rect x="-2" y="3"  width="4" height="7" rx="2" fill="#ECB22E"/>
+        <rect x="-10" y="-2" width="7" height="4" rx="2" fill="#E01E5A"/>
+      </g>
+      <text x="48" y="22" font-size="14" font-weight="700" fill="#2A121B">slack</text>
+      <text x="48" y="38" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="rgba(42,18,27,0.65)">#launch · <tspan fill="#16A534" font-weight="700">2m</tspan></text>
+      <circle class="pulse2" cx="284" cy="24" r="4.2" fill="#16A534"/>
+    </g>
+
+    <!-- meeting notes · coral tint -->
+    <g transform="translate(16,164)">
+      <rect x="0" y="0" width="300" height="48" rx="10" fill="rgba(190,81,51,0.09)"/>
+      <g transform="translate(22,24)">
+        <!-- mic — slim coral strokes -->
+        <rect x="-3" y="-9" width="6" height="11" rx="3" fill="#BE5133"/>
+        <path d="M-7 0 Q -7 7 0 7 Q 7 7 7 0" stroke="#BE5133" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <line x1="0" y1="7" x2="0" y2="10" stroke="#BE5133" stroke-width="1.3" stroke-linecap="round"/>
+      </g>
+      <text x="48" y="22" font-size="14" font-weight="700" fill="#2A121B">meeting notes</text>
+      <text x="48" y="38" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="rgba(42,18,27,0.65)">standup.txt · <tspan fill="#16A534" font-weight="700">8m</tspan></text>
+      <circle class="pulse3" cx="284" cy="24" r="4.2" fill="#16A534"/>
+    </g>
+
+    <!-- docs · peach tint -->
+    <g transform="translate(16,220)">
+      <rect x="0" y="0" width="300" height="48" rx="10" fill="rgba(229,154,99,0.14)"/>
+      <g transform="translate(22,24)">
+        <!-- doc — slim maroon outline -->
+        <rect x="-5" y="-9" width="10" height="15" rx="1.6" fill="none" stroke="#532638" stroke-width="1.1"/>
+        <line x1="-2.5" y1="-4" x2="2.5" y2="-4" stroke="#532638" stroke-width="0.9" stroke-linecap="round"/>
+        <line x1="-2.5" y1="0"  x2="2.5" y2="0"  stroke="#532638" stroke-width="0.9" stroke-linecap="round"/>
+        <line x1="-2.5" y1="4"  x2="1"   y2="4"  stroke="#532638" stroke-width="0.9" stroke-linecap="round"/>
+      </g>
+      <text x="48" y="22" font-size="14" font-weight="700" fill="#2A121B">docs</text>
+      <text x="48" y="38" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="rgba(42,18,27,0.65)">rfc.md · <tspan fill="#16A534" font-weight="700">1h</tspan></text>
+      <circle class="pulse" cx="284" cy="24" r="4.2" fill="#16A534" style="animation-delay:1.5s"/>
+    </g>
+  </g>
+
+  <!-- ===== flow lines: corpus → engine ===== -->
+  <g stroke="#16A534" stroke-opacity="0.45" stroke-width="1.6" fill="none" stroke-linecap="round">
+    <path class="flow" d="M316 76  C 350 76,  360 140, 372 154"/>
+    <path class="flow" d="M316 132 C 340 132, 354 148, 368 158" style="animation-delay:0.3s"/>
+    <path class="flow" d="M316 188 C 340 188, 354 172, 368 162" style="animation-delay:0.6s"/>
+    <path class="flow" d="M316 244 C 350 244, 360 180, 372 166" style="animation-delay:0.9s"/>
+  </g>
+
+  <!-- ====================== CENTER: COCOINDEX ENGINE ====================== -->
+  <!-- glow halo (emerald, subtle on white) -->
+  <circle cx="420" cy="160" r="96" fill="url(#eh-engine-glow)"/>
+
+  <!-- 4 green dots circling the coconut -->
+  <g class="spin" opacity="0.5">
+    <circle cx="420" cy="88"  r="4" fill="#16A534"/>
+    <circle cx="492" cy="160" r="4" fill="#16A534"/>
+    <circle cx="420" cy="232" r="4" fill="#16A534"/>
+    <circle cx="348" cy="160" r="4" fill="#16A534"/>
+  </g>
+
+  <!-- canonical CocoIndex mascot (paths verbatim from design_guidelines/assets/cocoindex.svg;
+       fills reverted to brand-canonical palette for clean rendering on white) -->
+  <g transform="translate(420,160) scale(0.4) translate(-109.7,-130)">
+    <!-- stem -->
+    <path d="M116.183 14.1802C121.829 22.1129 121.345 27.7213 121.345 27.7213L117.828 24.827L114.693 22.3026L108.067 16.7388L102.351 11.6417C102.351 11.6417 99.4896 9.04496 98.3872 8.21554C97.2852 7.38616 98.6444 4.36456 101.086 3.31342C103.528 2.26233 105.872 4.19186 105.872 4.19186C105.872 4.19186 110.538 6.24747 116.183 14.1802Z" fill="#532638"/>
+    <!-- palm leaf (palm-ink for readable green on white) -->
+    <path d="M131.724 10.4843C107.647 25.3444 100.313 35.7303 91 55.5126C91 55.5126 147.54 78.8599 153.514 78.8599C159.488 78.8599 174.255 78.793 186.475 69.5901C198.694 60.3876 209.667 42.2692 219.087 21.2307C199.127 6.2706 192.108 0.365929 166.107 0C152.375 0.688645 142.609 4.31824 131.724 10.4843Z" fill="#16A534"/>
+    <!-- leaf highlight dot -->
+    <path d="M179.676 13.2132C179.339 17.353 175.338 20.4018 170.74 20.023C166.14 19.6443 162.686 15.9813 163.023 11.8416C163.359 7.70188 167.36 4.65304 171.959 5.0318C176.558 5.41059 180.013 9.07353 179.676 13.2132Z" fill="#F6F4E9"/>
+    <!-- coconut outer shell -->
+    <path d="M109.714 239.678C170.307 239.678 219.427 190.557 219.427 129.964C219.427 69.371 170.307 20.2506 109.714 20.2506C49.1204 20.2506 0 69.371 0 129.964C0 190.557 49.1204 239.678 109.714 239.678Z" fill="#BE5133"/>
+    <!-- cream inner face -->
+    <path d="M49.538 37.9279C32.6557 49.0716 19.7564 62.2345 11.5196 82.5632C3.28292 102.892 24.6042 132.608 53.1548 147.528C80.6716 159.83 96.0891 161.134 123.58 159.46C147.577 157.279 166.101 151.947 183.818 138.247C201.536 124.547 216.595 97.589 208.179 80.3537C199.764 63.118 190.019 50.7441 170.974 38.3699C151.928 25.9956 130.594 20.2506 108.078 20.2506C84.7874 20.3792 68.9538 25.112 49.538 37.9279Z" fill="#FCF3D8"/>
+    <!-- peach face shell -->
+    <path d="M56.8396 44.5277C42.1144 53.6969 30.8625 64.5268 23.6779 81.2533C16.4937 97.9797 35.0912 122.43 59.9943 134.705C83.9956 144.827 97.4434 145.9 121.423 144.523C142.354 142.728 158.512 138.341 173.965 127.069C189.419 115.797 202.555 93.6161 195.214 79.4351C187.874 65.2541 179.374 55.0727 162.761 44.8913C146.149 34.7103 127.541 29.983 107.901 29.983C87.5856 30.0891 73.7751 33.983 56.8396 44.5277Z" fill="#E59A63"/>
+    <!-- brows -->
+    <path d="M64.6054 58.0966C70.6276 57.0175 75.1602 54.1931 74.7293 51.7881C74.2983 49.3832 69.067 48.3084 63.0448 49.3875C57.0226 50.4666 52.49 53.291 52.9209 55.696C53.3519 58.101 58.5832 59.1758 64.6054 58.0966Z" fill="#401D30"/>
+    <path d="M156.222 57.5536C162.287 58.3605 167.465 57.0513 167.787 54.6294C168.109 52.2074 163.454 49.5899 157.389 48.783C151.325 47.9761 146.147 49.2853 145.825 51.7072C145.502 54.1291 150.158 56.7466 156.222 57.5536Z" fill="#401D30"/>
+    <!-- cheeks -->
+    <path d="M49.5472 122.886C56.877 122.886 62.819 119.717 62.819 115.808C62.819 111.898 56.877 108.729 49.5472 108.729C42.2174 108.729 36.2754 111.898 36.2754 115.808C36.2754 119.717 42.2174 122.886 49.5472 122.886Z" fill="#FB6A76"/>
+    <path d="M170.764 122.886C178.094 122.886 184.036 119.717 184.036 115.808C184.036 111.898 178.094 108.729 170.764 108.729C163.434 108.729 157.492 111.898 157.492 115.808C157.492 119.717 163.434 122.886 170.764 122.886Z" fill="#FB6A76"/>
+    <!-- eyes (blinking!) — each eye group scales vertically around its own center -->
+    <g class="coco-eye">
+      <path d="M64.5894 107.844C75.8284 107.844 84.9395 98.7333 84.9395 87.4943C84.9395 76.2552 75.8284 67.1442 64.5894 67.1442C53.3503 67.1442 44.2393 76.2552 44.2393 87.4943C44.2393 98.7333 53.3503 107.844 64.5894 107.844Z" fill="#401D30"/>
+      <path d="M59.3937 87.079C63.9371 87.079 67.6203 83.918 67.6203 80.0187C67.6203 76.1195 63.9371 72.9585 59.3937 72.9585C54.8502 72.9585 51.167 76.1195 51.167 80.0187C51.167 83.918 54.8502 87.079 59.3937 87.079Z" fill="#F6F4E9"/>
+    </g>
+    <g class="coco-eye">
+      <path d="M154.836 107.844C166.076 107.844 175.187 98.7333 175.187 87.4943C175.187 76.2552 166.076 67.1442 154.836 67.1442C143.597 67.1442 134.486 76.2552 134.486 87.4943C134.486 98.7333 143.597 107.844 154.836 107.844Z" fill="#401D30"/>
+      <path d="M149.642 87.079C154.185 87.079 157.868 83.918 157.868 80.0187C157.868 76.1195 154.185 72.9585 149.642 72.9585C145.098 72.9585 141.415 76.1195 141.415 80.0187C141.415 83.918 145.098 87.079 149.642 87.079Z" fill="#F6F4E9"/>
+    </g>
+    <!-- feet (brand berry) -->
+    <path d="M102.963 220.673C99.3524 220.212 90.5915 195.475 94.9994 176.876C98.8934 173.638 100.963 174.667 101.636 178.646C98.2198 200.296 101.887 206.611 108.714 217.577C107.636 220.704 106.573 221.135 102.963 220.673Z" fill="#6A1E23"/>
+    <path d="M188.894 159.214C189.302 155.213 181.376 151.553 181.815 159.214C182.254 166.875 174.485 193.335 171.64 197.26C168.795 201.185 173.41 204.339 177.834 201.242C182.258 198.144 188.485 163.216 188.894 159.214Z" fill="#6A1E23"/>
+    <path d="M40.7002 174.61C41.6847 169.953 45.5663 169.301 46.8935 173.283C48.2207 177.264 51.8162 188.467 58.3958 198.941C64.5895 206.02 68.3345 206.838 74.7645 210.444C75.8444 212.561 74.3221 215.31 72.5525 215.752C70.7828 216.195 63.2623 212.656 57.9534 207.347C54.2799 203.103 52.1995 201.073 48.6632 194.518C44.8884 187.247 42.9208 183.057 40.7002 174.61Z" fill="#6A1E23"/>
+    <!-- mouth (gentle wiggle so the coco looks alive) -->
+    <path class="coco-mouth" d="M98.3543 91.1931L98.2742 91.1242C97.5031 90.4718 96.1495 90.5417 95.2119 90.9168C94.8193 91.0739 94.4825 91.3439 94.244 91.693L94.2018 91.7543C93.9319 92.1491 93.7871 92.6166 93.7871 93.0956V93.6879C93.7871 94.8568 94.0102 96.0149 94.4446 97.1003L94.6719 97.6692L95.085 98.3918C95.9834 99.9643 97.151 101.397 98.5046 102.6C99.7641 103.719 101.207 104.654 102.747 105.338C103.849 105.828 105.001 106.194 106.183 106.431L107.088 106.612C108.246 106.843 109.423 106.96 110.603 106.96H110.671C112.092 106.96 113.507 106.785 114.885 106.441C115.86 106.197 116.811 105.87 117.728 105.462L118.657 105.049C119.767 104.556 120.799 103.904 121.722 103.114C122.85 102.146 123.797 100.986 124.519 99.6867L124.985 98.8478C125.419 98.0656 125.75 97.2298 125.966 96.3615L126.233 95.2945C126.425 94.528 126.444 93.7284 126.289 92.9534L126.183 92.4237C126.116 92.0899 125.985 91.7727 125.796 91.4895C125.412 90.9142 124.816 90.5148 124.138 90.3794L123.969 90.3454C123.332 90.218 122.669 90.3066 122.088 90.5974L121.945 90.669C121.472 90.9057 121.088 91.2894 120.851 91.7629C120.799 91.8663 120.755 91.9732 120.718 92.0831L120.569 92.5293C120.411 93.0037 120.331 93.5001 120.331 94C120.331 94.3803 120.284 94.7592 120.192 95.128L120.161 95.2528C119.981 95.9719 119.659 96.6477 119.215 97.2404C118.783 97.8157 118.244 98.3019 117.627 98.672L117.144 98.9624C116.616 99.2792 116.055 99.5372 115.47 99.7318L114.617 100.016C114.003 100.221 113.375 100.377 112.736 100.483C111.611 100.671 110.465 100.702 109.332 100.576L108.431 100.476C107.52 100.375 106.625 100.161 105.766 99.8387L105.433 99.7139C104.172 99.2413 103.027 98.5038 102.075 97.5517C101.275 96.752 100.626 95.8148 100.158 94.7848L98.8231 91.8493C98.7111 91.6023 98.5574 91.3728 98.3543 91.1931Z" fill="#401E2B"/>
+  </g>
+
+  <!-- CocoIndex label -->
+  <text x="420" y="260" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle" letter-spacing="-0.02em" fill="#532638">CocoIndex</text>
+  <text x="420" y="278" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="#BE5133" text-anchor="middle" letter-spacing="0.22em" font-weight="700">ONLY THE Δ · ALWAYS ON</text>
+
+  <!-- ===== flow lines: engine → agent ===== -->
+  <g stroke="#16A534" stroke-width="1.6" fill="none" stroke-linecap="round">
+    <path class="flow" d="M472 160 C 500 160, 516 160, 540 160" marker-end="url(#eh-arrow)" style="animation-delay:0.5s"/>
+  </g>
+
+
+  <!-- ====================== RIGHT: AGENT + FRESH CONTEXT ====================== -->
+  <!-- agent card — transparent; robot + context panel float on the page -->
+  <g>
+
+    <!-- cute agent: friendly robot head -->
+    <g transform="translate(596,130)">
+      <!-- antenna -->
+      <line x1="0" y1="-44" x2="0" y2="-32" stroke="#2A121B" stroke-width="2" stroke-linecap="round"/>
+      <circle class="heartbeat" cx="0" cy="-46" r="3.6" fill="#BE5133"/>
+      <!-- head (brand peach) -->
+      <rect x="-32" y="-30" width="64" height="54" rx="14" fill="#E59A63"/>
+      <!-- face screen (brand ink — dark surface so neon eyes/smile still read) -->
+      <rect x="-24" y="-20" width="48" height="32" rx="8" fill="#2A121B"/>
+      <!-- eyes -->
+      <g fill="#6DFFB0">
+        <circle class="blink" cx="-10" cy="-6" r="3.4"/>
+        <circle class="blink" cx="10"  cy="-6" r="3.4"/>
+      </g>
+      <!-- smile -->
+      <path d="M-8 4 Q 0 10 8 4" stroke="#6DFFB0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <!-- cheeks -->
+      <circle cx="-22" cy="4" r="3" fill="#BE5133" fill-opacity="0.7"/>
+      <circle cx="22"  cy="4" r="3" fill="#BE5133" fill-opacity="0.7"/>
+      <!-- body hint -->
+      <rect x="-20" y="26" width="40" height="8" rx="4" fill="#E59A63" fill-opacity="0.7"/>
+    </g>
+
+    <text x="596" y="200" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="12" font-weight="700" fill="#2A121B" text-anchor="middle">production agent</text>
+    <text x="596" y="216" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" fill="rgba(42,18,27,0.6)" text-anchor="middle" letter-spacing="0.18em">ALWAYS ON-CONTEXT</text>
+
+    <!-- context window panel — CocoIndex palm-green tint -->
+    <g transform="translate(660,72)">
+      <rect x="0" y="0" width="192" height="176" rx="10" fill="rgba(22,165,52,0.08)"/>
+      <text x="12" y="18" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" fill="#16A534" letter-spacing="0.22em" font-weight="700">CONTEXT · FRESH</text>
+
+      <!-- 4 rows, each colored dot = source, line, timestamp -->
+      <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="10">
+        <!-- row 1: codebase -->
+        <g transform="translate(12,36)">
+          <circle cx="4" cy="4" r="4" fill="#0EA5E9"/>
+          <rect x="14" y="1" width="120" height="6" rx="3" fill="#2A121B" fill-opacity="0.25"/>
+          <text x="140" y="7" fill="#16A534" font-weight="700">now</text>
+        </g>
+        <!-- row 2: slack -->
+        <g transform="translate(12,58)">
+          <circle cx="4" cy="4" r="4" fill="#FB6A76"/>
+          <rect x="14" y="1" width="100" height="6" rx="3" fill="#2A121B" fill-opacity="0.25"/>
+          <text x="140" y="7" fill="#16A534" font-weight="700">2m</text>
+        </g>
+        <!-- row 3: meeting -->
+        <g transform="translate(12,80)">
+          <circle cx="4" cy="4" r="4" fill="#B45309"/>
+          <rect x="14" y="1" width="130" height="6" rx="3" fill="#2A121B" fill-opacity="0.25"/>
+          <text x="150" y="7" fill="#16A534" font-weight="700">8m</text>
+        </g>
+        <!-- row 4: docs -->
+        <g transform="translate(12,102)">
+          <circle cx="4" cy="4" r="4" fill="#532638"/>
+          <rect x="14" y="1" width="90" height="6" rx="3" fill="#2A121B" fill-opacity="0.25"/>
+          <text x="140" y="7" fill="#16A534" font-weight="700">1h</text>
+        </g>
+      </g>
+
+      <!-- decision row -->
+      <g transform="translate(12,134)">
+        <circle class="heartbeat" cx="5" cy="5" r="4.5" fill="#16A534"/>
+        <text x="18" y="9" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="#16A534" font-weight="700">decision aligned</text>
+      </g>
+
+      <!-- mini stats -->
+      <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" fill="rgba(42,18,27,0.6)">
+        <text x="12"  y="162">142K dec/s</text>
+        <text x="180" y="162" text-anchor="end" fill="#16A534" font-weight="700">98.7% on-ctx</text>
+      </g>
+    </g>
+  </g>
+
+</svg>

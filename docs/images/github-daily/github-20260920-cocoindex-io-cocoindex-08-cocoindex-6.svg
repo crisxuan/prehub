@@ -1,0 +1,350 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 60 1200 624" role="img" aria-label="CocoIndex-code — flagship MCP server for AI coding agents. AST-aware incremental semantic code index: live call graphs, symbols, vectors, and chunks fresh on every commit. 70% fewer tokens per turn, 80-90% cache hits on re-index, sub-second freshness. Features: Δ-only incremental processing, semantic search by meaning (not grep), call graphs and blast-radius analysis, global repo view for duplicates and architecture. Build coding agents (generate, refactor) and code-review agents (catch, approve). One install — Claude Code, Cursor, and other MCP-aware agents see your whole repo instantly.">
+  <title>CocoIndex-code — flagship semantic code index MCP server (light theme)</title>
+  <desc>Light-theme flagship hero for the CocoIndex-code project: AST-aware, incremental, MCP-server semantic code search engine for AI coding agents. Recolored for white GitHub READMEs — every token clears WCAG AA on #ffffff. Keywords: code intelligence, AST chunking, incremental index, call graph, blast radius, semantic search, vector embeddings, Claude Code, Cursor, MCP server, coding agent context.</desc>
+
+  <defs>
+    <!-- light palette (same mapping as enterprise-hero-light.svg):
+         indigo #0EA5E9 · violet #FB6A76 · coral #BE5133 · amber #B45309 · emerald #16A534 ·
+         ink #2A121B · maroon #532638 · peach #E59A63 · cream #FCF3D8 -->
+
+    <marker id="cic-arr-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#B45309"/>
+    </marker>
+    <marker id="cic-arr-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#BE5133"/>
+    </marker>
+    <marker id="cic-arr-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#16A534"/>
+    </marker>
+
+    <linearGradient id="cic-title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="#B45309"/>
+      <stop offset="50%" stop-color="#BE5133"/>
+      <stop offset="100%" stop-color="#E59A63"/>
+    </linearGradient>
+
+    <radialGradient id="cic-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%"   stop-color="#16A534" stop-opacity="0.15"/>
+      <stop offset="65%"  stop-color="#16A534" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#16A534" stop-opacity="0"/>
+    </radialGradient>
+
+    <style>
+      .flow { stroke-dasharray: 5 7; animation: mv 1.4s linear infinite; }
+      @keyframes mv { from { stroke-dashoffset: 0 } to { stroke-dashoffset: -24 } }
+      .pulse { animation: p 2.2s ease-in-out infinite; }
+      @keyframes p { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
+      .heartbeat { animation: hb 1.3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes hb { 0%,100% { transform: scale(1) } 50% { transform: scale(1.25) } }
+      .coco-eye { transform-box: fill-box; transform-origin: center; animation: blink 4.5s ease-in-out infinite; }
+      @keyframes blink { 0%,40%,44%,100% { transform: scaleY(1) } 42% { transform: scaleY(0.08) } }
+
+      /* mascot orbit rings — same animation style as enterprise-hero.svg */
+      .cic-spin   { animation: cicSp  9s linear infinite;  transform-origin: 600px 338px; }
+      @keyframes cicSp  { to { transform: rotate(360deg) } }
+      .cic-spin-r { animation: cicSpR 14s linear infinite; transform-origin: 600px 338px; }
+      @keyframes cicSpR { to { transform: rotate(-360deg) } }
+    </style>
+    <pattern id="cic-dots" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="0.9" fill="#2A121B" fill-opacity="0.14"/>
+    </pattern>
+  </defs>
+
+  <!-- ================= TOP: FLAGSHIP TITLE ================= -->
+  <g font-family="Inter, -apple-system, system-ui, sans-serif">
+
+    <!-- big title — mono 'cocoindex-' in ink, 'code' highlighted with the warm gradient -->
+    <text x="60" y="114" font-size="40" font-weight="800" letter-spacing="-0.02em">
+      <tspan font-family="JetBrains Mono, ui-monospace, monospace" fill="#2A121B">cocoindex-</tspan><tspan font-family="Inter, -apple-system, system-ui, sans-serif" font-weight="900" fill="#B45309">code</tspan>
+    </text>
+
+    <!-- primary subtitle -->
+    <text x="60" y="154" font-size="22" font-weight="700" fill="#2A121B">Codebase index &amp; search <tspan fill="#16A534" font-style="italic">for your coding agent.</tspan></text>
+
+    <!-- secondary tagline -->
+    <text x="60" y="184" font-size="16" font-weight="500" fill="rgba(42,18,27,0.65)">Live call graphs, symbols, vectors &amp; chunks — fresh on every commit.</text>
+
+    <!-- works-with chip grid (top right, aligned with title/tagline band): Claude · Cursor · OpenCode · Factory -->
+    <g transform="translate(1000, 120)" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" letter-spacing="0.12em" font-weight="700">
+      <text x="74" y="12" text-anchor="middle" fill="rgba(42,18,27,0.55)">WORKS WITH</text>
+      <!-- 2×2 chip grid: each chip 70×22, 4px gaps -->
+      <g transform="translate(0, 22)">
+        <rect x="0"  y="0"  width="70" height="22" rx="6" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+        <text x="35" y="15" text-anchor="middle" fill="#1F2328">CLAUDE</text>
+        <rect x="78" y="0"  width="70" height="22" rx="6" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+        <text x="113" y="15" text-anchor="middle" fill="#1F2328">CURSOR</text>
+        <rect x="0"  y="28" width="70" height="22" rx="6" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+        <text x="35" y="43" text-anchor="middle" fill="#1F2328">OPENCODE</text>
+        <rect x="78" y="28" width="70" height="22" rx="6" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+        <text x="113" y="43" text-anchor="middle" fill="#1F2328">FACTORY</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ================= HERO PIPELINE ================= -->
+  <!-- emerald glow behind the coco mascot (soft on white) -->
+  <circle cx="600" cy="338" r="140" fill="url(#cic-glow)"/>
+
+  <!-- 4 green dots orbiting the coconut -->
+  <g class="cic-spin">
+    <circle cx="600" cy="258" r="5" fill="#16A534"/>
+    <circle cx="680" cy="338" r="5" fill="#16A534"/>
+    <circle cx="600" cy="418" r="5" fill="#16A534"/>
+    <circle cx="520" cy="338" r="5" fill="#16A534"/>
+  </g>
+
+  <!-- ===== PANEL 1: YOUR REPO (indigo) · dotted card ===== -->
+  <g transform="translate(60, 220)">
+    <rect x="0" y="0" width="328" height="216" rx="14" fill="url(#cic-dots)"/>
+    <rect x="0" y="0" width="328" height="216" rx="14" fill="none" stroke="#2A121B" stroke-opacity="0.12" stroke-width="1"/>
+    <text x="20" y="26" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11" letter-spacing="0.22em" font-weight="800" fill="#0EA5E9">YOUR REPO · GIT</text>
+    <circle class="pulse" cx="300" cy="20" r="4" fill="#16A534"/>
+
+    <!-- file tree -->
+    <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="13" fill="#2A121B">
+      <text x="20" y="56"><tspan fill="rgba(42,18,27,0.5)">📁</tspan> src/</text>
+
+      <g transform="translate(36, 76)">
+        <!-- main.py -->
+        <rect x="0" y="0" width="14" height="14" rx="2" fill="#0EA5E9"/>
+        <text x="4" y="11" font-size="8" font-weight="800" fill="#FCF3D8">py</text>
+        <text x="22" y="11">main.py</text>
+        <text x="220" y="11" fill="rgba(42,18,27,0.5)" font-size="10">1.2k LOC</text>
+      </g>
+
+      <g transform="translate(36, 98)">
+        <rect x="0" y="0" width="14" height="14" rx="2" fill="#B45309"/>
+        <text x="3" y="11" font-size="8" font-weight="800" fill="#FCF3D8">ts</text>
+        <text x="22" y="11">api.ts</text>
+        <text x="220" y="11" fill="rgba(42,18,27,0.5)" font-size="10">860 LOC</text>
+      </g>
+
+      <g transform="translate(36, 120)">
+        <rect x="0" y="0" width="14" height="14" rx="2" fill="#BE5133"/>
+        <text x="3" y="11" font-size="8" font-weight="800" fill="#FCF3D8">rs</text>
+        <text x="22" y="11">core.rs</text>
+        <text x="220" y="11" fill="rgba(42,18,27,0.5)" font-size="10">2.4k LOC</text>
+      </g>
+
+      <g transform="translate(36, 142)">
+        <rect x="0" y="0" width="14" height="14" rx="2" fill="#16A534"/>
+        <text x="3" y="11" font-size="8" font-weight="800" fill="#FCF3D8">go</text>
+        <text x="22" y="11">svc.go</text>
+        <text x="220" y="11" fill="rgba(42,18,27,0.5)" font-size="10">540 LOC</text>
+      </g>
+
+      <g transform="translate(36, 164)">
+        <rect x="0" y="0" width="14" height="14" rx="2" fill="#FB6A76"/>
+        <text x="3" y="11" font-size="8" font-weight="800" fill="#FCF3D8">md</text>
+        <text x="22" y="11">README.md</text>
+      </g>
+    </g>
+
+    <!-- commit hash -->
+    <g transform="translate(20, 196)" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10">
+      <text fill="rgba(42,18,27,0.6)" y="12">commit <tspan fill="#16A534" font-weight="800">a7f3c19</tspan> · <tspan fill="#2A121B">main</tspan> · <tspan fill="rgba(42,18,27,0.65)">now</tspan></text>
+    </g>
+  </g>
+
+  <!-- ===== ARROW 1: repo → engine ===== -->
+  <g>
+    <path class="flow" d="M388 330 L 448 330" stroke="#B45309" stroke-width="2" fill="none" marker-end="url(#cic-arr-y)" stroke-linecap="round"/>
+    <g transform="translate(418, 314)">
+      <text x="0" y="3" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace" font-size="12" font-weight="800" fill="#B45309">Δ +1</text>
+    </g>
+  </g>
+
+  <!-- ===== CENTER: COCOINDEX MASCOT (no box; just the mascot inside the glow + spinning rings) ===== -->
+  <g>
+    <!-- canonical coco mascot (brand-canonical palette for white bg), centered at (600, 338) -->
+    <g transform="translate(600, 338) scale(0.28) translate(-109.7,-130)">
+      <!-- leaf (palm-ink for readable green on white) -->
+      <path d="M131.724 10.4843C107.647 25.3444 100.313 35.7303 91 55.5126C91 55.5126 147.54 78.8599 153.514 78.8599C159.488 78.8599 174.255 78.793 186.475 69.5901C198.694 60.3876 209.667 42.2692 219.087 21.2307C199.127 6.2706 192.108 0.365929 166.107 0C152.375 0.688645 142.609 4.31824 131.724 10.4843Z" fill="#16A534"/>
+      <!-- coconut outer -->
+      <path d="M109.714 239.678C170.307 239.678 219.427 190.557 219.427 129.964C219.427 69.371 170.307 20.2506 109.714 20.2506C49.1204 20.2506 0 69.371 0 129.964C0 190.557 49.1204 239.678 109.714 239.678Z" fill="#BE5133"/>
+      <!-- cream inner face -->
+      <path d="M49.538 37.9279C32.6557 49.0716 19.7564 62.2345 11.5196 82.5632C3.28292 102.892 24.6042 132.608 53.1548 147.528C80.6716 159.83 96.0891 161.134 123.58 159.46C147.577 157.279 166.101 151.947 183.818 138.247C201.536 124.547 216.595 97.589 208.179 80.3537C199.764 63.118 190.019 50.7441 170.974 38.3699C151.928 25.9956 130.594 20.2506 108.078 20.2506C84.7874 20.3792 68.9538 25.112 49.538 37.9279Z" fill="#FCF3D8"/>
+      <!-- peach shell (brand peach) -->
+      <path d="M56.8396 44.5277C42.1144 53.6969 30.8625 64.5268 23.6779 81.2533C16.4937 97.9797 35.0912 122.43 59.9943 134.705C83.9956 144.827 97.4434 145.9 121.423 144.523C142.354 142.728 158.512 138.341 173.965 127.069C189.419 115.797 202.555 93.6161 195.214 79.4351C187.874 65.2541 179.374 55.0727 162.761 44.8913C146.149 34.7103 127.541 29.983 107.901 29.983C87.5856 30.0891 73.7751 33.983 56.8396 44.5277Z" fill="#E59A63"/>
+      <!-- cheeks -->
+      <path d="M49.5472 122.886C56.877 122.886 62.819 119.717 62.819 115.808C62.819 111.898 56.877 108.729 49.5472 108.729C42.2174 108.729 36.2754 111.898 36.2754 115.808C36.2754 119.717 42.2174 122.886 49.5472 122.886Z" fill="#FB6A76"/>
+      <path d="M170.764 122.886C178.094 122.886 184.036 119.717 184.036 115.808C184.036 111.898 178.094 108.729 170.764 108.729C163.434 108.729 157.492 111.898 157.492 115.808C157.492 119.717 163.434 122.886 170.764 122.886Z" fill="#FB6A76"/>
+      <!-- eyes (both open, blinking) -->
+      <g class="coco-eye">
+        <path d="M64.5894 107.844C75.8284 107.844 84.9395 98.7333 84.9395 87.4943C84.9395 76.2552 75.8284 67.1442 64.5894 67.1442C53.3503 67.1442 44.2393 76.2552 44.2393 87.4943C44.2393 98.7333 53.3503 107.844 64.5894 107.844Z" fill="#401D30"/>
+        <path d="M59.3937 87.079C63.9371 87.079 67.6203 83.918 67.6203 80.0187C67.6203 76.1195 63.9371 72.9585 59.3937 72.9585C54.8502 72.9585 51.167 76.1195 51.167 80.0187C51.167 83.918 54.8502 87.079 59.3937 87.079Z" fill="#F6F4E9"/>
+      </g>
+      <g class="coco-eye">
+        <path d="M154.836 107.844C166.076 107.844 175.187 98.7333 175.187 87.4943C175.187 76.2552 166.076 67.1442 154.836 67.1442C143.597 67.1442 134.486 76.2552 134.486 87.4943C134.486 98.7333 143.597 107.844 154.836 107.844Z" fill="#401D30"/>
+        <path d="M149.642 87.079C154.185 87.079 157.868 83.918 157.868 80.0187C157.868 76.1195 154.185 72.9585 149.642 72.9585C145.098 72.9585 141.415 76.1195 141.415 80.0187C141.415 83.918 145.098 87.079 149.642 87.079Z" fill="#F6F4E9"/>
+      </g>
+      <!-- mouth -->
+      <path d="M98.3543 91.1931L98.2742 91.1242C97.5031 90.4718 96.1495 90.5417 95.2119 90.9168C94.8193 91.0739 94.4825 91.3439 94.244 91.693L94.2018 91.7543C93.9319 92.1491 93.7871 92.6166 93.7871 93.0956V93.6879C93.7871 94.8568 94.0102 96.0149 94.4446 97.1003L94.6719 97.6692L95.085 98.3918C95.9834 99.9643 97.151 101.397 98.5046 102.6C99.7641 103.719 101.207 104.654 102.747 105.338C103.849 105.828 105.001 106.194 106.183 106.431L107.088 106.612C108.246 106.843 109.423 106.96 110.603 106.96H110.671C112.092 106.96 113.507 106.785 114.885 106.441C115.86 106.197 116.811 105.87 117.728 105.462L118.657 105.049C119.767 104.556 120.799 103.904 121.722 103.114C122.85 102.146 123.797 100.986 124.519 99.6867L124.985 98.8478C125.419 98.0656 125.75 97.2298 125.966 96.3615L126.233 95.2945C126.425 94.528 126.444 93.7284 126.289 92.9534L126.183 92.4237C126.116 92.0899 125.985 91.7727 125.796 91.4895C125.412 90.9142 124.816 90.5148 124.138 90.3794L123.969 90.3454C123.332 90.218 122.669 90.3066 122.088 90.5974L121.945 90.669C121.472 90.9057 121.088 91.2894 120.851 91.7629C120.799 91.8663 120.755 91.9732 120.718 92.0831L120.569 92.5293C120.411 93.0037 120.331 93.5001 120.331 94C120.331 94.3803 120.284 94.7592 120.192 95.128L120.161 95.2528C119.981 95.9719 119.659 96.6477 119.215 97.2404C118.783 97.8157 118.244 98.3019 117.627 98.672L117.144 98.9624C116.616 99.2792 116.055 99.5372 115.47 99.7318L114.617 100.016C114.003 100.221 113.375 100.377 112.736 100.483C111.611 100.671 110.465 100.702 109.332 100.576L108.431 100.476C107.52 100.375 106.625 100.161 105.766 99.8387L105.433 99.7139C104.172 99.2413 103.027 98.5038 102.075 97.5517C101.275 96.752 100.626 95.8148 100.158 94.7848L98.8231 91.8493C98.7111 91.6023 98.5574 91.3728 98.3543 91.1931Z" fill="#401E2B"/>
+    </g>
+
+  </g>
+
+  <!-- ===== ARROW 2: engine → context ===== -->
+  <g>
+    <path class="flow" d="M752 330 L 812 330" stroke="#16A534" stroke-width="2" fill="none" marker-end="url(#cic-arr-m)" stroke-linecap="round" style="animation-delay:0.4s"/>
+    <g transform="translate(782, 314)">
+      <text x="0" y="3" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace" font-size="12" font-weight="800" fill="#16A534">&lt;1s</text>
+    </g>
+  </g>
+
+  <!-- ===== PANEL 3: FRESH CONTEXT (emerald) ===== -->
+  <g transform="translate(820, 220)">
+    <rect x="0" y="0" width="320" height="220" rx="14" fill="rgba(22,165,52,0.06)"/>
+    <text x="20" y="26" font-family="JetBrains Mono, ui-monospace, monospace" font-size="11" letter-spacing="0.22em" font-weight="800" fill="#16A534">FRESH CONTEXT · LIVE</text>
+    <circle class="pulse" cx="300" cy="20" r="4" fill="#16A534"/>
+
+    <!-- 2x2 mini output views -->
+    <!-- call graph -->
+    <g transform="translate(20, 48)">
+      <rect width="136" height="74" rx="8" fill="rgba(42,18,27,0.03)" stroke="rgba(42,18,27,0.2)" stroke-width="1"/>
+      <text x="8" y="14" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" letter-spacing="0.14em" font-weight="700" fill="#BE5133">CALL GRAPH</text>
+      <g stroke="#BE5133" stroke-width="1.2" stroke-opacity="0.7" fill="none">
+        <line x1="30" y1="40" x2="60" y2="30"/>
+        <line x1="30" y1="40" x2="62" y2="55"/>
+        <line x1="60" y1="30" x2="94" y2="40"/>
+        <line x1="62" y1="55" x2="94" y2="40"/>
+        <line x1="94" y1="40" x2="116" y2="54"/>
+      </g>
+      <g fill="#BE5133">
+        <circle cx="30" cy="40" r="4"/>
+        <circle cx="60" cy="30" r="4"/>
+        <circle cx="62" cy="55" r="4"/>
+        <circle cx="94" cy="40" r="4"/>
+        <circle cx="116" cy="54" r="4"/>
+      </g>
+    </g>
+
+    <!-- vector cloud -->
+    <g transform="translate(164, 48)">
+      <rect width="136" height="74" rx="8" fill="rgba(42,18,27,0.03)" stroke="rgba(42,18,27,0.2)" stroke-width="1"/>
+      <text x="8" y="14" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" letter-spacing="0.14em" font-weight="700" fill="#FB6A76">VECTOR CLOUD</text>
+      <g fill="#FB6A76">
+        <circle cx="30" cy="40" r="2.4"/>
+        <circle cx="42" cy="52" r="2"/>
+        <circle cx="50" cy="36" r="2.8"/>
+        <circle cx="60" cy="48" r="2.4"/>
+        <circle cx="72" cy="56" r="2.2"/>
+        <circle cx="70" cy="38" r="3"/>
+        <circle cx="84" cy="46" r="2.2"/>
+        <circle cx="90" cy="32" r="2.4"/>
+        <circle cx="100" cy="54" r="2"/>
+        <circle cx="110" cy="42" r="2.6"/>
+        <circle cx="120" cy="50" r="2"/>
+        <circle cx="56" cy="62" r="2"/>
+        <circle cx="38" cy="32" r="2"/>
+        <circle cx="116" cy="58" r="2.4"/>
+      </g>
+    </g>
+
+    <!-- semantic chunks -->
+    <g transform="translate(20, 134)">
+      <rect width="136" height="74" rx="8" fill="rgba(42,18,27,0.03)" stroke="rgba(42,18,27,0.2)" stroke-width="1"/>
+      <text x="8" y="14" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" letter-spacing="0.14em" font-weight="700" fill="#B45309">SEMANTIC CHUNKS</text>
+      <g>
+        <rect x="8" y="26" width="72" height="6" rx="3" fill="#B45309"/>
+        <rect x="8" y="38" width="110" height="6" rx="3" fill="#2A121B" fill-opacity="0.22"/>
+        <rect x="8" y="50" width="88" height="6" rx="3" fill="#2A121B" fill-opacity="0.22"/>
+        <rect x="8" y="62" width="100" height="6" rx="3" fill="#2A121B" fill-opacity="0.22"/>
+      </g>
+    </g>
+
+    <!-- symbols -->
+    <g transform="translate(164, 134)">
+      <rect width="136" height="74" rx="8" fill="rgba(42,18,27,0.03)" stroke="rgba(42,18,27,0.2)" stroke-width="1"/>
+      <text x="8" y="14" font-family="JetBrains Mono, ui-monospace, monospace" font-size="9" letter-spacing="0.14em" font-weight="700" fill="#0EA5E9">SYMBOLS</text>
+      <g font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="#2A121B">
+        <text x="8" y="30"><tspan fill="#BE5133">class</tspan> Parser</text>
+        <text x="8" y="46"><tspan fill="#B45309">fn</tspan> index_repo()</text>
+        <text x="8" y="62"><tspan fill="#16A534">type</tspan> Chunk</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ================= STATS: 3 BOXES · same layout as BUILD YOUR OWN ================= -->
+  <g transform="translate(60, 440)" font-family="Inter, -apple-system, system-ui, sans-serif">
+    <!-- Box 1: 70% fewer tokens -->
+    <g>
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" fill="#BE5133">
+        <rect x="-10" y="-12" width="6" height="24" rx="1.5" fill-opacity="0.35"/>
+        <rect x="0"   y="-7"  width="6" height="14" rx="1.5" fill-opacity="0.65"/>
+        <rect x="10"  y="-2"  width="6" height="4"  rx="1.5"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133"><tspan font-weight="900">70%</tspan> fewer tokens</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Less context per turn</text>
+    </g>
+    <!-- Box 2: <1s freshness -->
+    <g transform="translate(367, 0)">
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" fill="none" stroke="#BE5133" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="-4" y1="-14" x2="4" y2="-14"/>
+        <line x1="0"  y1="-14" x2="0" y2="-11"/>
+        <circle cx="0" cy="1" r="10.5"/>
+        <path d="M0 1 L 0 -4"/>
+        <path d="M0 1 L 5 4"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133"><tspan font-weight="900">&lt;1s</tspan> freshness</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Fresh context at any repo size</text>
+    </g>
+    <!-- Box 3: Instantly · speed up your coding agent -->
+    <g transform="translate(734, 0)">
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" fill="#BE5133" stroke="#BE5133" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M 2 -13 L -9 3 L -2 3 L -5 14 L 9 -3 L 2 -3 Z"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133">Instantly</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Speed up your coding agent</text>
+    </g>
+  </g>
+
+  <!-- ================= BUILD YOUR OWN · 3 CARDS ================= -->
+  <text x="60" y="552" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="13" font-weight="800" fill="rgba(42,18,27,0.65)" letter-spacing="0.22em">BUILD YOUR OWN</text>
+
+  <g transform="translate(60, 568)" font-family="Inter, -apple-system, system-ui, sans-serif">
+    <!-- Unified brand-coral stroke icons (no circle backdrops) — matches cocoindex.io inline-icon treatment -->
+
+    <!-- Card 1: Coding agents — code brackets with slash + sparkle -->
+    <g>
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" stroke="#BE5133" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M-10 -7 L -16 0 L -10 7"/>
+        <path d="M 10 -7 L 16 0 L 10 7"/>
+        <path d="M -4 9 L 4 -9"/>
+      </g>
+      <g fill="#BE5133">
+        <circle cx="57" cy="34" r="1.8"/>
+        <circle cx="52" cy="40" r="1.1"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133">Coding agents</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Generate · Refactor</text>
+    </g>
+
+    <!-- Card 2: Code-review agents — magnifier with checkmark -->
+    <g transform="translate(367, 0)">
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" stroke="#BE5133" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="-3" cy="-3" r="10"/>
+        <line x1="5" y1="5" x2="13" y2="13"/>
+        <path d="M-8 -3 L -4 1 L 3 -7"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133">Code-review agents</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Catch · Approve</text>
+    </g>
+
+    <!-- Card 3: Security-review agents — shield with checkmark -->
+    <g transform="translate(734, 0)">
+      <rect x="0" y="16" width="347" height="70" rx="16" fill="url(#cic-dots)"/>
+      <g transform="translate(40, 48)" stroke="#BE5133" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M 0 -14 L 12 -9 L 12 1 C 12 10 6 15 0 17 C -6 15 -12 10 -12 1 L -12 -9 Z"/>
+        <path d="M -5 0 L -1 4 L 6 -4"/>
+      </g>
+      <text x="80" y="44" font-size="17" font-weight="800" fill="#BE5133">Security-review agents</text>
+      <text x="80" y="66" font-size="13" font-weight="500" fill="rgba(42,18,27,0.7)">Scan · Audit</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 36" role="img" aria-label="Full quickstart">
+  <title>Full quickstart</title>
+  <desc>Lightning-bolt icon + "Full quickstart" label — jump into the CocoIndex docs quickstart. Light-theme variant (GitHub grey pill, amber bolt, ink text).</desc>
+
+  <!-- GitHub-native light pill -->
+  <rect x="0.5" y="0.5" width="169" height="35" rx="17.5" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+
+  <!-- lightning bolt icon -->
+  <g transform="translate(14, 8)">
+    <path d="M6 0 L 0 11 L 4.5 11 L 2 20 L 10 7 L 5 7 Z"
+          fill="#B45309" stroke="#92400E" stroke-width="0.9" stroke-linejoin="round"/>
+  </g>
+
+  <!-- text -->
+  <text x="32" y="23" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2" fill="#1F2328">Full quickstart</text>
+
+  <!-- arrow -->
+  <g transform="translate(148, 18)" stroke="#59636E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="0" y1="0" x2="10" y2="0"/>
+    <polyline points="6,-4 10,0 6,4"/>
+  </g>
+</svg>

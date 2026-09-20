@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 36" role="img" aria-label="CocoIndex documentation — quickstart, connectors, ops, transformations, target stores, RAG and knowledge graph recipes">
+  <title>CocoIndex Documentation</title>
+  <desc>Read the CocoIndex documentation — guides, quickstart, connectors, transformations, target stores, and the full API reference for Python and Rust. Light-theme button.</desc>
+
+  <!-- GitHub-native light pill: canvas-default bg, muted border -->
+  <rect x="0.5" y="0.5" width="91" height="35" rx="17.5" fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+
+  <!-- open-book icon · peach pages + coral spine (brand colors, readable on grey) -->
+  <g transform="translate(12, 9)">
+    <!-- left page -->
+    <path d="M1 2 L 10 3 L 10 17 L 1 16 Z" fill="#E59A63"/>
+    <!-- right page -->
+    <path d="M21 2 L 12 3 L 12 17 L 21 16 Z" fill="#E59A63"/>
+    <!-- center spine -->
+    <rect x="10" y="3" width="2" height="14" fill="#BE5133"/>
+    <!-- text lines (on peach pages, ink) -->
+    <g stroke="#2A121B" stroke-width="0.9" stroke-linecap="round" opacity="0.55">
+      <line x1="3"  y1="6"  x2="8"  y2="6.4"/>
+      <line x1="3"  y1="9"  x2="8"  y2="9.4"/>
+      <line x1="3"  y1="12" x2="7"  y2="12.3"/>
+      <line x1="14" y1="6.4" x2="19" y2="6"/>
+      <line x1="14" y1="9.4" x2="19" y2="9"/>
+      <line x1="14" y1="12.3" x2="18" y2="12"/>
+    </g>
+  </g>
+
+  <!-- wordmark — GitHub ink -->
+  <text x="42" y="18" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.2" fill="#1F2328" dominant-baseline="central">Docs</text>
+</svg>

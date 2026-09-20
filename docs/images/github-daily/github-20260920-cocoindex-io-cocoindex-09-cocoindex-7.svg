@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 44" role="img" aria-label="Learn the concept — three-node flow glyph (source dot → F ring → target dot) links to the CocoIndex core-concepts guide that explains Target = F(Source), persistent state, the incremental engine, and lineage">
+  <title>Learn the concept</title>
+  <desc>Light-theme GitHub grey pill. On the left, a three-node flow glyph — a filled source dot, an F ring in the middle (the transformation), and a filled target dot — encodes the CocoIndex concept Target = F(Source) at a glance. Label reads 'Learn the concept' with a trailing arrow; opens the core-concepts guide covering sources, targets, flows, the incremental engine, and data lineage.</desc>
+
+  <!-- GitHub-native light pill -->
+  <rect x="0.5" y="0.5" width="209" height="43" rx="21.5"
+        fill="#F6F8FA" stroke="#D1D9E0" stroke-width="1"/>
+
+  <!-- 3-node flow glyph: source ● → F ○ → target ● (brand violet, readable on grey) -->
+  <g transform="translate(22, 22)" stroke="#7C3AED" stroke-linecap="round" fill="#7C3AED">
+    <!-- source dot -->
+    <circle cx="-10" cy="0" r="2.2" stroke="none"/>
+    <!-- edge source → F -->
+    <line x1="-7.4" y1="0" x2="-3.6" y2="0" stroke-width="1.4" fill="none"/>
+    <!-- F ring (the transformation) -->
+    <circle cx="0" cy="0" r="3.2" fill="none" stroke-width="1.4"/>
+    <!-- edge F → target -->
+    <line x1="3.6" y1="0" x2="7.4" y2="0" stroke-width="1.4" fill="none"/>
+    <!-- target dot -->
+    <circle cx="10" cy="0" r="2.2" stroke="none"/>
+  </g>
+
+  <!-- label -->
+  <text x="44" y="22" dominant-baseline="central"
+        font-family="Inter, -apple-system, system-ui, sans-serif" font-size="14"
+        font-weight="700" letter-spacing="-0.2" fill="#1F2328">Learn the concept</text>
+
+  <!-- trailing arrow → -->
+  <g transform="translate(178, 22)" stroke="#59636E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="0" y1="0" x2="12" y2="0"/>
+    <polyline points="8,-5 12,0 8,5"/>
+  </g>
+</svg>
